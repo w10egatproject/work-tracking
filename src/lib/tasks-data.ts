@@ -1,0 +1,28 @@
+import { Task } from "@/types"
+
+export const TASKS_DATA: Task[] = [
+  { id: "1", title: "สร้างแกน西路งาน Bearing ช่องทาง 1 SE", wo: "3816627", report_date: "1 ต.ค. 2024", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pq/edit#gid=0" },
+  { id: "2", title: "สร้างช่องล้อของ pulley type D5", wo: "3881775", report_date: "26 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "3", title: "สร้าง bore pulley 630x1400 แต่ slot bolt", wo: "3856203", report_date: "17 ต.ค. 2024", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "4", title: "สร้างแกน西路งาน แต่ slot shift ELECON D1", wo: "3874681", report_date: "25 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "5", title: "สร้าง pulley NDB2 ขนาด 1000x1400", wo: "3902889", report_date: "21 พ.ย. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "6", title: "สร้างแกน西路งาน EGLO D1", wo: "3906195", report_date: "28 พ.ย. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "7", title: "สร้างแกน西路งาน EGLO 305", wo: "3918451", report_date: "20 ธ.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "8", title: "สร้าง bore 320 pulley 800x1400 1EA", wo: "3985951", report_date: "17 ม.ค. 2025", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "9", title: "สร้างแกน西路งาน NC NDB4 1EA", wo: "3985958", report_date: "17 ม.ค. 2025", completion_codes: "12", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "10", title: "สร้าง bore 320 pulley 800x1400 1EA", wo: "4034067", report_date: "17 ก.พ. 2025", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "11", title: "สร้างเครื่องบด RKU บดย่อย 250", wo: "4013367", report_date: "3 ก.พ. 2025", completion_codes: "11,12,13,14", completion_date: "", progress: 0, equip: "270006 Reclaimer 6", link: "" },
+  { id: "12", title: "สร้างShaft G/B KEA450 reliastockstop 2 SE", wo: "4027209", report_date: "1 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "13", title: "สร้าง bore 355 pulley 1000x1400", wo: "4034067", report_date: "17 ก.พ. 2025", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "14", title: "สร้างแกน西路งาน แต่ slot shift ELECON D2", wo: "4034065", report_date: "17 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "15", title: "สร้างแกน西路งาน แต่ slot shift ELECON D8", wo: "4034066", report_date: "17 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "16", title: "สร้างชุดล้อทำงาน Induction", wo: "4041721", report_date: "3 มี.ค. 2025", completion_codes: "12", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "17", title: "สร้างแกน西路งานบด Slovakia แต่ slot", wo: "4064152", report_date: "19 มี.ค. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "18", title: "สร้าง pulley บด Slovakia", wo: "4064890", report_date: "23 มี.ค. 2025", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "19", title: "สร้างแกน西路งานรถบด 43-0262 พื้นที่ขุดลอก", wo: "3998654", report_date: "4 มี.ค. 2025", completion_codes: "11,13", completion_date: "", progress: 0, equip: "430262 สายพานลำเลียงRecommend10 ชั้น", link: "" },
+  { id: "20", title: "เปลี่ยน bearing บด Slovakia", wo: "3927273", report_date: "11 ธ.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "21", title: "สร้าง Cover F/C 760CDR-XR-XR", wo: "4000726", report_date: "7 ม.ค. 2025", completion_codes: "11,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "22", title: "สร้างชุดล้อทำงานทราย", wo: "3631878", report_date: "21 ก.พ. 2023", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
+  { id: "23", title: "สร้างแกน西路งาน Apron Conveyor บด Slovakia", wo: "4039061", report_date: "27 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "240007 Crusher 3", link: "" },
+  { id: "24", title: "สร้างแกน西路งานแต่ slot bolt", wo: "4055566", report_date: "4 มี.ค. 2025", completion_codes: "11", completion_date: "", progress: 0, equip: "", link: "" },
+]
