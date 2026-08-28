@@ -21,6 +21,7 @@ import {
   Save,
   ChevronLeft,
   ChevronRight,
+  RotateCcw,
 } from "lucide-react"
 
 // Thai date parsing utilities
@@ -83,6 +84,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [allTasks, setAllTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [handoverOpen, setHandoverOpen] = useState(false)
+
+  // Timeline Window Extension State (เริ่มต้นแสดง 2 เดือน แล้วกดดูเพิ่มได้)
+  const [visibleMonthsCount, setVisibleMonthsCount] = useState(2)
 
   // Edit Task Header Metadata State
   const [editTaskModalOpen, setEditTaskModalOpen] = useState(false)
@@ -237,32 +241,25 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  // Generate dynamic date timeline columns based on display_date (or report_date) and completion_date
+  // Generate dynamic date timeline columns starting from display_date (or report_date) for visibleMonthsCount months
   const { dayColumns, monthGroups } = useMemo(() => {
     if (!task) return { dayColumns: [], monthGroups: [] }
 
+    // Start anchor: if display_date is set, start from display_date; otherwise start from report_date
     let startDate = parseThaiDate(task.display_date) || parseThaiDate(task.report_date)
-    let endDate = parseThaiDate(task.completion_date)
-
-    if (task.subtasks && task.subtasks.length > 0) {
-      for (const st of task.subtasks) {
-        const s = parseThaiDate(st.start)
-        const e = parseThaiDate(st.end)
-        if (s && (!startDate || s < startDate)) startDate = s
-        if (e && (!endDate || e > endDate)) endDate = e
-      }
-    }
-
     if (!startDate) startDate = new Date(2026, 7, 27)
-    if (!endDate || endDate < startDate) {
-      endDate = new Date(startDate)
-      endDate.setDate(endDate.getDate() + (task.total_days ? task.total_days - 1 : 11))
-    }
+
+    const startYear = startDate.getFullYear()
+    const startMonth = startDate.getMonth()
+
+    // Calculate end date based on visibleMonthsCount months
+    const targetEndMonth = startMonth + visibleMonthsCount
+    const targetEndDate = new Date(startYear, targetEndMonth, 0) // last day of target month
 
     const cols: DayColumn[] = []
     const cur = new Date(startDate)
     let count = 0
-    while (cur <= endDate && count < 35) {
+    while (cur <= targetEndDate && count < 365) {
       const dayOfWeek = cur.getDay()
       cols.push({
         date: new Date(cur),
@@ -297,7 +294,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
 
     return { dayColumns: cols, monthGroups: groups }
-  }, [task])
+  }, [task, visibleMonthsCount])
 
   const handleOpenEditSubtask = (st: Subtask) => {
     setEditingSubtask(st)
@@ -700,7 +697,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* 3. Modern High-Density Spreadsheet & Timeline Matrix Grid */}
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
-          {/* Table Header Bar */}
+          {/* Table Header Bar with Extend Month Controls */}
           <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#005B9A] ring-4 ring-sky-100"></span>
@@ -711,8 +708,47 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 {subtasks.length} แถว
               </span>
             </div>
-            <div className="text-[11px] text-slate-400">
-              💡 คลิกที่แถวเพื่อแก้ % ความคืบหน้า • ชี้เมาส์ที่แถวเพื่อแทรก/ลบแถว
+
+            {/* Timeline Window Controls */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="text-[11px] font-bold text-slate-600 bg-slate-100 border border-slate-200/80 px-2.5 py-1 rounded-xl font-mono flex items-center gap-1.5 shadow-2xs">
+                <span>📅 ช่วงที่แสดง:</span>
+                <span className="text-[#005B9A] font-extrabold">{monthGroups.map((g) => g.month).join(" - ")}</span>
+                <span className="text-slate-400">({dayColumns.length} วัน)</span>
+              </div>
+
+              {visibleMonthsCount > 2 && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleMonthsCount((prev) => Math.max(2, prev - 1))}
+                  className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+                  title="ย่อลด 1 เดือน"
+                >
+                  <span>➖ ย่อเดือน</span>
+                </button>
+              )}
+
+              {visibleMonthsCount > 2 && (
+                <button
+                  type="button"
+                  onClick={() => setVisibleMonthsCount(2)}
+                  className="px-2 py-1 bg-white hover:bg-slate-100 text-slate-500 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+                  title="รีเซ็ตกลับเป็น 2 เดือน"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>รีเซ็ต</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
+                className="px-3 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95"
+                title="ขยายแสดงไทม์ไลน์เพิ่มอีก 1 เดือน"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>ขยายดูเพิ่ม +1 เดือน</span>
+              </button>
             </div>
           </div>
 
@@ -926,6 +962,21 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 })}
               </tbody>
             </table>
+          </div>
+
+          {/* Bottom Table Bar with Extend Month Shortcut */}
+          <div className="bg-slate-50/80 border-t border-slate-200 px-5 py-2.5 flex items-center justify-between text-xs flex-wrap gap-2">
+            <div className="text-[11px] text-slate-500">
+              💡 แสดงช่วงเวลา: <span className="font-mono font-bold text-[#005B9A]">{dayColumns[0]?.dateStr || "-"}</span> ถึง <span className="font-mono font-bold text-[#005B9A]">{dayColumns[dayColumns.length - 1]?.dateStr || "-"}</span> (รวม {dayColumns.length} วัน)
+            </div>
+            <button
+              type="button"
+              onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
+              className="px-3.5 py-1 bg-white hover:bg-sky-50 text-[#005B9A] border border-sky-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>กดดูวันเพิ่ม (+1 เดือน)</span>
+            </button>
           </div>
         </div>
 
