@@ -69,7 +69,6 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
       onAdd({ ...taskPayload, id: String(Date.now()), taskNo: `งานที่-ใหม่` })
     } finally {
       setSubmitting(false)
-      // Reset form
       setTitle("")
       setWo("")
       setEquip("")
@@ -80,21 +79,21 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-[#0F2747] text-white px-6 py-4 flex items-center justify-between border-b border-slate-700">
+        <div className="bg-[#0F172A] text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#005B9A] border border-sky-400/30 flex items-center justify-center text-xl shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#005B9A] to-[#004A7D] border border-sky-400/30 flex items-center justify-center text-xl shadow-xs">
               📝
             </div>
             <div>
-              <h2 className="text-base font-bold tracking-tight">เพิ่มใบสั่งงานซ่อมบำรุงใหม่</h2>
-              <p className="text-xs text-slate-300">บันทึกลงแผ่นงาน &quot;ลำดับงาน&quot; พร้อมสร้าง Subtasks อัตโนมัติ</p>
+              <h2 className="text-base font-extrabold tracking-tight">เพิ่มใบสั่งงานซ่อมบำรุงใหม่</h2>
+              <p className="text-xs text-slate-400">บันทึกลงแผ่นงาน &quot;ลำดับงาน&quot; พร้อมสร้างแผนงานย่อยอัตโนมัติ</p>
             </div>
           </div>
           <button
@@ -108,8 +107,8 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           <div>
-            <label className="block font-bold text-[#0F2747] mb-1">
-              รายการ / ชื่องานซ่อมบำรุง <span className="text-red-500">*</span>
+            <label className="block font-bold text-[#0F172A] mb-1">
+              รายการ / ชื่องานซ่อมบำรุง <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -117,13 +116,13 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="เช่น สร้างอุปกรณ์จับยก Bearing จำนวน 1 SE"
-              className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-[#F0B323]/30 outline-none font-medium"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none font-medium"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-[#0F2747] mb-1">
+              <label className="block font-bold text-[#0F172A] mb-1">
                 เลข Work Order (W/O)
               </label>
               <input
@@ -131,11 +130,11 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 value={wo}
                 onChange={(e) => setWo(e.target.value)}
                 placeholder="เช่น 3816627"
-                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs font-mono font-bold text-[#005B9A] focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-[#005B9A] focus:bg-white focus:border-[#005B9A] outline-none"
               />
             </div>
             <div>
-              <label className="block font-bold text-[#0F2747] mb-1">
+              <label className="block font-bold text-[#0F172A] mb-1">
                 วันที่เริ่มงาน
               </label>
               <input
@@ -143,16 +142,16 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 value={reportDate}
                 onChange={(e) => setReportDate(e.target.value)}
                 placeholder="เช่น 1 ส.ค. 2024"
-                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
               />
             </div>
           </div>
 
           {/* Disciplines Selection (W11-W14) */}
           <div>
-            <label className="block font-bold text-[#0F2747] mb-1.5 flex items-center justify-between">
-              <span>หมวดงานที่ร่วมงาน (W Codes) <span className="text-red-500">*</span></span>
-              <span className="text-[11px] text-slate-400 font-normal">เลือกลำดับหมวดงานที่ต้องดำเนินการ</span>
+            <label className="block font-bold text-[#0F172A] mb-1.5 flex items-center justify-between">
+              <span>หมวดงานที่ร่วมงาน (W Codes) <span className="text-rose-500">*</span></span>
+              <span className="text-[11px] text-slate-400 font-normal">เลือกลำดับหมวดที่เกี่ยวข้อง</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {(["W11", "W12", "W13", "W14"] as DisciplineCode[]).map((code) => {
@@ -175,7 +174,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                       >
                         ✓
                       </span>
-                      <span className="text-xs font-bold text-[#0F2747]">{conf.fullName}</span>
+                      <span className="text-xs font-bold text-[#0F172A]">{conf.fullName}</span>
                     </div>
                     <span className="text-[10px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border text-slate-600">
                       {conf.num}
@@ -188,7 +187,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-[#0F2747] mb-1">
+              <label className="block font-bold text-[#0F172A] mb-1">
                 วันที่คาดว่าจะแล้วเสร็จ
               </label>
               <input
@@ -196,11 +195,11 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 value={completionDate}
                 onChange={(e) => setCompletionDate(e.target.value)}
                 placeholder="เช่น 30 มี.ค. 2026"
-                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
               />
             </div>
             <div>
-              <label className="block font-bold text-[#0F2747] mb-1">
+              <label className="block font-bold text-[#0F172A] mb-1">
                 ระยะเวลาทั้งหมด (วัน)
               </label>
               <input
@@ -208,13 +207,13 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 min={1}
                 value={totalDays}
                 onChange={(e) => setTotalDays(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:border-[#005B9A] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-[#0F2747] mb-1">
+            <label className="block font-bold text-[#0F172A] mb-1">
               อุปกรณ์ / เครื่องจักร (Equip)
             </label>
             <input
@@ -222,12 +221,12 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={equip}
               onChange={(e) => setEquip(e.target.value)}
               placeholder="เช่น 270006 Reclaimer 6 หรือ 240007 Crusher 3"
-              className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-[#0F2747] mb-1">
+            <label className="block font-bold text-[#0F172A] mb-1">
               ลิ้งค์ Google Sheets
             </label>
             <input
@@ -235,7 +234,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full px-3.5 py-2.5 bg-[#F8FAFC] border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
             />
           </div>
 
@@ -251,7 +250,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+              className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
             >
               {submitting ? "กำลังบันทึก..." : "✓ บันทึกงานใหม่"}
             </button>

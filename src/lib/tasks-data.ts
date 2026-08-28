@@ -1,4 +1,4 @@
-import { Task, Subtask, TaskStatus, parseWCodes, DisciplineCode } from "@/types"
+import { Task, Subtask, TaskStatus, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
 
 export const INITIAL_TASKS: Task[] = [
   {
@@ -9,7 +9,7 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "1 ส.ค. 2024",
     completion_codes: "12,13",
     w_codes: ["W12", "W13"],
-    completion_date: "28/8/2026",
+    completion_date: "",
     total_days: 757,
     progress: 20,
     status: "ดำเนินการ",
@@ -47,7 +47,7 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "26 ส.ค. 2024",
     completion_codes: "11,12,13",
     w_codes: ["W11", "W12", "W13"],
-    completion_date: "15/12/2025",
+    completion_date: "",
     total_days: 476,
     progress: 45,
     status: "ดำเนินการ",
@@ -63,7 +63,7 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "17 ต.ค. 2024",
     completion_codes: "12,13",
     w_codes: ["W12", "W13"],
-    completion_date: "10/01/2026",
+    completion_date: "",
     total_days: 450,
     progress: 30,
     status: "ดำเนินการ",
@@ -79,7 +79,7 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "25 พ.ย. 2024",
     completion_codes: "11,12,13",
     w_codes: ["W11", "W12", "W13"],
-    completion_date: "20/03/2026",
+    completion_date: "",
     total_days: 480,
     progress: 10,
     status: "ดำเนินการ",
@@ -95,13 +95,13 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "21 ม.ค. 2025",
     completion_codes: "11,12,13",
     w_codes: ["W11", "W12", "W13"],
-    completion_date: "15/04/2026",
+    completion_date: "",
     total_days: 450,
     progress: 0,
     status: "รอดำเนินการ",
     current_discipline: "W11",
     equip: "",
-    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=1337021834#gid=1337021834",
+    link: "",
   },
   {
     id: "6",
@@ -111,13 +111,13 @@ export const INITIAL_TASKS: Task[] = [
     report_date: "28 ม.ค. 2025",
     completion_codes: "11,12,13",
     w_codes: ["W11", "W12", "W13"],
-    completion_date: "30/04/2026",
+    completion_date: "",
     total_days: 457,
     progress: 0,
     status: "รอดำเนินการ",
     current_discipline: "W11",
     equip: "",
-    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=708815062#gid=708815062",
+    link: "",
   },
   {
     id: "7",
@@ -418,6 +418,7 @@ export function getTaskById(id: string): Task | undefined {
 export function addTaskToStore(newTask: Partial<Task>): Task {
   const nextId = String(tasksStore.length + 1)
   const wCodes = parseWCodes(newTask.completion_codes || "")
+  const status = deriveTaskStatus(newTask.completion_date, newTask.link)
   const created: Task = {
     id: nextId,
     taskNo: `งานที่${nextId}`,
@@ -428,8 +429,8 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
     w_codes: wCodes.length > 0 ? wCodes : ["W11", "W12"],
     completion_date: newTask.completion_date || "",
     total_days: newTask.total_days || 30,
-    progress: 0,
-    status: "รอดำเนินการ",
+    progress: status === "เสร็จ" ? 100 : (status === "ดำเนินการ" ? (newTask.progress || 10) : 0),
+    status,
     current_discipline: wCodes[0] || "W11",
     equip: newTask.equip || "",
     link: newTask.link || "",
@@ -444,7 +445,12 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
 export function updateTaskInStore(id: string, updates: Partial<Task>): Task | null {
   const index = tasksStore.findIndex(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
   if (index === -1) return null
-  tasksStore[index] = { ...tasksStore[index], ...updates }
+  const merged = { ...tasksStore[index], ...updates }
+  merged.status = deriveTaskStatus(merged.completion_date, merged.link)
+  if (merged.status === "เสร็จ" && merged.progress < 100) {
+    merged.progress = 100
+  }
+  tasksStore[index] = merged
   return tasksStore[index]
 }
 

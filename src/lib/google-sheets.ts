@@ -1,5 +1,5 @@
 import { google } from "googleapis"
-import { Task, parseWCodes, DisciplineCode } from "@/types"
+import { Task, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
 import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore } from "./tasks-data"
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ""
@@ -53,6 +53,8 @@ export async function fetchAllTasks(): Promise<Task[]> {
       const equip = String(row[6] || "")
       const link = String(row[7] || "")
       const wCodes = parseWCodes(rawCodes)
+      const status = deriveTaskStatus(completionDate, link)
+      const isDone = status === "เสร็จ"
 
       tasks.push({
         id,
@@ -64,8 +66,8 @@ export async function fetchAllTasks(): Promise<Task[]> {
         completion_codes: rawCodes,
         w_codes: wCodes,
         total_days: 0,
-        progress: 0,
-        status: "ดำเนินการ",
+        progress: isDone ? 100 : (status === "ดำเนินการ" ? 25 : 0),
+        status,
         current_discipline: wCodes[0] || "W12",
         equip,
         link,

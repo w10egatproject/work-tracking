@@ -67,6 +67,16 @@ export function parseWCodes(raw: string): DisciplineCode[] {
   return codes
 }
 
+export function deriveTaskStatus(completionDate?: string, link?: string): TaskStatus {
+  if (completionDate && completionDate.trim() !== "") {
+    return "เสร็จ"
+  }
+  if (link && link.trim() !== "") {
+    return "ดำเนินการ"
+  }
+  return "รอดำเนินการ"
+}
+
 export interface Subtask {
   id: string
   category: string
