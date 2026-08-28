@@ -4,10 +4,9 @@ import { useState, useEffect, useMemo } from "react"
 import { Task, DisciplineCode } from "@/types"
 import SummaryCards from "@/components/SummaryCards"
 import TaskTable from "@/components/TaskTable"
-import MasterGanttView from "@/components/MasterGanttView"
 import KanbanBoardView from "@/components/KanbanBoardView"
 import AddTaskDialog from "@/components/AddTaskDialog"
-import { Search, Filter, Plus, Table as TableIcon, Calendar, LayoutGrid, RefreshCw, Sparkles } from "lucide-react"
+import { Search, Filter, Plus, Table as TableIcon, LayoutGrid, RefreshCw, Calendar } from "lucide-react"
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -19,7 +18,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("ALL")
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL")
-  const [viewMode, setViewMode] = useState<"table" | "gantt" | "kanban">("table")
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table")
 
   const loadData = async () => {
     try {
@@ -175,42 +174,30 @@ export default function Home() {
               </select>
             </div>
 
-            {/* View Mode Toggle (Table / Gantt / Kanban) */}
+            {/* View Mode Toggle (Table / Kanban) */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button
                 onClick={() => setViewMode("table")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                   viewMode === "table"
                     ? "bg-white text-slate-900 shadow-2xs"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <TableIcon className="w-3.5 h-3.5 text-emerald-600" />
-                <span>ตาราง (Table)</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode("gantt")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  viewMode === "gantt"
-                    ? "bg-white text-slate-900 shadow-2xs"
-                    : "text-slate-500 hover:text-slate-900"
-                }`}
-              >
-                <Calendar className="w-3.5 h-3.5 text-blue-600" />
-                <span>ไทม์ไลน์ (Timeline)</span>
+                <span>ตาราง (Table View)</span>
               </button>
 
               <button
                 onClick={() => setViewMode("kanban")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                   viewMode === "kanban"
                     ? "bg-white text-slate-900 shadow-2xs"
                     : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5 text-purple-600" />
-                <span>บอร์ด (Kanban)</span>
+                <span>บอร์ด (Kanban View)</span>
               </button>
             </div>
           </div>
@@ -225,7 +212,6 @@ export default function Home() {
         ) : (
           <>
             {viewMode === "table" && <TaskTable tasks={filteredTasks} />}
-            {viewMode === "gantt" && <MasterGanttView tasks={filteredTasks} />}
             {viewMode === "kanban" && <KanbanBoardView tasks={filteredTasks} />}
           </>
         )}

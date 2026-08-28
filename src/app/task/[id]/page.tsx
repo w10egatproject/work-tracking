@@ -189,16 +189,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  // Days list for timeline (Jan 1-31, Feb 1-7)
-  const daysInJan = Array.from({ length: 31 }, (_, i) => i + 1)
-  const daysInFeb = Array.from({ length: 7 }, (_, i) => i + 1)
-  const weekdaysThai = ["พฤหัส", "ศุกร์", "เสาร์", "อาทิตย์", "จันทร์", "อังคาร", "พุธ"]
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-3">
         <div className="w-9 h-9 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-slate-500 text-xs font-semibold">กำลังโหลดข้อมูลแผ่นงานและไทม์ไลน์...</div>
+        <div className="text-slate-500 text-xs font-semibold">กำลังโหลดข้อมูลแผ่นงาน...</div>
       </div>
     )
   }
@@ -406,253 +401,172 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        {/* Subtasks and Daily Gantt Matrix Table */}
+        {/* Subtasks Clean Breakdown Table */}
         <div className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs">
           <div className="bg-slate-50/90 border-b border-slate-200 px-5 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                แผนงานย่อยและไทม์ไลน์รายวัน (Subtasks & Daily Gantt)
+                รายการแผนงานย่อย (Subtasks Breakdown)
               </span>
               <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-                (คลิกที่แถวงานย่อยเพื่อปรับ % หรือกดปุ่ม ⬆️/⬇️ เพื่อแทรกแถว)
+                (คลิกที่แถวเพื่อแก้ไข % ความคืบหน้า หรือกดปุ่ม ⬆️/⬇️ ที่คอลัมน์จัดการเพื่อแทรกแถว)
               </span>
+            </div>
+            <div className="text-xs font-semibold text-slate-400 bg-white border border-slate-200 px-2.5 py-1 rounded-full">
+              {subtasks.filter((s) => !s.isHeader).length} งานย่อย
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <div className="min-w-[1400px]">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  {/* Top Header: Months */}
-                  <tr className="bg-slate-100/90 border-b border-slate-200 text-slate-700 text-xs font-bold">
-                    <th colSpan={7} className="py-2.5 px-4 border-r border-slate-200 bg-slate-100">
-                      รายละเอียดงานย่อย
-                    </th>
-                    <th
-                      colSpan={31}
-                      className="py-1 px-1 text-center border-r border-slate-200 bg-blue-50/70 text-blue-900 font-bold"
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-100/90 border-b border-slate-200 text-slate-700 text-xs font-bold uppercase tracking-wider">
+                  <th className="py-3 px-5 border-r border-slate-200 min-w-[320px]">งานที่ต้องทำ</th>
+                  <th className="py-3 px-3 border-r border-slate-200 w-36 text-center">วันที่เริ่มงาน</th>
+                  <th className="py-3 px-3 border-r border-slate-200 w-28 text-center">วันที่ใช้ (วัน)</th>
+                  <th className="py-3 px-3 border-r border-slate-200 w-36 text-center">วันที่เสร็จ</th>
+                  <th className="py-3 px-4 border-r border-slate-200 w-44 text-center">ความคืบหน้า</th>
+                  <th className="py-3 px-3 border-r border-slate-200 w-32 text-center">สถานะ</th>
+                  <th className="py-3 px-3 w-32 text-center">แทรก / ลบแถว</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
+                {subtasks.map((st) => {
+                  const isHeader = st.isHeader
+                  const conf = st.discipline ? DISCIPLINE_CONFIG[st.discipline] : null
+
+                  return (
+                    <tr
+                      key={st.id}
+                      onClick={() => !isHeader && handleOpenEditSubtask(st)}
+                      className={`group transition-all ${
+                        isHeader
+                          ? "bg-slate-100/90 font-bold border-t-2 border-slate-300"
+                          : "hover:bg-blue-50/40 cursor-pointer bg-white"
+                      }`}
                     >
-                      มกราคม 2026 (ม.ค.)
-                    </th>
-                    <th colSpan={7} className="py-1 px-1 text-center bg-purple-50/70 text-purple-900 font-bold">
-                      กุมภาพันธ์ 2026 (ก.พ.)
-                    </th>
-                  </tr>
+                      {/* ชื่องานที่ต้องทำ */}
+                      <td className="py-3 px-5 border-r border-slate-100">
+                        <div className="flex items-center justify-between gap-2">
+                          {isHeader ? (
+                            <div className="flex items-center gap-2.5 text-slate-900 font-extrabold text-xs">
+                              <span
+                                className={`w-6 h-6 rounded-lg flex items-center justify-center font-mono text-[11px] text-white font-extrabold shadow-2xs ${
+                                  conf?.barClass || "bg-slate-600"
+                                }`}
+                              >
+                                {conf?.num}
+                              </span>
+                              <span>{st.category}</span>
+                            </div>
+                          ) : (
+                            <span className="text-slate-700 pl-6 flex items-center gap-2">
+                              <span className="text-slate-400">•</span>
+                              <span className="font-semibold text-slate-800">{st.category}</span>
+                              <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
-                  {/* Secondary Header: Columns + Day Numbers & Weekdays */}
-                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-[11px] font-bold">
-                    <th className="py-2.5 px-4 border-r border-slate-200 w-80">งานที่ต้องทำ</th>
-                    <th className="py-2.5 px-2 border-r border-slate-200 w-24 text-center">วันที่เริ่มงาน</th>
-                    <th className="py-2.5 px-2 border-r border-slate-200 w-16 text-center">วันที่ใช้</th>
-                    <th className="py-2.5 px-2 border-r border-slate-200 w-24 text-center">วันที่เสร็จ</th>
-                    <th className="py-2.5 px-2 border-r border-slate-200 w-24 text-center">ดำเนินการ%</th>
-                    <th className="py-2.5 px-2 border-r border-slate-200 w-24 text-center">สถานะ</th>
-                    <th className="py-2.5 px-1 border-r border-slate-200 w-24 text-center">แทรก/ลบ</th>
-
-                    {/* Jan 1-31 Columns */}
-                    {daysInJan.map((d, i) => (
-                      <th
-                        key={`jan-${d}`}
-                        className="py-1 px-0.5 border-r border-slate-200/50 w-5 text-center font-normal"
-                      >
-                        <div className="font-bold text-[10px]">{d}</div>
-                        <div className="text-[8px] text-slate-400 truncate">{weekdaysThai[i % 7]}</div>
-                      </th>
-                    ))}
-
-                    {/* Feb 1-7 Columns */}
-                    {daysInFeb.map((d, i) => (
-                      <th
-                        key={`feb-${d}`}
-                        className="py-1 px-0.5 border-r border-slate-200/50 w-5 text-center font-normal"
-                      >
-                        <div className="font-bold text-[10px]">{d}</div>
-                        <div className="text-[8px] text-slate-400 truncate">{weekdaysThai[(i + 3) % 7]}</div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
-                  {subtasks.map((st) => {
-                    const isHeader = st.isHeader
-                    const conf = st.discipline ? DISCIPLINE_CONFIG[st.discipline] : null
-
-                    return (
-                      <tr
-                        key={st.id}
-                        onClick={() => !isHeader && handleOpenEditSubtask(st)}
-                        className={`group transition-all ${
-                          isHeader
-                            ? "bg-slate-100/80 font-bold border-t-2 border-slate-300"
-                            : "hover:bg-blue-50/40 cursor-pointer bg-white"
+                      {/* วันที่เริ่มงาน */}
+                      <td
+                        className={`py-3 px-3 border-r border-slate-100 text-center ${
+                          isHeader ? "font-bold text-slate-900" : "text-slate-500"
                         }`}
                       >
-                        {/* ชื่องานที่ต้องทำ */}
-                        <td className="py-2.5 px-4 border-r border-slate-100">
-                          <div className="flex items-center justify-between gap-1.5">
-                            {isHeader ? (
-                              <div className="flex items-center gap-2 text-slate-900 font-bold">
-                                <span
-                                  className={`w-3 h-3 rounded-md flex items-center justify-center font-mono text-[9px] text-white font-extrabold ${
-                                    conf?.barClass || "bg-slate-600"
-                                  }`}
-                                >
-                                  {conf?.num}
-                                </span>
-                                <span>{st.category}</span>
-                              </div>
-                            ) : (
-                              <span className="text-slate-700 pl-5 flex items-center gap-1.5">
-                                <span className="text-slate-400">•</span>
-                                <span className="font-medium">{st.category}</span>
-                                <Edit2 className="w-2.5 h-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </span>
-                            )}
+                        {st.start || "-"}
+                      </td>
+
+                      {/* วันที่ใช้ */}
+                      <td
+                        className={`py-3 px-3 border-r border-slate-100 text-center font-mono ${
+                          isHeader ? "font-bold" : "text-slate-600"
+                        }`}
+                      >
+                        {st.days ? `${st.days} วัน` : "-"}
+                      </td>
+
+                      {/* วันที่เสร็จ */}
+                      <td
+                        className={`py-3 px-3 border-r border-slate-100 text-center ${
+                          isHeader ? "font-bold text-slate-900" : "text-slate-500"
+                        }`}
+                      >
+                        {st.end || "-"}
+                      </td>
+
+                      {/* ระยะการดำเนินการ% */}
+                      <td className="py-3 px-4 border-r border-slate-100">
+                        <div className="flex items-center gap-2.5 justify-center">
+                          <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                st.progress === 100 ? "bg-emerald-500" : "bg-blue-600"
+                              }`}
+                              style={{ width: `${st.progress}%` }}
+                            ></div>
                           </div>
-                        </td>
-
-                        {/* วันที่เริ่มงาน */}
-                        <td
-                          className={`py-2 px-2 border-r border-slate-100 text-center ${
-                            isHeader ? "font-bold text-slate-900" : "text-slate-500"
-                          }`}
-                        >
-                          {st.start || "-"}
-                        </td>
-
-                        {/* วันที่ใช้ */}
-                        <td
-                          className={`py-2 px-2 border-r border-slate-100 text-center font-mono ${
-                            isHeader ? "font-bold" : "text-slate-600"
-                          }`}
-                        >
-                          {st.days || "-"}
-                        </td>
-
-                        {/* วันที่เสร็จ */}
-                        <td
-                          className={`py-2 px-2 border-r border-slate-100 text-center ${
-                            isHeader ? "font-bold text-slate-900" : "text-slate-500"
-                          }`}
-                        >
-                          {st.end || "-"}
-                        </td>
-
-                        {/* ระยะการดำเนินการ% */}
-                        <td className="py-2 px-2 border-r border-slate-100">
-                          <div className="flex items-center gap-2 justify-center">
-                            <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all ${
-                                  st.progress === 100 ? "bg-emerald-500" : "bg-blue-600"
-                                }`}
-                                style={{ width: `${st.progress}%` }}
-                              ></div>
-                            </div>
-                            <span className="font-mono font-bold text-[11px] w-7 text-right">
-                              {st.progress}%
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* สถานะ */}
-                        <td className="py-2 px-2 border-r border-slate-100 text-center">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                              st.status === "เสร็จ"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                : st.status === "ดำเนินการ"
-                                ? "bg-blue-50 text-blue-700 border-blue-200"
-                                : "bg-amber-50 text-amber-800 border-amber-200"
-                            }`}
-                          >
-                            {st.status}
+                          <span className="font-mono font-bold text-xs w-8 text-right text-slate-700">
+                            {st.progress}%
                           </span>
-                        </td>
+                        </div>
+                      </td>
 
-                        {/* จัดการแถว (ปุ่มแทรกด้านบน / ด้านล่าง / ลบ) */}
-                        <td className="py-1 px-1 border-r border-slate-100 text-center">
-                          <div className="flex items-center justify-center gap-0.5">
+                      {/* สถานะ */}
+                      <td className="py-3 px-3 border-r border-slate-100 text-center">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1 shadow-2xs ${
+                            st.status === "เสร็จ"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              : st.status === "ดำเนินการ"
+                              ? "bg-blue-50 text-blue-700 border-blue-200"
+                              : "bg-amber-50 text-amber-800 border-amber-200"
+                          }`}
+                        >
+                          <span>{st.status === "เสร็จ" ? "✅" : st.status === "ดำเนินการ" ? "⚙️" : "⏳"}</span>
+                          <span>{st.status}</span>
+                        </span>
+                      </td>
+
+                      {/* จัดการแถว (ปุ่มแทรกด้านบน / ด้านล่าง / ลบ) */}
+                      <td className="py-2 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenInsertModal(st, "above", e)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-200"
+                            title="แทรกแถวด้านบน"
+                          >
+                            <ArrowUpToLine className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => handleOpenInsertModal(st, "below", e)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors border border-transparent hover:border-emerald-200"
+                            title="แทรกแถวด้านล่าง"
+                          >
+                            <ArrowDownToLine className="w-4 h-4" />
+                          </button>
+                          {!isHeader && (
                             <button
                               type="button"
-                              onClick={(e) => handleOpenInsertModal(st, "above", e)}
-                              className="p-1 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
-                              title="แทรกแถวด้านบน"
+                              onClick={(e) => handleDeleteSubtask(st.id, e)}
+                              className="p-1.5 rounded-lg text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              title="ลบแถวนี้"
                             >
-                              <ArrowUpToLine className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
-                            <button
-                              type="button"
-                              onClick={(e) => handleOpenInsertModal(st, "below", e)}
-                              className="p-1 rounded-md text-slate-400 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
-                              title="แทรกแถวด้านล่าง"
-                            >
-                              <ArrowDownToLine className="w-3.5 h-3.5" />
-                            </button>
-                            {!isHeader && (
-                              <button
-                                type="button"
-                                onClick={(e) => handleDeleteSubtask(st.id, e)}
-                                className="p-1 rounded-md text-slate-300 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                title="ลบแถวนี้"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* 31 Jan Cells Gantt Lane */}
-                        {daysInJan.map((d) => {
-                          const isHighlighted =
-                            (st.discipline === "W12" &&
-                              (d === 1 || (d >= 1 && d <= 30 && st.progress === 0))) ||
-                            (st.discipline === "W13" && d >= 1 && d <= 30)
-
-                          return (
-                            <td
-                              key={`jan-lane-${d}`}
-                              className="p-0 border-r border-slate-100 text-center relative h-8"
-                            >
-                              {isHighlighted && (
-                                <div
-                                  className={`h-5 w-full mx-auto shadow-2xs ${
-                                    st.progress === 100 && d === 1
-                                      ? "bg-emerald-500 rounded-md"
-                                      : isHeader
-                                      ? "bg-amber-400/90 rounded-md"
-                                      : "bg-blue-500 rounded-md"
-                                  }`}
-                                  title={`${st.category}: ${st.progress}%`}
-                                ></div>
-                              )}
-                            </td>
-                          )
-                        })}
-
-                        {/* 7 Feb Cells Gantt Lane */}
-                        {daysInFeb.map((d) => {
-                          const isHighlighted =
-                            (st.discipline === "W12" && d <= 3) || (st.discipline === "W13" && d <= 3)
-                          return (
-                            <td
-                              key={`feb-lane-${d}`}
-                              className="p-0 border-r border-slate-100 text-center relative h-8"
-                            >
-                              {isHighlighted && (
-                                <div className="h-5 w-full mx-auto bg-amber-400/80 rounded-md shadow-2xs"></div>
-                              )}
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -784,7 +698,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                     value={insertStart}
                     onChange={(e) => setInsertStart(e.target.value)}
                     placeholder="เช่น 1 ก.พ. 2026"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white"
                   />
                 </div>
                 <div>
@@ -794,7 +708,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                     min={1}
                     value={insertDays}
                     onChange={(e) => setInsertDays(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white font-mono"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white font-mono"
                   />
                 </div>
               </div>
@@ -806,7 +720,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   value={insertEnd}
                   onChange={(e) => setInsertEnd(e.target.value)}
                   placeholder="เช่น 10 ก.พ. 2026"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white"
                 />
               </div>
 
