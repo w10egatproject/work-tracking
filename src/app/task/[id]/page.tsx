@@ -327,7 +327,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const currentTaskNum = task.taskNo?.replace("งานที่", "") || task.id
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans select-none antialiased text-[12px] pb-16 selection:bg-[#005B9A] selection:text-white">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans select-none antialiased text-[12px] pb-8 selection:bg-[#005B9A] selection:text-white">
       {/* 1. Modern Frosted Header Bar */}
       <header className="bg-[#0F172A] text-white px-5 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-slate-800 shadow-md">
         <div className="flex items-center gap-3">
@@ -763,52 +763,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         )}
       </main>
 
-      {/* 5. Modern Bottom Sheet Navigation Tabs Bar */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2 flex items-center justify-between text-xs z-40 shadow-lg">
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none">
-          <button
-            onClick={() => handleOpenInsertModal(subtasks[0] || ({} as Subtask), "below")}
-            className="p-1.5 bg-sky-50 text-[#005B9A] hover:bg-sky-100 rounded-lg border border-sky-200 transition-colors mr-1 flex items-center gap-1 font-bold text-[11px]"
-            title="เพิ่มงานย่อย"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>แทรกงาน</span>
-          </button>
-          
-          <a
-            href="/"
-            className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 transition-colors border border-slate-200"
-          >
-            <span>📋 ลำดับงาน</span>
-          </a>
-
-          <div className="h-4 w-px bg-slate-200 mx-1"></div>
-
-          {allTasks.map((t) => {
-            const isActive = t.id === taskId || t.taskNo === task.taskNo
-            const tNum = t.taskNo || `งานที่${t.id}`
-            return (
-              <a
-                key={t.id}
-                href={`/task/${t.id}`}
-                className={`px-3 py-1.5 text-[11px] font-bold rounded-xl transition-all duration-150 flex items-center gap-1 ${
-                  isActive
-                    ? "bg-[#005B9A] text-white shadow-xs"
-                    : "bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200/70"
-                }`}
-              >
-                <span>{tNum}</span>
-              </a>
-            )
-          })}
-        </div>
-
-        <div className="flex items-center gap-1 text-slate-400 pl-3 border-l border-slate-200 hidden sm:flex font-mono text-[11px]">
-          <span>กฟผ. แม่เมาะ W10</span>
-        </div>
-      </footer>
-
-      {/* 6. Handover Stepper Modal */}
+      {/* 5. Handover Stepper Modal */}
       <DisciplineHandoverDialog
         task={task}
         open={handoverOpen}
