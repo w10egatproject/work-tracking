@@ -577,6 +577,7 @@ export function updateTaskDetailsInStore(taskId: string, updates: Partial<Task>)
 
   if (updates.title !== undefined) task.title = updates.title
   if (updates.report_date !== undefined) task.report_date = updates.report_date
+  if (updates.display_date !== undefined) task.display_date = updates.display_date
   if (updates.completion_date !== undefined) task.completion_date = updates.completion_date
   if (updates.total_days !== undefined) task.total_days = updates.total_days
   if (updates.wo !== undefined) task.wo = updates.wo

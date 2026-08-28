@@ -111,6 +111,7 @@ export interface Task {
   title: string
   wo: string
   report_date: string
+  display_date?: string
   completion_codes: string
   w_codes: DisciplineCode[]
   completion_date: string

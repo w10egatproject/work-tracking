@@ -15,10 +15,12 @@ import {
   CheckCircle2,
   Clock,
   Wrench,
-  Calendar,
+  Calendar as CalendarIcon,
   Layers,
   Sparkles,
   Save,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 
 // Thai date parsing utilities
@@ -27,6 +29,10 @@ const THAI_MONTHS: Record<string, number> = {
   "ก.ค.": 6, "ส.ค.": 7, "ก.ย.": 8, "ต.ค.": 9, "พ.ย.": 10, "ธ.ค.": 11,
 }
 const THAI_MONTH_NAMES = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+const THAI_MONTH_FULL = [
+  "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+]
 const THAI_DAYS = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."]
 const THAI_DAYS_FULL = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"]
 
@@ -60,10 +66,10 @@ function formatThaiDate(d: Date): string {
   return `${day} ${month} ${year}`
 }
 
-function calculateDayDifference(startStr: string, endStr: string): number | null {
+function calculateDayDifference(startStr: string, endStr: string): number {
   const s = parseThaiDate(startStr)
   const e = parseThaiDate(endStr)
-  if (!s || !e) return null
+  if (!s || !e) return 1
   const diffTime = e.getTime() - s.getTime()
   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1
   return diffDays > 0 ? diffDays : 1
@@ -78,15 +84,22 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true)
   const [handoverOpen, setHandoverOpen] = useState(false)
 
-  // Edit Task Header Metadata State (แสดงข้อมูลตั้งแต่วันที่, วันที่แล้วเสร็จ, W/O, Equip, etc.)
+  // Edit Task Header Metadata State
   const [editTaskModalOpen, setEditTaskModalOpen] = useState(false)
   const [editTitle, setEditTitle] = useState("")
-  const [editReportDate, setEditReportDate] = useState("")
-  const [editCompletionDate, setEditCompletionDate] = useState("")
-  const [editTotalDays, setEditTotalDays] = useState(11)
+  const [editReportDate, setEditReportDate] = useState("") // วันที่เริ่มงาน
+  const [editDisplayDate, setEditDisplayDate] = useState("") // แสดงข้อมูลตั้งแต่วันที่
+  const [editCompletionDate, setEditCompletionDate] = useState("") // วันที่แล้วเสร็จ
+  const [editTotalDays, setEditTotalDays] = useState(11) // ระยะเวลาคำนวณอัตโนมัติ (ห้ามพิมพ์)
   const [editWo, setEditWo] = useState("")
   const [editEquip, setEditEquip] = useState("")
   const [isSavingTaskDetails, setIsSavingTaskDetails] = useState(false)
+
+  // Calendar Modal Picker State
+  const [calendarPickerOpen, setCalendarPickerOpen] = useState(false)
+  const [calendarTargetField, setCalendarTargetField] = useState<"report_date" | "display_date" | "completion_date">("report_date")
+  const [calendarPickerTitle, setCalendarPickerTitle] = useState("เลือกวันที่")
+  const [calendarCurrentDate, setCalendarCurrentDate] = useState<Date>(new Date())
 
   // Subtask progress editing state
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null)
@@ -139,25 +152,47 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const handleOpenEditTaskModal = () => {
     if (!task) return
     setEditTitle(task.title || "")
-    setEditReportDate(task.report_date || "27 ส.ค. 2026")
-    setEditCompletionDate(task.completion_date || "7 ก.ย. 2026")
-    setEditTotalDays(task.total_days || 11)
+    const repDate = task.report_date || "27 ส.ค. 2026"
+    const dispDate = task.display_date || task.report_date || "27 ส.ค. 2026"
+    const compDate = task.completion_date || "7 ก.ย. 2026"
+
+    setEditReportDate(repDate)
+    setEditDisplayDate(dispDate)
+    setEditCompletionDate(compDate)
+    setEditTotalDays(calculateDayDifference(repDate, compDate))
     setEditWo(task.wo || "")
     setEditEquip(task.equip || "")
     setEditTaskModalOpen(true)
   }
 
-  // Auto-calculate days when start or completion date is typed in modal
-  const handleReportDateChange = (newVal: string) => {
-    setEditReportDate(newVal)
-    const diff = calculateDayDifference(newVal, editCompletionDate)
-    if (diff !== null) setEditTotalDays(diff)
+  // Open Calendar Picker Modal for a specific date field
+  const handleOpenCalendarPicker = (
+    field: "report_date" | "display_date" | "completion_date",
+    title: string,
+    currentVal: string
+  ) => {
+    setCalendarTargetField(field)
+    setCalendarPickerTitle(title)
+    const parsed = parseThaiDate(currentVal) || new Date()
+    setCalendarCurrentDate(parsed)
+    setCalendarPickerOpen(true)
   }
 
-  const handleCompletionDateChange = (newVal: string) => {
-    setEditCompletionDate(newVal)
-    const diff = calculateDayDifference(editReportDate, newVal)
-    if (diff !== null) setEditTotalDays(diff)
+  // Handle selecting a date from the Calendar Picker
+  const handleSelectCalendarDate = (selectedDate: Date) => {
+    const formatted = formatThaiDate(selectedDate)
+    if (calendarTargetField === "report_date") {
+      setEditReportDate(formatted)
+      const diff = calculateDayDifference(formatted, editCompletionDate)
+      setEditTotalDays(diff)
+    } else if (calendarTargetField === "display_date") {
+      setEditDisplayDate(formatted)
+    } else if (calendarTargetField === "completion_date") {
+      setEditCompletionDate(formatted)
+      const diff = calculateDayDifference(editReportDate, formatted)
+      setEditTotalDays(diff)
+    }
+    setCalendarPickerOpen(false)
   }
 
   const handleSaveTaskDetails = async (e: React.FormEvent) => {
@@ -165,11 +200,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     if (!task) return
     setIsSavingTaskDetails(true)
 
+    const calculatedDays = calculateDayDifference(editReportDate, editCompletionDate)
+
     const updates = {
       title: editTitle.trim(),
       report_date: editReportDate.trim(),
+      display_date: editDisplayDate.trim(),
       completion_date: editCompletionDate.trim(),
-      total_days: Number(editTotalDays) || 1,
+      total_days: calculatedDays,
       wo: editWo.trim(),
       equip: editEquip.trim(),
     }
@@ -199,11 +237,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  // Generate dynamic date timeline columns based on report_date and completion_date
+  // Generate dynamic date timeline columns based on display_date (or report_date) and completion_date
   const { dayColumns, monthGroups } = useMemo(() => {
     if (!task) return { dayColumns: [], monthGroups: [] }
 
-    let startDate = parseThaiDate(task.report_date)
+    let startDate = parseThaiDate(task.display_date) || parseThaiDate(task.report_date)
     let endDate = parseThaiDate(task.completion_date)
 
     if (task.subtasks && task.subtasks.length > 0) {
@@ -512,57 +550,70 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </h2>
               </div>
 
-              {/* Meta Grid Pills - All Clickable with Edit Action */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-                {/* 1. แสดงข้อมูลตั้งแต่วันที่ / วันที่เริ่มงาน */}
+              {/* Meta Grid Pills - 5 Separate Clear Boxes */}
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                {/* 1. วันที่เริ่มงาน (Row 3) */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
                   className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
-                  title="คลิกเพื่อเปลี่ยนวันที่เริ่มงาน"
+                  title="คลิกเพื่อแก้ไขวันที่เริ่มงาน"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
-                    <span>แสดงข้อมูลตั้งแต่วันที่</span>
-                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span>วันที่เริ่มงาน</span>
+                    <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
                   <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
                     {task.report_date || "-"}
                   </div>
                 </button>
 
-                {/* 2. ระยะเวลาการทำงาน */}
+                {/* 2. แสดงข้อมูลตั้งแต่วันที่ (Row 6) */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
                   className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
-                  title="คลิกเพื่อแก้ไขระยะเวลา"
+                  title="คลิกเพื่อแก้ไขวันที่เริ่มแสดงผลไทม์ไลน์"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
-                    <span>ระยะเวลาการทำงาน</span>
-                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <span>แสดงตั้งแต่วันที่</span>
+                    <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
-                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
-                    {task.total_days || 11} วัน
+                  <div className="font-bold text-[#005B9A] mt-0.5 font-mono">
+                    {task.display_date || task.report_date || "-"}
                   </div>
                 </button>
 
-                {/* 3. วันที่แล้วเสร็จ */}
+                {/* 3. ระยะเวลาการทำงาน (คำนวณอัตโนมัติ) */}
+                <div
+                  className="bg-slate-100/70 border border-slate-200/80 p-2.5 rounded-xl text-left"
+                  title="ระยะเวลาคำนวณอัตโนมัติจากวันที่เริ่มงานและวันที่แล้วเสร็จ"
+                >
+                  <div className="text-[10px] font-bold text-slate-400">
+                    ระยะเวลา (วัน)
+                  </div>
+                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono">
+                    {task.total_days || calculateDayDifference(task.report_date, task.completion_date)} วัน
+                  </div>
+                </div>
+
+                {/* 4. วันที่แล้วเสร็จ (Row 5) */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
                   className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
-                  title="คลิกเพื่อเปลี่ยนวันที่แล้วเสร็จ"
+                  title="คลิกเพื่อแก้ไขวันที่แล้วเสร็จ"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
                     <span>วันที่แล้วเสร็จ</span>
-                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
                   <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
                     {task.completion_date || "-"}
                   </div>
                 </button>
 
-                {/* 4. อุปกรณ์ (Equip) */}
+                {/* 5. อุปกรณ์ (Equip) */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
@@ -571,7 +622,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
                     <span>อุปกรณ์ (Equip)</span>
-                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Wrench className="w-3 h-3 opacity-60" />
                   </div>
                   <div className="font-bold text-[#0F172A] mt-0.5 truncate group-hover:text-[#005B9A]">
                     {task.equip || "-"}
@@ -921,7 +972,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         onSuccess={(updated) => setTask(updated)}
       />
 
-      {/* 6. Edit Task Header Metadata Modal (แสดงข้อมูลตั้งแต่วันที่, วันที่แล้วเสร็จ, W/O, Equip, etc.) */}
+      {/* 6. Edit Task Header Metadata Modal */}
       {editTaskModalOpen && (
         <div
           className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
@@ -931,13 +982,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         >
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
-                  <Calendar className="w-4 h-4" />
+                  <CalendarIcon className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-[#0F172A]">แก้ไขวันที่และรายละเอียดใบสั่งงาน</h3>
-                  <p className="text-[11px] text-slate-400">ระบบจะปรับช่วงปฏิทินรายวัน (Daily Timeline) ให้อัตโนมัติ</p>
+                  <p className="text-[11px] text-slate-400">คลิกที่ช่องวันที่เพื่อเปิดปฏิทินเลือกวันได้สะดวกรวดเร็ว</p>
                 </div>
               </div>
               <button
@@ -964,53 +1015,71 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 />
               </div>
 
-              {/* วันที่เริ่ม และ วันที่แล้วเสร็จ */}
+              {/* 1. วันที่เริ่มงาน & 2. แสดงข้อมูลตั้งแต่วันที่ (แยกช่องชัดเจน) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* วันที่เริ่มงาน */}
                 <div>
-                  <label className="block font-bold text-[#0F172A] mb-1">
-                    แสดงข้อมูลตั้งแต่วันที่ (เริ่มงาน) <span className="text-rose-500">*</span>
+                  <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                    <span>วันที่เริ่มงาน <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={editReportDate}
-                    onChange={(e) => handleReportDateChange(e.target.value)}
-                    placeholder="เช่น 27 ส.ค. 2026"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-mono font-bold text-[#005B9A]"
-                  />
+                  <div
+                    onClick={() => handleOpenCalendarPicker("report_date", "เลือกวันที่เริ่มงาน", editReportDate)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-bold text-[#005B9A]">{editReportDate || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-4 h-4 text-[#005B9A] group-hover:scale-110 transition-transform" />
+                  </div>
                 </div>
 
+                {/* แสดงข้อมูลตั้งแต่วันที่ (แยกจากวันที่เริ่มงาน) */}
                 <div>
-                  <label className="block font-bold text-[#0F172A] mb-1">
-                    วันที่แล้วเสร็จ <span className="text-rose-500">*</span>
+                  <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                    <span>แสดงข้อมูลตั้งแต่วันที่ <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={editCompletionDate}
-                    onChange={(e) => handleCompletionDateChange(e.target.value)}
-                    placeholder="เช่น 7 ก.ย. 2026"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-mono font-bold text-[#005B9A]"
-                  />
+                  <div
+                    onClick={() => handleOpenCalendarPicker("display_date", "เลือกวันที่เริ่มต้นแสดงผลไทม์ไลน์", editDisplayDate)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-bold text-[#005B9A]">{editDisplayDate || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-4 h-4 text-[#005B9A] group-hover:scale-110 transition-transform" />
+                  </div>
                 </div>
               </div>
 
-              {/* ระยะเวลา (วัน) & เลข W/O */}
+              {/* 3. วันที่แล้วเสร็จ & 4. ระยะเวลา (ห้ามพิมพ์ แสดงเฉพาะที่คำนวณแล้ว) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {/* วันที่แล้วเสร็จ */}
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                    <span>วันที่แล้วเสร็จ <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
+                  </label>
+                  <div
+                    onClick={() => handleOpenCalendarPicker("completion_date", "เลือกวันที่แล้วเสร็จ", editCompletionDate)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-bold text-[#005B9A]">{editCompletionDate || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-4 h-4 text-[#005B9A] group-hover:scale-110 transition-transform" />
+                  </div>
+                </div>
+
+                {/* ระยะเวลาการทำงาน (ห้ามพิมพ์ แสดงเฉพาะที่คำนวณแล้ว) */}
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
                     <span>ระยะเวลาการทำงาน (วัน)</span>
-                    <span className="text-[10px] text-slate-400 font-normal">คำนวณอัตโนมัติ</span>
+                    <span className="text-[10px] text-emerald-600 font-semibold">🔒 คำนวณอัตโนมัติ</span>
                   </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={editTotalDays}
-                    onChange={(e) => setEditTotalDays(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] font-mono font-bold text-[#0F172A]"
-                  />
+                  <div className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono font-extrabold text-[#0F172A] cursor-not-allowed flex items-center justify-between">
+                    <span>{editTotalDays} วัน</span>
+                    <span className="text-[10px] text-slate-400 font-normal">(คำนวณจากช่วงวันที่)</span>
+                  </div>
                 </div>
+              </div>
 
+              {/* เลข W/O และ อุปกรณ์ (Equip) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1">
                     เลข Work Order (W/O)
@@ -1019,24 +1088,23 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                     type="text"
                     value={editWo}
                     onChange={(e) => setEditWo(e.target.value)}
-                    placeholder="เช่น 4161863"
+                    placeholder="เช่น 4132222"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] font-mono font-bold text-[#005B9A]"
                   />
                 </div>
-              </div>
 
-              {/* อุปกรณ์ (Equip) */}
-              <div>
-                <label className="block font-bold text-[#0F172A] mb-1">
-                  อุปกรณ์ / เครื่องจักร (Equip)
-                </label>
-                <input
-                  type="text"
-                  value={editEquip}
-                  onChange={(e) => setEditEquip(e.target.value)}
-                  placeholder="เช่น 270006 Reclaimer 6 หรือ Sump 2SW"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
-                />
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1">
+                    อุปกรณ์ / เครื่องจักร (Equip)
+                  </label>
+                  <input
+                    type="text"
+                    value={editEquip}
+                    onChange={(e) => setEditEquip(e.target.value)}
+                    placeholder="เช่น Sump 2SW"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
@@ -1061,7 +1129,17 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      {/* 7. Quick Subtask Edit Modal (Presets + Slider + Direct typing) */}
+      {/* 7. Modern Thai Calendar Picker Modal */}
+      {calendarPickerOpen && (
+        <ThaiCalendarPickerModal
+          title={calendarPickerTitle}
+          initialDate={calendarCurrentDate}
+          onSelectDate={handleSelectCalendarDate}
+          onClose={() => setCalendarPickerOpen(false)}
+        />
+      )}
+
+      {/* 8. Quick Subtask Edit Modal (Presets + Slider + Direct typing) */}
       {editingSubtask && (
         <div
           className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
@@ -1184,7 +1262,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       )}
 
-      {/* 8. Insert Subtask Row Modal (Above / Below) */}
+      {/* 9. Insert Subtask Row Modal (Above / Below) */}
       {insertModalOpen && targetSubtask && (
         <div
           className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
@@ -1309,6 +1387,183 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// 7. Modern Thai Calendar Picker Modal Component
+function ThaiCalendarPickerModal({
+  title,
+  initialDate,
+  onSelectDate,
+  onClose,
+}: {
+  title: string
+  initialDate: Date
+  onSelectDate: (date: Date) => void
+  onClose: () => void
+}) {
+  const [viewDate, setViewDate] = useState<Date>(new Date(initialDate))
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date(initialDate))
+
+  const currentYear = viewDate.getFullYear()
+  const currentMonth = viewDate.getMonth()
+  const thaiYear = currentYear + 543
+
+  const prevMonth = () => {
+    setViewDate(new Date(currentYear, currentMonth - 1, 1))
+  }
+
+  const nextMonth = () => {
+    setViewDate(new Date(currentYear, currentMonth + 1, 1))
+  }
+
+  // Calculate calendar grid (42 cells: 6 weeks)
+  const calendarCells = useMemo(() => {
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
+    const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate()
+
+    const cells: { date: Date; isCurrentMonth: boolean; dayNum: number }[] = []
+
+    // Prev month days
+    for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+      const d = new Date(currentYear, currentMonth - 1, daysInPrevMonth - i)
+      cells.push({ date: d, isCurrentMonth: false, dayNum: d.getDate() })
+    }
+
+    // Current month days
+    for (let i = 1; i <= daysInMonth; i++) {
+      const d = new Date(currentYear, currentMonth, i)
+      cells.push({ date: d, isCurrentMonth: true, dayNum: i })
+    }
+
+    // Next month days
+    const remaining = 42 - cells.length
+    for (let i = 1; i <= remaining; i++) {
+      const d = new Date(currentYear, currentMonth + 1, i)
+      cells.push({ date: d, isCurrentMonth: false, dayNum: i })
+    }
+
+    return cells
+  }, [currentYear, currentMonth])
+
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    )
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-slate-950/40 z-60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
+              <CalendarIcon className="w-4 h-4" />
+            </div>
+            <h3 className="font-bold text-xs text-[#0F172A]">{title}</h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Month & Year Navigation Bar */}
+        <div className="flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-200/80 mb-3">
+          <button
+            type="button"
+            onClick={prevMonth}
+            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div className="font-extrabold text-xs text-[#0F172A]">
+            <span>{THAI_MONTH_FULL[currentMonth]}</span>{" "}
+            <span className="font-mono text-[#005B9A]">{currentYear}</span>{" "}
+            <span className="text-[10px] text-slate-400 font-normal">({thaiYear})</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={nextMonth}
+            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Weekday Headers */}
+        <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] text-slate-400 mb-1">
+          {THAI_DAYS.map((day, idx) => (
+            <div key={idx} className={idx === 0 || idx === 6 ? "text-amber-600" : ""}>
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar Day Cells Grid */}
+        <div className="grid grid-cols-7 gap-1 text-center text-xs">
+          {calendarCells.map((cell, idx) => {
+            const isSelected = isSameDay(cell.date, selectedDay)
+            const isToday = isSameDay(cell.date, new Date())
+
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setSelectedDay(cell.date)}
+                className={`py-2 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center relative ${
+                  isSelected
+                    ? "bg-[#005B9A] text-white shadow-xs scale-105"
+                    : cell.isCurrentMonth
+                    ? "text-[#0F172A] hover:bg-sky-50 hover:text-[#005B9A]"
+                    : "text-slate-300 hover:bg-slate-50"
+                } ${isToday && !isSelected ? "ring-1 ring-[#005B9A]" : ""}`}
+              >
+                <span>{cell.dayNum}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Selected Date Summary & Quick Presets */}
+        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="text-[11px] font-bold text-slate-500">
+            วันที่เลือก: <span className="font-mono text-[#005B9A] font-extrabold">{formatThaiDate(selectedDay)}</span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setSelectedDay(new Date())}
+              className="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              วันนี้
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectDate(selectedDay)}
+              className="px-3.5 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-lg text-xs font-bold transition-all shadow-xs"
+            >
+              ยืนยัน
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
