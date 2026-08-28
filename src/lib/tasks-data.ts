@@ -571,6 +571,21 @@ export function deleteSubtaskInStore(taskId: string, subtaskId: string): Task | 
   return task
 }
 
+export function updateTaskDetailsInStore(taskId: string, updates: Partial<Task>): Task | null {
+  const task = getTaskById(taskId)
+  if (!task) return null
+
+  if (updates.title !== undefined) task.title = updates.title
+  if (updates.report_date !== undefined) task.report_date = updates.report_date
+  if (updates.completion_date !== undefined) task.completion_date = updates.completion_date
+  if (updates.total_days !== undefined) task.total_days = updates.total_days
+  if (updates.wo !== undefined) task.wo = updates.wo
+  if (updates.equip !== undefined) task.equip = updates.equip
+  if (updates.completion_codes !== undefined) task.completion_codes = updates.completion_codes
+
+  return task
+}
+
 export function recordHandoverInStore(taskId: string, fromDiscipline: DisciplineCode, toDiscipline: DisciplineCode, handoverDate: string, notes: string): Task | null {
   const task = getTaskById(taskId)
   if (!task) return null

@@ -12,15 +12,13 @@ import {
   ArrowUpToLine,
   ArrowDownToLine,
   Plus,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
   CheckCircle2,
   Clock,
   Wrench,
   Calendar,
   Layers,
   Sparkles,
+  Save,
 } from "lucide-react"
 
 // Thai date parsing utilities
@@ -62,6 +60,15 @@ function formatThaiDate(d: Date): string {
   return `${day} ${month} ${year}`
 }
 
+function calculateDayDifference(startStr: string, endStr: string): number | null {
+  const s = parseThaiDate(startStr)
+  const e = parseThaiDate(endStr)
+  if (!s || !e) return null
+  const diffTime = e.getTime() - s.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1
+  return diffDays > 0 ? diffDays : 1
+}
+
 export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const taskId = resolvedParams.id
@@ -70,6 +77,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [allTasks, setAllTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [handoverOpen, setHandoverOpen] = useState(false)
+
+  // Edit Task Header Metadata State (แสดงข้อมูลตั้งแต่วันที่, วันที่แล้วเสร็จ, W/O, Equip, etc.)
+  const [editTaskModalOpen, setEditTaskModalOpen] = useState(false)
+  const [editTitle, setEditTitle] = useState("")
+  const [editReportDate, setEditReportDate] = useState("")
+  const [editCompletionDate, setEditCompletionDate] = useState("")
+  const [editTotalDays, setEditTotalDays] = useState(11)
+  const [editWo, setEditWo] = useState("")
+  const [editEquip, setEditEquip] = useState("")
+  const [isSavingTaskDetails, setIsSavingTaskDetails] = useState(false)
 
   // Subtask progress editing state
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null)
@@ -118,7 +135,71 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     loadTask()
   }, [taskId])
 
-  // Generate dynamic date timeline columns
+  // Open Edit Task Header Metadata modal
+  const handleOpenEditTaskModal = () => {
+    if (!task) return
+    setEditTitle(task.title || "")
+    setEditReportDate(task.report_date || "27 ส.ค. 2026")
+    setEditCompletionDate(task.completion_date || "7 ก.ย. 2026")
+    setEditTotalDays(task.total_days || 11)
+    setEditWo(task.wo || "")
+    setEditEquip(task.equip || "")
+    setEditTaskModalOpen(true)
+  }
+
+  // Auto-calculate days when start or completion date is typed in modal
+  const handleReportDateChange = (newVal: string) => {
+    setEditReportDate(newVal)
+    const diff = calculateDayDifference(newVal, editCompletionDate)
+    if (diff !== null) setEditTotalDays(diff)
+  }
+
+  const handleCompletionDateChange = (newVal: string) => {
+    setEditCompletionDate(newVal)
+    const diff = calculateDayDifference(editReportDate, newVal)
+    if (diff !== null) setEditTotalDays(diff)
+  }
+
+  const handleSaveTaskDetails = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!task) return
+    setIsSavingTaskDetails(true)
+
+    const updates = {
+      title: editTitle.trim(),
+      report_date: editReportDate.trim(),
+      completion_date: editCompletionDate.trim(),
+      total_days: Number(editTotalDays) || 1,
+      wo: editWo.trim(),
+      equip: editEquip.trim(),
+    }
+
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateTaskDetails",
+          updates,
+        }),
+      })
+
+      if (res.ok) {
+        const updatedTask = await res.json()
+        setTask(updatedTask)
+      } else {
+        setTask({ ...task, ...updates })
+      }
+    } catch (err) {
+      console.error("Error saving task details:", err)
+      setTask({ ...task, ...updates })
+    } finally {
+      setIsSavingTaskDetails(false)
+      setEditTaskModalOpen(false)
+    }
+  }
+
+  // Generate dynamic date timeline columns based on report_date and completion_date
   const { dayColumns, monthGroups } = useMemo(() => {
     if (!task) return { dayColumns: [], monthGroups: [] }
 
@@ -137,13 +218,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     if (!startDate) startDate = new Date(2026, 7, 27)
     if (!endDate || endDate < startDate) {
       endDate = new Date(startDate)
-      endDate.setDate(endDate.getDate() + 11)
+      endDate.setDate(endDate.getDate() + (task.total_days ? task.total_days - 1 : 11))
     }
 
     const cols: DayColumn[] = []
     const cur = new Date(startDate)
     let count = 0
-    while (cur <= endDate && count < 31) {
+    while (cur <= endDate && count < 35) {
       const dayOfWeek = cur.getDay()
       cols.push({
         date: new Date(cur),
@@ -353,11 +434,21 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
         <div className="flex items-center gap-2.5">
           <button
+            onClick={handleOpenEditTaskModal}
+            className="px-3.5 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
+            title="แก้ไขวันที่และรายละเอียดใบสั่งงาน"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-[#F0B323]" />
+            <span>แก้ไขวันที่/ข้อมูลงาน</span>
+          </button>
+
+          <button
             onClick={() => setHandoverOpen(true)}
             className="px-3.5 py-1.5 bg-gradient-to-r from-[#F0B323] to-[#D99C12] hover:from-[#D99C12] text-[#0F172A] rounded-xl font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_2px_8px_rgba(240,179,35,0.3)] active:scale-95"
           >
             <span>🤝 ส่งมอบงาน (Handover)</span>
           </button>
+
           {task.link && (
             <a
               href={task.link}
@@ -374,7 +465,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
       {/* Main Workspace Body */}
       <main className="flex-1 p-5 max-w-[1700px] w-full mx-auto space-y-4">
-        {/* 2. Modern Minimalist Sheet Header Card (Summary Box styled like a sleek sheet card) */}
+        {/* 2. Modern Minimalist Sheet Header Card (Clickable Metadata Boxes) */}
         <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
           {/* Card Top Accent Strip */}
           <div className="h-1 bg-gradient-to-r from-[#005B9A] via-[#F0B323] to-[#10B981]"></div>
@@ -389,9 +480,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </span>
                 <span className="text-slate-300">|</span>
                 <span className="text-xs font-bold text-slate-400">เลข W/O:</span>
-                <span className="bg-sky-50 text-[#005B9A] font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80">
-                  {task.wo || "-"}
-                </span>
+                <button
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-sky-50 hover:bg-sky-100 text-[#005B9A] font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80 transition-colors flex items-center gap-1 group"
+                  title="คลิกเพื่อแก้ไข W/O"
+                >
+                  <span>{task.wo || "-"}</span>
+                  <Edit2 className="w-3 h-3 text-[#005B9A] opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
                 <span className="text-slate-300">|</span>
                 <span className="text-xs font-bold text-slate-400">หมวดร่วมงาน:</span>
                 <span className="bg-amber-50 text-amber-900 font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-amber-200/80">
@@ -399,34 +495,88 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </span>
               </div>
 
-              {/* Title Box with subtle peach glow */}
-              <div className="bg-amber-50/40 border border-amber-200/70 rounded-xl p-3.5">
-                <div className="text-[11px] font-bold text-amber-800/80 uppercase tracking-wider mb-1">
-                  ชื่องาน / รายละเอียดใบสั่งงาน:
+              {/* Title Box with subtle peach glow (Clickable to Edit) */}
+              <div
+                onClick={handleOpenEditTaskModal}
+                className="bg-amber-50/40 hover:bg-amber-50/70 border border-amber-200/70 rounded-xl p-3.5 cursor-pointer transition-all group"
+                title="คลิกเพื่อแก้ไขชื่องานและวันที่"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[11px] font-bold text-amber-800/80 uppercase tracking-wider">
+                    ชื่องาน / รายละเอียดใบสั่งงาน (คลิกเพื่อแก้ไข):
+                  </span>
+                  <Edit2 className="w-3.5 h-3.5 text-amber-700 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
-                <h2 className="text-sm font-bold text-[#0F172A] leading-relaxed">
+                <h2 className="text-sm font-bold text-[#0F172A] leading-relaxed group-hover:text-[#005B9A] transition-colors">
                   {task.title}
                 </h2>
               </div>
 
-              {/* Meta Grid Pills */}
+              {/* Meta Grid Pills - All Clickable with Edit Action */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-                <div className="bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl">
-                  <div className="text-[10px] font-bold text-slate-400">วันที่เริ่มงาน</div>
-                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono">{task.report_date || "-"}</div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl">
-                  <div className="text-[10px] font-bold text-slate-400">ระยะเวลา</div>
-                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono">{task.total_days || 11} วัน</div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl">
-                  <div className="text-[10px] font-bold text-slate-400">วันที่แล้วเสร็จ</div>
-                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono">{task.completion_date || "-"}</div>
-                </div>
-                <div className="bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl truncate">
-                  <div className="text-[10px] font-bold text-slate-400">อุปกรณ์ (Equip)</div>
-                  <div className="font-bold text-[#0F172A] mt-0.5 truncate">{task.equip || "-"}</div>
-                </div>
+                {/* 1. แสดงข้อมูลตั้งแต่วันที่ / วันที่เริ่มงาน */}
+                <button
+                  type="button"
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  title="คลิกเพื่อเปลี่ยนวันที่เริ่มงาน"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
+                    <span>แสดงข้อมูลตั้งแต่วันที่</span>
+                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
+                    {task.report_date || "-"}
+                  </div>
+                </button>
+
+                {/* 2. ระยะเวลาการทำงาน */}
+                <button
+                  type="button"
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  title="คลิกเพื่อแก้ไขระยะเวลา"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
+                    <span>ระยะเวลาการทำงาน</span>
+                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
+                    {task.total_days || 11} วัน
+                  </div>
+                </button>
+
+                {/* 3. วันที่แล้วเสร็จ */}
+                <button
+                  type="button"
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  title="คลิกเพื่อเปลี่ยนวันที่แล้วเสร็จ"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
+                    <span>วันที่แล้วเสร็จ</span>
+                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="font-bold text-[#0F172A] mt-0.5 font-mono group-hover:text-[#005B9A]">
+                    {task.completion_date || "-"}
+                  </div>
+                </button>
+
+                {/* 4. อุปกรณ์ (Equip) */}
+                <button
+                  type="button"
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all truncate group"
+                  title="คลิกเพื่อแก้ไขอุปกรณ์"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
+                    <span>อุปกรณ์ (Equip)</span>
+                    <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <div className="font-bold text-[#0F172A] mt-0.5 truncate group-hover:text-[#005B9A]">
+                    {task.equip || "-"}
+                  </div>
+                </button>
               </div>
             </div>
 
@@ -511,7 +661,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               </span>
             </div>
             <div className="text-[11px] text-slate-400">
-              💡 คลิกที่แถวหรือตัวเลข % เพื่อแก้ไขความคืบหน้า • ชี้เมาส์ที่แถวเพื่อแทรก/ลบแถว
+              💡 คลิกที่แถวเพื่อแก้ % ความคืบหน้า • ชี้เมาส์ที่แถวเพื่อแทรก/ลบแถว
             </div>
           </div>
 
@@ -770,6 +920,146 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         onClose={() => setHandoverOpen(false)}
         onSuccess={(updated) => setTask(updated)}
       />
+
+      {/* 6. Edit Task Header Metadata Modal (แสดงข้อมูลตั้งแต่วันที่, วันที่แล้วเสร็จ, W/O, Equip, etc.) */}
+      {editTaskModalOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setEditTaskModalOpen(false)
+          }}
+        >
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-[#0F172A]">แก้ไขวันที่และรายละเอียดใบสั่งงาน</h3>
+                  <p className="text-[11px] text-slate-400">ระบบจะปรับช่วงปฏิทินรายวัน (Daily Timeline) ให้อัตโนมัติ</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditTaskModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTaskDetails} className="space-y-4 text-xs">
+              {/* ชื่องาน */}
+              <div>
+                <label className="block font-bold text-[#0F172A] mb-1">
+                  ชื่องาน / รายละเอียดใบสั่งงาน <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={2}
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-medium resize-none"
+                />
+              </div>
+
+              {/* วันที่เริ่ม และ วันที่แล้วเสร็จ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1">
+                    แสดงข้อมูลตั้งแต่วันที่ (เริ่มงาน) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editReportDate}
+                    onChange={(e) => handleReportDateChange(e.target.value)}
+                    placeholder="เช่น 27 ส.ค. 2026"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-mono font-bold text-[#005B9A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1">
+                    วันที่แล้วเสร็จ <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editCompletionDate}
+                    onChange={(e) => handleCompletionDateChange(e.target.value)}
+                    placeholder="เช่น 7 ก.ย. 2026"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-mono font-bold text-[#005B9A]"
+                  />
+                </div>
+              </div>
+
+              {/* ระยะเวลา (วัน) & เลข W/O */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                    <span>ระยะเวลาการทำงาน (วัน)</span>
+                    <span className="text-[10px] text-slate-400 font-normal">คำนวณอัตโนมัติ</span>
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={editTotalDays}
+                    onChange={(e) => setEditTotalDays(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] font-mono font-bold text-[#0F172A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#0F172A] mb-1">
+                    เลข Work Order (W/O)
+                  </label>
+                  <input
+                    type="text"
+                    value={editWo}
+                    onChange={(e) => setEditWo(e.target.value)}
+                    placeholder="เช่น 4161863"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] font-mono font-bold text-[#005B9A]"
+                  />
+                </div>
+              </div>
+
+              {/* อุปกรณ์ (Equip) */}
+              <div>
+                <label className="block font-bold text-[#0F172A] mb-1">
+                  อุปกรณ์ / เครื่องจักร (Equip)
+                </label>
+                <input
+                  type="text"
+                  value={editEquip}
+                  onChange={(e) => setEditEquip(e.target.value)}
+                  placeholder="เช่น 270006 Reclaimer 6 หรือ Sump 2SW"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditTaskModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingTaskDetails}
+                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSavingTaskDetails ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* 7. Quick Subtask Edit Modal (Presets + Slider + Direct typing) */}
       {editingSubtask && (

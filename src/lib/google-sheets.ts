@@ -1,6 +1,6 @@
 import { google } from "googleapis"
 import { Task, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
-import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt } from "./tasks-data"
+import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateTaskDetailsInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt } from "./tasks-data"
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ""
 const MASTER_SHEET_NAME = "ลำดับงาน"
@@ -184,4 +184,11 @@ export async function executeHandover(
   notes: string
 ): Promise<Task | null> {
   return recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes)
+}
+
+export async function updateTaskDetails(
+  taskId: string,
+  updates: Partial<Task>
+): Promise<Task | null> {
+  return updateTaskDetailsInStore(taskId, updates)
 }

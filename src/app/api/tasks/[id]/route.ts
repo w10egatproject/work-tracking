@@ -49,5 +49,13 @@ export async function PATCH(
     return NextResponse.json(updated)
   }
 
+  if (body.action === "updateTaskDetails") {
+    const { updates } = body
+    const { updateTaskDetails } = await import("@/lib/google-sheets")
+    const updated = await updateTaskDetails(id, updates)
+    if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 })
+    return NextResponse.json(updated)
+  }
+
   return NextResponse.json({ error: "Invalid action" }, { status: 400 })
 }
