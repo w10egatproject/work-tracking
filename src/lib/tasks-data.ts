@@ -1,28 +1,667 @@
-import { Task } from "@/types"
+import { Task, Subtask, TaskStatus, parseWCodes, DisciplineCode } from "@/types"
 
-export const TASKS_DATA: Task[] = [
-  { id: "1", title: "สร้างแกน西路งาน Bearing ช่องทาง 1 SE", wo: "3816627", report_date: "1 ต.ค. 2024", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pq/edit#gid=0" },
-  { id: "2", title: "สร้างช่องล้อของ pulley type D5", wo: "3881775", report_date: "26 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "3", title: "สร้าง bore pulley 630x1400 แต่ slot bolt", wo: "3856203", report_date: "17 ต.ค. 2024", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "4", title: "สร้างแกน西路งาน แต่ slot shift ELECON D1", wo: "3874681", report_date: "25 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "5", title: "สร้าง pulley NDB2 ขนาด 1000x1400", wo: "3902889", report_date: "21 พ.ย. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "6", title: "สร้างแกน西路งาน EGLO D1", wo: "3906195", report_date: "28 พ.ย. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "7", title: "สร้างแกน西路งาน EGLO 305", wo: "3918451", report_date: "20 ธ.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "8", title: "สร้าง bore 320 pulley 800x1400 1EA", wo: "3985951", report_date: "17 ม.ค. 2025", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "9", title: "สร้างแกน西路งาน NC NDB4 1EA", wo: "3985958", report_date: "17 ม.ค. 2025", completion_codes: "12", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "10", title: "สร้าง bore 320 pulley 800x1400 1EA", wo: "4034067", report_date: "17 ก.พ. 2025", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "11", title: "สร้างเครื่องบด RKU บดย่อย 250", wo: "4013367", report_date: "3 ก.พ. 2025", completion_codes: "11,12,13,14", completion_date: "", progress: 0, equip: "270006 Reclaimer 6", link: "" },
-  { id: "12", title: "สร้างShaft G/B KEA450 reliastockstop 2 SE", wo: "4027209", report_date: "1 ต.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "13", title: "สร้าง bore 355 pulley 1000x1400", wo: "4034067", report_date: "17 ก.พ. 2025", completion_codes: "12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "14", title: "สร้างแกน西路งาน แต่ slot shift ELECON D2", wo: "4034065", report_date: "17 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "15", title: "สร้างแกน西路งาน แต่ slot shift ELECON D8", wo: "4034066", report_date: "17 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "16", title: "สร้างชุดล้อทำงาน Induction", wo: "4041721", report_date: "3 มี.ค. 2025", completion_codes: "12", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "17", title: "สร้างแกน西路งานบด Slovakia แต่ slot", wo: "4064152", report_date: "19 มี.ค. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "18", title: "สร้าง pulley บด Slovakia", wo: "4064890", report_date: "23 มี.ค. 2025", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "19", title: "สร้างแกน西路งานรถบด 43-0262 พื้นที่ขุดลอก", wo: "3998654", report_date: "4 มี.ค. 2025", completion_codes: "11,13", completion_date: "", progress: 0, equip: "430262 สายพานลำเลียงRecommend10 ชั้น", link: "" },
-  { id: "20", title: "เปลี่ยน bearing บด Slovakia", wo: "3927273", report_date: "11 ธ.ค. 2024", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "21", title: "สร้าง Cover F/C 760CDR-XR-XR", wo: "4000726", report_date: "7 ม.ค. 2025", completion_codes: "11,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "22", title: "สร้างชุดล้อทำงานทราย", wo: "3631878", report_date: "21 ก.พ. 2023", completion_codes: "11,12,13", completion_date: "", progress: 0, equip: "", link: "" },
-  { id: "23", title: "สร้างแกน西路งาน Apron Conveyor บด Slovakia", wo: "4039061", report_date: "27 ก.พ. 2025", completion_codes: "11,12", completion_date: "", progress: 0, equip: "240007 Crusher 3", link: "" },
-  { id: "24", title: "สร้างแกน西路งานแต่ slot bolt", wo: "4055566", report_date: "4 มี.ค. 2025", completion_codes: "11", completion_date: "", progress: 0, equip: "", link: "" },
+export const INITIAL_TASKS: Task[] = [
+  {
+    id: "1",
+    taskNo: "งานที่1",
+    title: "สร้างอุปกรณ์จับยก Bearing จำนวน 1 SE",
+    wo: "3816627",
+    report_date: "1 ส.ค. 2024",
+    completion_codes: "12,13",
+    w_codes: ["W12", "W13"],
+    completion_date: "28/8/2026",
+    total_days: 757,
+    progress: 20,
+    status: "ดำเนินการ",
+    current_discipline: "W12",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=0#gid=0",
+    subtasks: [
+      { id: "1-1", category: "W12 : เครื่องกล", discipline: "W12", start: "1 ส.ค. 2024", days: 548, end: "30 ม.ค. 2026", progress: 20, status: "ดำเนินการ", isHeader: true },
+      { id: "1-2", category: "ประสานงานกับหน่วยงาน", discipline: "W12", start: "1 ส.ค. 2024", days: 1, end: "1 ส.ค. 2024", progress: 100, status: "เสร็จ" },
+      { id: "1-3", category: "จัดเตรียมวัสดุและอุปกรณ์จับยก", discipline: "W12", start: "1 ม.ค. 2026", days: 30, end: "30 ม.ค. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-4", category: "กลึงขึ้นรูปชิ้นงานตามแบบ", discipline: "W12", start: "1 ก.พ. 2026", days: 1, end: "1 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-5", category: "ตรวจสอบขนาดและพิกัดความเผื่อ", discipline: "W12", start: "2 ก.พ. 2026", days: 1, end: "2 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-6", category: "ส่งมอบงานให้หมวดเชื่อม", discipline: "W12", start: "3 ก.พ. 2026", days: 1, end: "3 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-7", category: "W13 : ซ่อมเครื่องจักรกล", discipline: "W13", start: "1 ม.ค. 2026", days: 30, end: "30 ม.ค. 2026", progress: 0, status: "รอดำเนินการ", isHeader: true },
+      { id: "1-8", category: "เชื่อมประกอบโครงสร้างอุปกรณ์จับยก", discipline: "W13", start: "1 ม.ค. 2026", days: 30, end: "30 ม.ค. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-9", category: "ตรวจสอบแนวเชื่อม NDT", discipline: "W13", start: "1 ก.พ. 2026", days: 1, end: "1 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-10", category: "ทดสอบการรับน้ำหนัก Load Test", discipline: "W13", start: "2 ก.พ. 2026", days: 1, end: "2 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "1-11", category: "ทำสีและเก็บรายละเอียด", discipline: "W13", start: "3 ก.พ. 2026", days: 1, end: "3 ก.พ. 2026", progress: 0, status: "รอดำเนินการ" },
+    ],
+    gantt: {
+      months: ["ส.ค. 24", "ก.ย. 24", "ต.ค. 24", "พ.ย. 24", "ธ.ค. 24", "ม.ค. 25", "ก.พ. 25", "มี.ค. 25", "ม.ค. 26", "ก.พ. 26", "ส.ค. 26"],
+      bars: [
+        { label: "W12: เครื่องกล", startIdx: 0, width: 8, color: "bg-orange-500", progress: 20, discipline: "W12" },
+        { label: "ประสานงานกับหน่วยงาน", startIdx: 0, width: 1, color: "bg-blue-500", progress: 100, discipline: "W12" },
+        { label: "W13: ซ่อมเครื่องจักรกล", startIdx: 8, width: 2, color: "bg-amber-500", progress: 0, discipline: "W13" },
+      ]
+    },
+    handovers: []
+  },
+  {
+    id: "2",
+    taskNo: "งานที่2",
+    title: "ตรวจเช็คซ่อมรูบอร์ pulley type D5",
+    wo: "3831775",
+    report_date: "26 ส.ค. 2024",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "15/12/2025",
+    total_days: 476,
+    progress: 45,
+    status: "ดำเนินการ",
+    current_discipline: "W12",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=1383172123#gid=1383172123",
+  },
+  {
+    id: "3",
+    taskNo: "งานที่3",
+    title: "ซ่อม bore pulley 630x1400 และ slot bolt",
+    wo: "3856203",
+    report_date: "17 ต.ค. 2024",
+    completion_codes: "12,13",
+    w_codes: ["W12", "W13"],
+    completion_date: "10/01/2026",
+    total_days: 450,
+    progress: 30,
+    status: "ดำเนินการ",
+    current_discipline: "W12",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=1490539448#gid=1490539448",
+  },
+  {
+    id: "4",
+    taskNo: "งานที่4",
+    title: "เช็ครอยร้าว เช็คศูนย์ shift ELECON D1",
+    wo: "3874681",
+    report_date: "25 พ.ย. 2024",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "20/03/2026",
+    total_days: 480,
+    progress: 10,
+    status: "ดำเนินการ",
+    current_discipline: "W11",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=878609441#gid=878609441",
+  },
+  {
+    id: "5",
+    taskNo: "งานที่5",
+    title: "ซ่อม pulley NDB2 ขนาด 1000x1400",
+    wo: "3902889",
+    report_date: "21 ม.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "15/04/2026",
+    total_days: 450,
+    progress: 0,
+    status: "รอดำเนินการ",
+    current_discipline: "W11",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=1337021834#gid=1337021834",
+  },
+  {
+    id: "6",
+    taskNo: "งานที่6",
+    title: "ตรวจเช็คซ่อม EGLO D1",
+    wo: "3906195",
+    report_date: "28 ม.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "30/04/2026",
+    total_days: 457,
+    progress: 0,
+    status: "รอดำเนินการ",
+    current_discipline: "W11",
+    equip: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=708815062#gid=708815062",
+  },
+  {
+    id: "7",
+    taskNo: "งานที่7",
+    title: "ตรวจเช็คซ่อม เพลา EGLO 305",
+    wo: "3918451",
+    report_date: "20 ก.พ. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "8",
+    taskNo: "งานที่8",
+    title: "ซ่อม bore 320 pulley 800x1400 1EA",
+    wo: "3985951",
+    report_date: "17 ก.ค. 2025",
+    completion_codes: "12,13",
+    w_codes: ["W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "9",
+    taskNo: "งานที่9",
+    title: "สร้างเพลา NC NDB4 1EA",
+    wo: "3985958",
+    report_date: "17 ก.ค. 2025",
+    completion_codes: "12",
+    w_codes: ["W12"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "10",
+    taskNo: "งานที่10",
+    title: "ซ่อม bore 320 pulley 800x1400 1EA",
+    wo: "4034067",
+    report_date: "17 ก.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "11",
+    taskNo: "งานที่11",
+    title: "งานซ่อมปรับปรุงแก้ไข โครงเบรค 250",
+    wo: "4013367",
+    report_date: "3 ก.ย. 2025",
+    completion_codes: "11,12,13,14",
+    w_codes: ["W11", "W12", "W13", "W14"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "270006 Reclaimer 6",
+    link: "",
+  },
+  {
+    id: "12",
+    taskNo: "งานที่12",
+    title: "ดัดShaft G/B KEA450ติดตั้งbackstop= 2 SE",
+    wo: "4027209",
+    report_date: "1 ต.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "13",
+    taskNo: "งานที่13",
+    title: "ซ่อม bore 355 pulley 1000x1400",
+    wo: "4034067",
+    report_date: "17 ต.ค. 2025",
+    completion_codes: "12,13",
+    w_codes: ["W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "14",
+    taskNo: "งานที่14",
+    title: "เช็ครอยร้าว เช็คศูนย์ shift ELECON D2",
+    wo: "4034065",
+    report_date: "17 ต.ค. 2025",
+    completion_codes: "11,12",
+    w_codes: ["W11", "W12"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "15",
+    taskNo: "งานที่15",
+    title: "เช็ครอยร้าว เช็คศูนย์ shift ELECON D8",
+    wo: "4034066",
+    report_date: "17 ต.ค. 2025",
+    completion_codes: "11,12",
+    w_codes: ["W11", "W12"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "16",
+    taskNo: "งานที่16",
+    title: "สร้างอุปกรณ์เครื่อง Induction",
+    wo: "4041721",
+    report_date: "3 พ.ย. 2025",
+    completion_codes: "12",
+    w_codes: ["W12"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "17",
+    taskNo: "งานที่17",
+    title: "สร้างอุปกรณ์เครื่องเจียร์ บ. เครื่องกล",
+    wo: "4064152",
+    report_date: "19 ธ.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "18",
+    taskNo: "งานที่18",
+    title: "เซาะร่อง pulley เอาเพลาออก",
+    wo: "4064890",
+    report_date: "23 ธ.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "19",
+    taskNo: "งานที่19",
+    title: "เชื่อมถังบรรจุน้ำรถน้ำ 43-0262 พร้อมทำฐาน",
+    wo: "3998654",
+    report_date: "4 มี.ค. 2025",
+    completion_codes: "11,13",
+    w_codes: ["W11", "W13"],
+    completion_date: "20/06/2025",
+    total_days: 108,
+    progress: 100,
+    status: "เสร็จ",
+    current_discipline: "W13",
+    equip: "430262 รถบรรทุกน้ำแบบรถ 10 ล้อ",
+    link: "",
+  },
+  {
+    id: "20",
+    taskNo: "งานที่20",
+    title: "เปลี่ยนชุดขับปั๊มใต้ห้อง",
+    wo: "3927273",
+    report_date: "11 มี.ค. 2025",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "30/08/2025",
+    total_days: 172,
+    progress: 100,
+    status: "เสร็จ",
+    current_discipline: "W13",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "21",
+    taskNo: "งานที่21",
+    title: "ตรวจเช็ครอยร้าว Cover F/C 760CDR-XR-R",
+    wo: "4000726",
+    report_date: "7 ส.ค. 2025",
+    completion_codes: "11,13",
+    w_codes: ["W11", "W13"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "22",
+    taskNo: "งานที่22",
+    title: "ทำเครื่องล้างล้อรถ",
+    wo: "3631878",
+    report_date: "21 ส.ค. 2023",
+    completion_codes: "11,12,13",
+    w_codes: ["W11", "W12", "W13"],
+    completion_date: "10/01/2024",
+    total_days: 142,
+    progress: 100,
+    status: "เสร็จ",
+    current_discipline: "W13",
+    equip: "",
+    link: "",
+  },
+  {
+    id: "23",
+    taskNo: "งานที่23",
+    title: "กลึงสร้างสลักโซ่ Apron Conveyor ตามแบบ",
+    wo: "4039061",
+    report_date: "27 ต.ค. 2025",
+    completion_codes: "11,12",
+    w_codes: ["W11", "W12"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "240007 Crusher 3",
+    link: "",
+  },
+  {
+    id: "24",
+    taskNo: "งานที่24",
+    title: "ตรวจเช็คตรวจรอยเพลา เช็คคด",
+    wo: "4055566",
+    report_date: "4 ธ.ค. 2025",
+    completion_codes: "11",
+    w_codes: ["W11"],
+    completion_date: "",
+    total_days: 0,
+    progress: 0,
+    status: "รอดำเนินการ",
+    equip: "",
+    link: "",
+  },
 ]
+
+// In-memory runtime state for tasks & subtasks so updates persist during server lifecycle
+let tasksStore = [...INITIAL_TASKS]
+
+export function getTasksStore(): Task[] {
+  return tasksStore
+}
+
+export function getTaskById(id: string): Task | undefined {
+  const task = tasksStore.find(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
+  if (!task) return undefined
+  
+  // If subtasks are missing, generate structured starter subtasks according to w_codes
+  if (!task.subtasks || task.subtasks.length === 0) {
+    task.subtasks = generateDefaultSubtasks(task)
+  }
+  if (!task.gantt) {
+    task.gantt = generateDefaultGantt(task)
+  }
+  return task
+}
+
+export function addTaskToStore(newTask: Partial<Task>): Task {
+  const nextId = String(tasksStore.length + 1)
+  const wCodes = parseWCodes(newTask.completion_codes || "")
+  const created: Task = {
+    id: nextId,
+    taskNo: `งานที่${nextId}`,
+    title: newTask.title || `งานซ่อมบำรุง #${nextId}`,
+    wo: newTask.wo || "",
+    report_date: newTask.report_date || new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }),
+    completion_codes: newTask.completion_codes || (wCodes.map(w => w.replace("W", "")).join(",") || "11,12"),
+    w_codes: wCodes.length > 0 ? wCodes : ["W11", "W12"],
+    completion_date: newTask.completion_date || "",
+    total_days: newTask.total_days || 30,
+    progress: 0,
+    status: "รอดำเนินการ",
+    current_discipline: wCodes[0] || "W11",
+    equip: newTask.equip || "",
+    link: newTask.link || "",
+    handovers: [],
+  }
+  created.subtasks = generateDefaultSubtasks(created)
+  created.gantt = generateDefaultGantt(created)
+  tasksStore.unshift(created)
+  return created
+}
+
+export function updateTaskInStore(id: string, updates: Partial<Task>): Task | null {
+  const index = tasksStore.findIndex(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
+  if (index === -1) return null
+  tasksStore[index] = { ...tasksStore[index], ...updates }
+  return tasksStore[index]
+}
+
+export function updateSubtaskInStore(taskId: string, subtaskId: string, updates: any): Task | null {
+  const task = getTaskById(taskId)
+  if (!task || !task.subtasks) return null
+  const subIndex = task.subtasks.findIndex(st => st.id === subtaskId)
+  if (subIndex !== -1) {
+    if (typeof updates.progress === "number") {
+      const p = updates.progress
+      updates.status = p === 100 ? "เสร็จ" : (p > 0 ? "ดำเนินการ" : "รอดำเนินการ")
+    }
+    task.subtasks[subIndex] = { ...task.subtasks[subIndex], ...updates }
+    // Recalculate task overall progress from non-header subtasks
+    const nonHeaders = task.subtasks.filter(st => !st.isHeader)
+    if (nonHeaders.length > 0) {
+      const avg = Math.round(nonHeaders.reduce((sum, st) => sum + (st.progress || 0), 0) / nonHeaders.length)
+      task.progress = avg
+      if (avg === 100) task.status = "เสร็จ"
+      else if (avg > 0) task.status = "ดำเนินการ"
+      else task.status = "รอดำเนินการ"
+    }
+  }
+  return task
+}
+
+export function insertSubtaskInStore(
+  taskId: string,
+  discipline: DisciplineCode,
+  newSubtask: { category: string; start?: string; days?: number; end?: string; progress?: number },
+  targetSubtaskId?: string,
+  position: "above" | "below" = "below"
+): Task | null {
+  const task = getTaskById(taskId)
+  if (!task || !task.subtasks) return null
+
+  const p = newSubtask.progress || 0
+  const status: TaskStatus = p === 100 ? "เสร็จ" : (p > 0 ? "ดำเนินการ" : "รอดำเนินการ")
+  const createdSubtask: Subtask = {
+    id: `${task.id}-${Date.now()}`,
+    category: newSubtask.category || "งานย่อยใหม่",
+    discipline,
+    start: newSubtask.start || task.report_date || "",
+    days: Number(newSubtask.days) || 1,
+    end: newSubtask.end || "",
+    progress: p,
+    status,
+  }
+
+  // Find insert position
+  let insertIndex = -1
+  if (targetSubtaskId) {
+    insertIndex = task.subtasks.findIndex(st => st.id === targetSubtaskId)
+  }
+
+  if (insertIndex !== -1) {
+    if (position === "above") {
+      task.subtasks.splice(insertIndex, 0, createdSubtask)
+    } else {
+      task.subtasks.splice(insertIndex + 1, 0, createdSubtask)
+    }
+  } else {
+    // Find the last subtask of this discipline
+    for (let i = task.subtasks.length - 1; i >= 0; i--) {
+      if (task.subtasks[i].discipline === discipline) {
+        insertIndex = i
+        break
+      }
+    }
+    if (insertIndex !== -1) {
+      task.subtasks.splice(insertIndex + 1, 0, createdSubtask)
+    } else {
+      task.subtasks.push(createdSubtask)
+    }
+  }
+
+  // Recalculate progress
+  const nonHeaders = task.subtasks.filter(st => !st.isHeader)
+  if (nonHeaders.length > 0) {
+    const avg = Math.round(nonHeaders.reduce((sum, st) => sum + (st.progress || 0), 0) / nonHeaders.length)
+    task.progress = avg
+    if (avg === 100) task.status = "เสร็จ"
+    else if (avg > 0) task.status = "ดำเนินการ"
+    else task.status = "รอดำเนินการ"
+  }
+
+  return task
+}
+
+export function deleteSubtaskInStore(taskId: string, subtaskId: string): Task | null {
+  const task = getTaskById(taskId)
+  if (!task || !task.subtasks) return null
+
+  task.subtasks = task.subtasks.filter(st => st.id !== subtaskId)
+
+  // Recalculate progress
+  const nonHeaders = task.subtasks.filter(st => !st.isHeader)
+  if (nonHeaders.length > 0) {
+    const avg = Math.round(nonHeaders.reduce((sum, st) => sum + (st.progress || 0), 0) / nonHeaders.length)
+    task.progress = avg
+    if (avg === 100) task.status = "เสร็จ"
+    else if (avg > 0) task.status = "ดำเนินการ"
+    else task.status = "รอดำเนินการ"
+  }
+
+  return task
+}
+
+export function recordHandoverInStore(taskId: string, fromDiscipline: DisciplineCode, toDiscipline: DisciplineCode, handoverDate: string, notes: string): Task | null {
+  const task = getTaskById(taskId)
+  if (!task) return null
+  if (!task.handovers) task.handovers = []
+  
+  const handoverRecord = {
+    id: `ho-${Date.now()}`,
+    taskId: task.id,
+    fromDiscipline,
+    toDiscipline,
+    handoverDate,
+    notes,
+    timestamp: new Date().toISOString(),
+  }
+  task.handovers.push(handoverRecord)
+  task.current_discipline = toDiscipline
+  task.status = "ดำเนินการ"
+
+  // Update previous discipline subtasks to completed
+  if (task.subtasks) {
+    task.subtasks.forEach(st => {
+      if (st.discipline === fromDiscipline) {
+        st.progress = 100
+        st.status = "เสร็จ"
+      } else if (st.discipline === toDiscipline && st.status === "รอดำเนินการ") {
+        st.status = "ดำเนินการ"
+      }
+    })
+  }
+  return task
+}
+
+function generateDefaultSubtasks(task: Task): Subtask[] {
+  const subtasks: Subtask[] = []
+  const wCodes = task.w_codes && task.w_codes.length > 0 ? task.w_codes : ["W11", "W12", "W13"]
+  
+  const disciplineNames: Record<string, string> = {
+    W11: "W11 : วิศวกรรม",
+    W12: "W12 : เครื่องกล",
+    W13: "W13 : ซ่อมเครื่องจักรกล",
+    W14: "W14 : ซ่อมอุปกรณ์เครื่องจักรกล",
+  }
+
+  const disciplineSteps: Record<string, string[]> = {
+    W11: ["ศึกษาแบบและสเปกทางวิศวกรรม", "คำนวณและตรวจสอบความแข็งแรง", "จัดทำแบบสั่งทำงาน"],
+    W12: ["ประสานงานกับหน่วยงาน", "จัดเตรียมวัสดุและอุปกรณ์", "กลึงขึ้นรูปชิ้นงานตามแบบ", "ตรวจสอบขนาดและพิกัดความเผื่อ"],
+    W13: ["เชื่อมประกอบโครงสร้าง", "ตรวจสอบแนวเชื่อม NDT", "ทดสอบการรับน้ำหนัก Load Test", "ทำสีและเก็บรายละเอียด"],
+    W14: ["ตรวจเช็คระบบส่งกำลัง", "ติดตั้งอุปกรณ์และทดสอบเดินเครื่อง"],
+  }
+
+  let idCounter = 1
+  for (const w of wCodes) {
+    const isCurrent = task.current_discipline === w
+    const isDone = task.status === "เสร็จ"
+    const headerStatus: TaskStatus = isDone ? "เสร็จ" : (isCurrent ? (task.progress > 0 ? "ดำเนินการ" : "รอดำเนินการ") : "รอดำเนินการ")
+    
+    subtasks.push({
+      id: `${task.id}-${idCounter++}`,
+      category: disciplineNames[w] || `${w} : ปฏิบัติการ`,
+      discipline: w as DisciplineCode,
+      start: task.report_date || "1 ส.ค. 2024",
+      days: 30,
+      end: task.completion_date || "30 ม.ค. 2026",
+      progress: isDone ? 100 : (isCurrent ? task.progress : 0),
+      status: headerStatus,
+      isHeader: true,
+    })
+
+    const steps = disciplineSteps[w] || ["ดำเนินการตามขั้นตอนมาตรฐาน", "ตรวจสอบและส่งมอบงาน"]
+    for (const step of steps) {
+      const stepStatus: TaskStatus = isDone ? "เสร็จ" : (isCurrent && task.progress >= 50 ? "เสร็จ" : (isCurrent ? "ดำเนินการ" : "รอดำเนินการ"))
+      subtasks.push({
+        id: `${task.id}-${idCounter++}`,
+        category: step,
+        discipline: w as DisciplineCode,
+        start: task.report_date || "",
+        days: 5,
+        end: "",
+        progress: isDone ? 100 : (isCurrent && task.progress >= 50 ? 100 : 0),
+        status: stepStatus,
+      })
+    }
+  }
+  return subtasks
+}
+
+function generateDefaultGantt(task: Task) {
+  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+  const bars = []
+  const wCodes = task.w_codes || ["W11", "W12"]
+  const colors: Record<string, string> = {
+    W11: "bg-purple-500",
+    W12: "bg-blue-500",
+    W13: "bg-orange-500",
+    W14: "bg-emerald-500",
+  }
+
+  let offset = 0
+  for (const w of wCodes) {
+    bars.push({
+      label: `${w}: หมวดงาน`,
+      startIdx: offset,
+      width: 3,
+      color: colors[w] || "bg-blue-500",
+      progress: task.current_discipline === w ? task.progress : (task.status === "เสร็จ" ? 100 : 0),
+      discipline: w as DisciplineCode,
+    })
+    offset = (offset + 3) % 9
+  }
+
+  return { months, bars }
+}

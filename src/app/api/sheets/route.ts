@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server"
-import { fetchAllSheets } from "@/lib/google-sheets"
+import { fetchAllTasks } from "@/lib/google-sheets"
 
 export async function GET() {
   try {
-    const tasks = await fetchAllSheets()
+    const tasks = await fetchAllTasks()
     return NextResponse.json(tasks)
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 })
+  } catch (e) {
+    return NextResponse.json({ error: "Failed to fetch sheets" }, { status: 500 })
   }
 }
