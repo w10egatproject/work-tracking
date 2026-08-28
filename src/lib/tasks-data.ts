@@ -106,18 +106,30 @@ export const INITIAL_TASKS: Task[] = [
   {
     id: "6",
     taskNo: "งานที่6",
-    title: "ตรวจเช็คซ่อม EGLO D1",
-    wo: "3906195",
-    report_date: "28 ม.ค. 2025",
-    completion_codes: "11,12,13",
-    w_codes: ["W11", "W12", "W13"],
-    completion_date: "",
-    total_days: 457,
-    progress: 0,
-    status: "รอดำเนินการ",
-    current_discipline: "W11",
+    title: "ปรับปรุงPontoonนสำรวจสภาพพื้นผิวSump 2SW \nซื้อแผ่นเหล็กตีนไก่ ขนาด 4x8ฟุต PR.1500240230",
+    wo: "4161863",
+    report_date: "27 ส.ค. 2026",
+    completion_codes: "11,13",
+    w_codes: ["W13", "W11"],
+    completion_date: "7 ก.ย. 2026",
+    total_days: 11,
+    progress: 35,
+    status: "ดำเนินการ",
+    current_discipline: "W13",
     equip: "",
-    link: "",
+    link: "https://docs.google.com/spreadsheets/d/1ZZ1iQTKzplo_VClDPZcOaKErtnqv3oVN9ocszZuR5pc/edit?gid=80428362#gid=80428362",
+    subtasks: [
+      { id: "6-1", category: "W13 : เชื่อมเครื่องกล", discipline: "W13", start: "27 ส.ค. 2026", days: 12, end: "7 ก.ย. 2026", progress: 40, status: "ดำเนินการ", isHeader: true },
+      { id: "6-2", category: "ประสานงานกับหน่วยงาน", discipline: "W13", start: "27 ส.ค. 2026", days: 1, end: "27 ส.ค. 2026", progress: 100, status: "เสร็จ", highlightStart: true, highlightEnd: true },
+      { id: "6-3", category: "งานพ่นทราย (พวอน-ช)", discipline: "W13", start: "28 ส.ค. 2026", days: 5, end: "1 ก.ย. 2026", progress: 20, status: "ดำเนินการ" },
+      { id: "6-4", category: "เชื่อมซ่อม", discipline: "W13", start: "1 ก.ย. 2026", days: 7, end: "7 ก.ย. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "6-5", category: "W11 : วิศวกรรม", discipline: "W11", start: "27 ส.ค. 2026", days: 12, end: "7 ก.ย. 2026", progress: 30, status: "ดำเนินการ", isHeader: true },
+      { id: "6-6", category: "ประสานงานกับหน่วยงานพ่นทราย", discipline: "W11", start: "27 ส.ค. 2026", days: 1, end: "27 ส.ค. 2026", progress: 100, status: "เสร็จ", highlightStart: true, highlightEnd: true },
+      { id: "6-7", category: "NDT แนวเชื่อม ก่อน", discipline: "W11", start: "1 ก.ย. 2026", days: 2, end: "2 ก.ย. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "6-8", category: "งานเปิดความแน่นเหล็กตีนไก่", discipline: "W11", start: "2 ก.ย. 2026", days: 2, end: "3 ก.ย. 2026", progress: 20, status: "ดำเนินการ" },
+      { id: "6-9", category: "NDT แนวเชื่อม หลัง", discipline: "W11", start: "7 ก.ย. 2026", days: 1, end: "7 ก.ย. 2026", progress: 0, status: "รอดำเนินการ" },
+      { id: "6-10", category: "ส่งมอบงาน", discipline: "W11", start: "7 ก.ย. 2026", days: 1, end: "7 ก.ย. 2026", progress: 0, status: "ยังไม่ดำเนินการ", highlightStart: true, highlightEnd: true },
+    ],
   },
   {
     id: "7",
@@ -591,7 +603,7 @@ export function recordHandoverInStore(taskId: string, fromDiscipline: Discipline
   return task
 }
 
-function generateDefaultSubtasks(task: Task): Subtask[] {
+export function generateDefaultSubtasks(task: Task): Subtask[] {
   const subtasks: Subtask[] = []
   const wCodes = task.w_codes && task.w_codes.length > 0 ? task.w_codes : ["W11", "W12", "W13"]
   
@@ -645,7 +657,7 @@ function generateDefaultSubtasks(task: Task): Subtask[] {
   return subtasks
 }
 
-function generateDefaultGantt(task: Task) {
+export function generateDefaultGantt(task: Task) {
   const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
   const bars = []
   const wCodes = task.w_codes || ["W11", "W12"]

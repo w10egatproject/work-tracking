@@ -1,6 +1,6 @@
 export type DisciplineCode = "W11" | "W12" | "W13" | "W14"
 
-export type TaskStatus = "รอดำเนินการ" | "ดำเนินการ" | "เสร็จ"
+export type TaskStatus = "รอดำเนินการ" | "ดำเนินการ" | "เสร็จ" | "ยังไม่ดำเนินการ"
 
 export interface DisciplineMeta {
   code: DisciplineCode
@@ -87,6 +87,8 @@ export interface Subtask {
   progress: number
   status: TaskStatus
   isHeader?: boolean
+  highlightStart?: boolean
+  highlightEnd?: boolean
 }
 
 export interface GanttBar {

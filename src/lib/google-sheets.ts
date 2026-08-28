@@ -1,6 +1,6 @@
 import { google } from "googleapis"
 import { Task, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
-import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore } from "./tasks-data"
+import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt } from "./tasks-data"
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ""
 const MASTER_SHEET_NAME = "ลำดับงาน"
@@ -50,8 +50,27 @@ export async function fetchAllTasks(): Promise<Task[]> {
       const reportDate = String(row[3] || "")
       const completionDate = String(row[4] || "")
       const rawCodes = String(row[5] || "")
-      const equip = String(row[6] || "")
-      const link = String(row[7] || "")
+      
+      let val6 = String(row[6] || "").trim()
+      let val7 = String(row[7] || "").trim()
+      
+      let equip = ""
+      let link = ""
+
+      // Smart URL detection for Column G & H
+      const isUrl = (s: string) => s.startsWith("http://") || s.startsWith("https://") || s.includes("docs.google.com") || s.includes("gid=")
+      
+      if (isUrl(val6)) {
+        link = val6
+        equip = val7
+      } else if (isUrl(val7)) {
+        equip = val6
+        link = val7
+      } else {
+        equip = val6
+        link = val7
+      }
+
       const wCodes = parseWCodes(rawCodes)
       const status = deriveTaskStatus(completionDate, link)
       const isDone = status === "เสร็จ"
@@ -68,7 +87,7 @@ export async function fetchAllTasks(): Promise<Task[]> {
         total_days: 0,
         progress: isDone ? 100 : (status === "ดำเนินการ" ? 25 : 0),
         status,
-        current_discipline: wCodes[0] || "W12",
+        current_discipline: wCodes[0] || "W11",
         equip,
         link,
       })
@@ -82,8 +101,28 @@ export async function fetchAllTasks(): Promise<Task[]> {
 }
 
 export async function fetchTaskDetail(id: string): Promise<Task | null> {
-  const task = getTaskById(id)
-  return task || null
+  const allTasks = await fetchAllTasks()
+  const liveTask = allTasks.find(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
+  const existing = getTaskById(id)
+
+  if (liveTask) {
+    const combined: Task = {
+      ...existing,
+      ...liveTask,
+      subtasks: existing?.subtasks,
+      gantt: existing?.gantt,
+      handovers: existing?.handovers,
+    }
+    if (!combined.subtasks || combined.subtasks.length === 0) {
+      combined.subtasks = generateDefaultSubtasks(combined)
+    }
+    if (!combined.gantt) {
+      combined.gantt = generateDefaultGantt(combined)
+    }
+    return combined
+  }
+
+  return existing || null
 }
 
 export async function createNewTask(data: Partial<Task>): Promise<Task> {
