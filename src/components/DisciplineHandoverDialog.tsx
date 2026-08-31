@@ -12,11 +12,10 @@ interface Props {
 }
 
 export default function DisciplineHandoverDialog({ task, open, onClose, onSuccess }: Props) {
-  const currentDiscipline = task.current_discipline || task.w_codes[0] || "W12"
-
-  const remainingDisciplines = task.w_codes.filter((d) => d !== currentDiscipline)
+  const initialCurrent = task.current_discipline || task.w_codes[0] || "W11"
+  const [fromDiscipline, setFromDiscipline] = useState<DisciplineCode>(initialCurrent)
   const [toDiscipline, setToDiscipline] = useState<DisciplineCode>(
-    remainingDisciplines[0] || "W13"
+    task.w_codes.find((d) => d !== initialCurrent) || "W12"
   )
   const [byUser, setByUser] = useState("")
   const [handoverDate, setHandoverDate] = useState(
@@ -27,7 +26,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
 
   if (!open) return null
 
-  const currentMeta = DISCIPLINE_CONFIG[currentDiscipline]
+  const fromMeta = DISCIPLINE_CONFIG[fromDiscipline]
   const targetMeta = DISCIPLINE_CONFIG[toDiscipline]
 
   const handleConfirm = async (e: React.FormEvent) => {
@@ -40,7 +39,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "handover",
-          fromDiscipline: currentDiscipline,
+          fromDiscipline,
           toDiscipline,
           handoverDate,
           notes,
@@ -70,6 +69,8 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
     }
   }
 
+  const allDisciplines: DisciplineCode[] = ["W11", "W12", "W13", "W14"]
+
   return (
     <div
       className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
@@ -94,7 +95,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -108,8 +109,8 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             <div className="flex-1 bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs text-center">
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ผู้ส่งมอบ</div>
               <div className="text-xs font-bold text-[#0F172A] mt-1 flex items-center justify-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${currentMeta.barClass}`}></span>
-                <span>{currentMeta.fullName}</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${fromMeta ? fromMeta.barClass : "bg-purple-500"}`}></span>
+                <span>{fromMeta ? fromMeta.fullName : fromDiscipline}</span>
               </div>
               <div className="text-[11px] text-emerald-600 font-bold mt-1 flex items-center justify-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
@@ -139,7 +140,28 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             </div>
           </div>
 
-          {/* Select Target Discipline */}
+          {/* 1. เลือกหมวดผู้ส่งมอบงาน (From Discipline) */}
+          <div>
+            <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+              เลือกหมวดผู้ส่งมอบงาน <span className="text-rose-500">*</span>
+            </label>
+            <select
+              value={fromDiscipline}
+              onChange={(e) => setFromDiscipline(e.target.value as DisciplineCode)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-[#0F172A] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none"
+            >
+              {allDisciplines.map((code) => {
+                const conf = DISCIPLINE_CONFIG[code]
+                return (
+                  <option key={code} value={code}>
+                    {conf.fullName}
+                  </option>
+                )
+              })}
+            </select>
+          </div>
+
+          {/* 2. เลือกหมวดผู้รับมอบงาน (To Discipline) */}
           <div>
             <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
               เลือกหมวดผู้รับมอบงาน <span className="text-rose-500">*</span>
@@ -149,21 +171,21 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
               onChange={(e) => setToDiscipline(e.target.value as DisciplineCode)}
               className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-[#0F172A] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none"
             >
-              {(["W11", "W12", "W13", "W14"] as DisciplineCode[]).map((code) => {
+              {allDisciplines.map((code) => {
                 const conf = DISCIPLINE_CONFIG[code]
                 return (
-                  <option key={code} value={code} disabled={code === currentDiscipline}>
-                    {conf.fullName}{code === currentDiscipline ? " - หมวดปัจจุบัน" : ""}
+                  <option key={code} value={code}>
+                    {conf.fullName}
                   </option>
                 )
               })}
             </select>
           </div>
 
-          {/* Handover By / ผู้ส่งมอบ */}
+          {/* 3. Handover By / ชื่อผู้ส่งมอบ */}
           <div>
             <label className="block text-xs font-bold text-[#0F172A] mb-1.5 flex items-center justify-between">
-              <span>ผู้ส่งมอบงาน (Handover By)</span>
+              <span>ชื่อผู้ส่งมอบงาน / ผู้บันทึก (Handover By)</span>
               <span className="text-[10px] text-slate-400 font-normal">เช่น วิศวกรผู้ควบคุมงาน / นายสมชาย</span>
             </label>
             <input
@@ -175,7 +197,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             />
           </div>
 
-          {/* Handover Date */}
+          {/* 4. Handover Date */}
           <div>
             <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
               วันที่ส่งมอบงาน
@@ -189,7 +211,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             />
           </div>
 
-          {/* Notes */}
+          {/* 5. Notes */}
           <div>
             <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
               หมายเหตุ / รายละเอียดการส่งมอบ
@@ -207,7 +229,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
           <div className="flex items-start gap-2.5 bg-sky-50/80 border border-sky-200 text-[#005B9A] p-3.5 rounded-xl text-xs">
             <AlertCircle className="w-4 h-4 text-[#005B9A] flex-shrink-0 mt-0.5" />
             <div className="leading-relaxed">
-              เมื่อยืนยัน ระบบจะปรับหมวด <strong>{currentMeta.name}</strong> เป็น <strong>&quot;เสร็จ&quot; (100%)</strong> และปรับหมวด <strong>{targetMeta ? targetMeta.name : toDiscipline}</strong> เป็น <strong>&quot;ดำเนินการ&quot;</strong>
+              เมื่อยืนยัน ระบบจะปรับหมวด <strong>{fromMeta ? fromMeta.name : fromDiscipline}</strong> เป็น <strong>&quot;เสร็จ&quot; (100%)</strong> และปรับหมวด <strong>{targetMeta ? targetMeta.name : toDiscipline}</strong> เป็น <strong>&quot;ดำเนินการ&quot;</strong>
             </div>
           </div>
 
@@ -216,14 +238,14 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+              className="px-5 py-2.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{submitting ? "กำลังส่งมอบ..." : "✓ ยืนยันการส่งมอบงาน"}</span>
