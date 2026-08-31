@@ -27,7 +27,7 @@ type FloatingNavbarProps = DashboardNavProps | TaskDetailNavProps
 export default function FloatingNavbar(props: FloatingNavbarProps) {
   if (props.type === "dashboard") {
     return (
-      <header className="sticky top-3.5 z-40 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-3rem)] max-w-[1600px] transition-all">
+      <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
         <div className="backdrop-blur-2xl bg-white/90 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3.5 text-[#1D1D1F] transition-all">
           {/* Left: Branding & Subtitle */}
           <div className="flex items-center gap-3">
@@ -115,7 +115,7 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
 
   // Task Detail floating navbar (Apple Frosted Glass Style)
   return (
-    <header className="sticky top-3.5 z-40 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-3rem)] max-w-[1600px] transition-all">
+    <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
       <div className="backdrop-blur-2xl bg-white/85 border border-black/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 text-[#1D1D1F] transition-all">
         {/* Left: Back & Title info */}
         <div className="flex items-center gap-3 overflow-hidden">
