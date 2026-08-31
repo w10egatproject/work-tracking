@@ -1009,12 +1009,20 @@ export function getTasksStore(): Task[] {
 }
 
 export function getTaskById(id: string): Task | undefined {
-  const task = tasksStore.find(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
+  const cleanId = id.replace(/\D/g, "")
+  const task = tasksStore.find(
+    (t) =>
+      t.id === id ||
+      t.taskNo === id ||
+      t.taskNo === `งานที่${id}` ||
+      t.id === `งานที่${id}` ||
+      (cleanId !== "" && t.id.replace(/\D/g, "") === cleanId) ||
+      (cleanId !== "" && (t.taskNo || "").replace(/\D/g, "") === cleanId)
+  )
   if (!task) return undefined
   
-  // If subtasks are missing, generate structured starter subtasks according to w_codes
   if (!task.subtasks || task.subtasks.length === 0) {
-    task.subtasks = generateDefaultSubtasks(task)
+    task.subtasks = generateInitialDisciplineHeaders(task)
   }
   if (!task.gantt) {
     task.gantt = generateDefaultGantt(task)
@@ -1123,7 +1131,13 @@ export function insertSubtaskInStore(
   // Find insert position
   let insertIndex = -1
   if (targetSubtaskId) {
-    insertIndex = task.subtasks.findIndex(st => st.id === targetSubtaskId)
+    insertIndex = task.subtasks.findIndex(
+      (st) =>
+        st.id === targetSubtaskId ||
+        st.id.endsWith(`-${targetSubtaskId}`) ||
+        targetSubtaskId.endsWith(`-${st.id}`) ||
+        (st.isHeader && (st.discipline === discipline || st.category.includes(discipline)))
+    )
   }
 
   if (insertIndex !== -1) {
@@ -1133,9 +1147,12 @@ export function insertSubtaskInStore(
       task.subtasks.splice(insertIndex + 1, 0, createdSubtask)
     }
   } else {
-    // Find the last subtask of this discipline
+    // Find the discipline header or last subtask of this discipline
     for (let i = task.subtasks.length - 1; i >= 0; i--) {
-      if (task.subtasks[i].discipline === discipline) {
+      if (
+        task.subtasks[i].discipline === discipline ||
+        task.subtasks[i].category.includes(discipline)
+      ) {
         insertIndex = i
         break
       }

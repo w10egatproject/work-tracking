@@ -852,9 +852,15 @@ async function syncTaskHeaderToGoogleSheet(taskId: string, task: Task) {
 }
 
 export async function updateSubtask(taskId: string, subtaskId: string, updates: any): Promise<Task | null> {
-  const updated = updateSubtaskInStore(taskId, subtaskId, updates)
+  const numId = taskId.replace("งานที่", "").trim()
+  let existing: Task | null | undefined = getTaskById(numId)
+  if (!existing || !existing.subtasks || existing.subtasks.length === 0) {
+    existing = await fetchTaskDetail(numId)
+  }
+
+  const updated = updateSubtaskInStore(numId, subtaskId, updates)
   if (updated && updated.subtasks) {
-    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(numId, updated.subtasks)
   }
   return updated
 }
@@ -866,17 +872,29 @@ export async function insertSubtask(
   targetSubtaskId?: string,
   position: "above" | "below" = "below"
 ): Promise<Task | null> {
-  const updated = insertSubtaskInStore(taskId, discipline, newSubtask, targetSubtaskId, position)
+  const numId = taskId.replace("งานที่", "").trim()
+  let existing: Task | null | undefined = getTaskById(numId)
+  if (!existing || !existing.subtasks || existing.subtasks.length === 0) {
+    existing = await fetchTaskDetail(numId)
+  }
+
+  const updated = insertSubtaskInStore(numId, discipline, newSubtask, targetSubtaskId, position)
   if (updated && updated.subtasks) {
-    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(numId, updated.subtasks)
   }
   return updated
 }
 
 export async function deleteSubtask(taskId: string, subtaskId: string): Promise<Task | null> {
-  const updated = deleteSubtaskInStore(taskId, subtaskId)
+  const numId = taskId.replace("งานที่", "").trim()
+  let existing: Task | null | undefined = getTaskById(numId)
+  if (!existing || !existing.subtasks || existing.subtasks.length === 0) {
+    existing = await fetchTaskDetail(numId)
+  }
+
+  const updated = deleteSubtaskInStore(numId, subtaskId)
   if (updated && updated.subtasks) {
-    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(numId, updated.subtasks)
   }
   return updated
 }
