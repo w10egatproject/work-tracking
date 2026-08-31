@@ -93,6 +93,12 @@ export async function fetchAllTasks(): Promise<Task[]> {
       })
     }
 
+    tasks.sort((a, b) => {
+      const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+      const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+      return numB - numA
+    })
+
     return tasks.length > 0 ? tasks : getTasksStore()
   } catch (error) {
     console.error("Error fetching Google Sheets:", error)
@@ -314,37 +320,63 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
 
       let createdSheetId: number | null = null
 
+      const masterSheet = allSheets.find((s) => s.properties?.title === MASTER_SHEET_NAME)
+
       if (templateSheet && templateSheet.properties?.sheetId !== undefined) {
         const sourceSheetId = templateSheet.properties.sheetId
+        const requests: any[] = [
+          {
+            duplicateSheet: {
+              sourceSheetId,
+              newSheetName: newTabName,
+              insertSheetIndex: allSheets.length,
+            },
+          },
+        ]
+        if (masterSheet?.properties?.sheetId !== undefined) {
+          requests.push({
+            updateSheetProperties: {
+              properties: {
+                sheetId: masterSheet.properties.sheetId,
+                index: 0,
+              },
+              fields: "index",
+            },
+          })
+        }
+
         const duplicateRes = await sheets.spreadsheets.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
-          requestBody: {
-            requests: [
-              {
-                duplicateSheet: {
-                  sourceSheetId,
-                  newSheetName: newTabName,
-                },
-              },
-            ],
-          },
+          requestBody: { requests },
         })
         createdSheetId = duplicateRes.data.replies?.[0]?.duplicateSheet?.properties?.sheetId ?? null
       } else {
-        // Fallback: create empty sheet tab
+        // Fallback: create empty sheet tab at the end
+        const requests: any[] = [
+          {
+            addSheet: {
+              properties: {
+                title: newTabName,
+                index: allSheets.length,
+              },
+            },
+          },
+        ]
+        if (masterSheet?.properties?.sheetId !== undefined) {
+          requests.push({
+            updateSheetProperties: {
+              properties: {
+                sheetId: masterSheet.properties.sheetId,
+                index: 0,
+              },
+              fields: "index",
+            },
+          })
+        }
+
         const addRes = await sheets.spreadsheets.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
-          requestBody: {
-            requests: [
-              {
-                addSheet: {
-                  properties: {
-                    title: newTabName,
-                  },
-                },
-              },
-            ],
-          },
+          requestBody: { requests },
         })
         createdSheetId = addRes.data.replies?.[0]?.addSheet?.properties?.sheetId ?? null
       }

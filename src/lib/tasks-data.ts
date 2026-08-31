@@ -994,10 +994,18 @@ export const INITIAL_TASKS: Task[] = [
 ]
 
 // In-memory runtime state for tasks & subtasks so updates persist during server lifecycle
-let tasksStore = [...INITIAL_TASKS]
+let tasksStore = [...INITIAL_TASKS].sort((a, b) => {
+  const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+  const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+  return numB - numA
+})
 
 export function getTasksStore(): Task[] {
-  return tasksStore
+  return tasksStore.sort((a, b) => {
+    const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+    const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+    return numB - numA
+  })
 }
 
 export function getTaskById(id: string): Task | undefined {
@@ -1046,6 +1054,11 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
   created.subtasks = newTask.subtasks || generateDefaultSubtasks(created)
   created.gantt = newTask.gantt || generateDefaultGantt(created)
   tasksStore.unshift(created)
+  tasksStore.sort((a, b) => {
+    const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+    const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+    return numB - numA
+  })
   return created
 }
 

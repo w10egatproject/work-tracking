@@ -29,7 +29,12 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json()
         if (Array.isArray(data)) {
-          setTasks(data)
+          const sorted = [...data].sort((a, b) => {
+            const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+            const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+            return numB - numA
+          })
+          setTasks(sorted)
         }
       }
     } catch (e) {
@@ -62,7 +67,13 @@ export default function Home() {
   }
 
   const handleTaskAdded = (newTask: Task) => {
-    setTasks((prev) => [newTask, ...prev])
+    setTasks((prev) =>
+      [newTask, ...prev].sort((a, b) => {
+        const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+        const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+        return numB - numA
+      })
+    )
   }
 
   const handleTaskDeleted = (deletedId: string) => {
@@ -83,26 +94,32 @@ export default function Home() {
   const countW13 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("13") || (t.w_codes && t.w_codes.includes("W13"))).length, [tasks])
   const countW14 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("14") || (t.w_codes && t.w_codes.includes("W14"))).length, [tasks])
 
-  // Filter tasks
+  // Filter tasks - Sorted descending (latest task on top, Task 1 at bottom)
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      const matchSearch =
-        !searchQuery.trim() ||
-        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.wo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        task.equip.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (task.taskNo && task.taskNo.toLowerCase().includes(searchQuery.toLowerCase()))
+    return tasks
+      .filter((task) => {
+        const matchSearch =
+          !searchQuery.trim() ||
+          task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          task.wo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          task.equip.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (task.taskNo && task.taskNo.toLowerCase().includes(searchQuery.toLowerCase()))
 
-      const matchDiscipline =
-        selectedDiscipline === "ALL" ||
-        (task.w_codes && task.w_codes.includes(selectedDiscipline as DisciplineCode)) ||
-        task.completion_codes.includes(selectedDiscipline.replace("W", ""))
+        const matchDiscipline =
+          selectedDiscipline === "ALL" ||
+          (task.w_codes && task.w_codes.includes(selectedDiscipline as DisciplineCode)) ||
+          task.completion_codes.includes(selectedDiscipline.replace("W", ""))
 
-      const matchStatus =
-        selectedStatus === "ALL" || task.status === selectedStatus
+        const matchStatus =
+          selectedStatus === "ALL" || task.status === selectedStatus
 
-      return matchSearch && matchDiscipline && matchStatus
-    })
+        return matchSearch && matchDiscipline && matchStatus
+      })
+      .sort((a, b) => {
+        const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
+        const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
+        return numB - numA
+      })
   }, [tasks, searchQuery, selectedDiscipline, selectedStatus])
 
   const todayStr = new Date().toLocaleDateString("th-TH", {
