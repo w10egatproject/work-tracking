@@ -840,18 +840,18 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </td>
 
                         {/* 7. ปุ่มจัดการแถว */}
-                        <td className="py-1.5 px-2 text-center bg-[#FAFAFC] whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={(e) => handleOpenInsertModal(st, "below", e)}
-                              className="px-2.5 py-1 rounded-lg bg-white hover:bg-sky-50 text-[#005B9A] hover:text-[#004A7D] border border-slate-200 hover:border-sky-300 text-[10px] font-semibold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
-                              title="แทรกแถวงานย่อย"
-                            >
-                              <Plus className="w-3 h-3 stroke-[2.5]" />
-                              <span>แทรกแถว</span>
-                            </button>
-                            {!isHeader && (
+                        <td className={`py-1.5 px-2 text-center whitespace-nowrap ${isHeader ? "bg-sky-50/40" : "bg-[#FAFAFC]"}`}>
+                          {!isHeader ? (
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => handleOpenInsertModal(st, "below", e)}
+                                className="px-2.5 py-1 rounded-lg bg-white hover:bg-sky-50 text-[#005B9A] hover:text-[#004A7D] border border-slate-200 hover:border-sky-300 text-[10px] font-semibold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+                                title="แทรกแถวงานย่อย"
+                              >
+                                <Plus className="w-3 h-3 stroke-[2.5]" />
+                                <span>แทรกแถว</span>
+                              </button>
                               <button
                                 type="button"
                                 onClick={(e) => handleDeleteSubtask(st.id, e)}
@@ -860,8 +860,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
-                            )}
-                          </div>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-[#86868B] font-normal">-</span>
+                          )}
                         </td>
                       </tr>
                     )
