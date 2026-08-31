@@ -602,7 +602,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       />
 
       {/* Main Workspace Body */}
-      <main className="flex-1 px-4 sm:px-6 max-w-[1600px] w-full mx-auto space-y-4 pt-4">
+      <main className="flex-1 px-4 sm:px-6 max-w-[1600px] w-full mx-auto space-y-6 pt-7 sm:pt-8">
         {/* 2. Apple-Clean Bento Metadata Card (Modular Component) */}
         <TaskHeaderCard
           task={task}

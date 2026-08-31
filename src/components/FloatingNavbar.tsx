@@ -115,7 +115,7 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
 
   // Task Detail floating navbar (Apple Frosted Glass Style)
   return (
-    <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
+    <header className="sticky top-4 sm:top-5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
       <div className="backdrop-blur-2xl bg-white/85 border border-black/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 text-[#1D1D1F] transition-all">
         {/* Left: Back & Title info */}
         <div className="flex items-center gap-3 overflow-hidden">
