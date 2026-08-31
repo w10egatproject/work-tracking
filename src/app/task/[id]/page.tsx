@@ -3,6 +3,7 @@
 import { useState, useEffect, use, useMemo } from "react"
 import { Task, Subtask, TaskStatus, DISCIPLINE_CONFIG, DisciplineCode } from "@/types"
 import DisciplineHandoverDialog from "@/components/DisciplineHandoverDialog"
+import FloatingNavbar from "@/components/FloatingNavbar"
 import {
   ArrowLeft,
   ExternalLink,
@@ -85,7 +86,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [loading, setLoading] = useState(true)
   const [handoverOpen, setHandoverOpen] = useState(false)
 
-  // Timeline Window Extension State (เริ่มต้นแสดง 2 เดือน แล้วกดดูเพิ่มได้)
+  // Synchronized row hover across left/right tables
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
+
+  // Timeline Window Extension State (Default 2 months)
   const [visibleMonthsCount, setVisibleMonthsCount] = useState(2)
 
   // Edit Task Header Metadata State
@@ -94,7 +98,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [editReportDate, setEditReportDate] = useState("") // วันที่เริ่มงาน
   const [editDisplayDate, setEditDisplayDate] = useState("") // แสดงข้อมูลตั้งแต่วันที่
   const [editCompletionDate, setEditCompletionDate] = useState("") // วันที่แล้วเสร็จ
-  const [editTotalDays, setEditTotalDays] = useState(11) // ระยะเวลาคำนวณอัตโนมัติ (ห้ามพิมพ์)
+  const [editTotalDays, setEditTotalDays] = useState(11) // ระยะเวลาคำนวณอัตโนมัติ
   const [editWo, setEditWo] = useState("")
   const [editEquip, setEditEquip] = useState("")
   const [isSavingTaskDetails, setIsSavingTaskDetails] = useState(false)
@@ -245,16 +249,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const { dayColumns, monthGroups } = useMemo(() => {
     if (!task) return { dayColumns: [], monthGroups: [] }
 
-    // Start anchor: if display_date is set, start from display_date; otherwise start from report_date
     let startDate = parseThaiDate(task.display_date) || parseThaiDate(task.report_date)
     if (!startDate) startDate = new Date(2026, 7, 27)
 
     const startYear = startDate.getFullYear()
     const startMonth = startDate.getMonth()
 
-    // Calculate end date based on visibleMonthsCount months
     const targetEndMonth = startMonth + visibleMonthsCount
-    const targetEndDate = new Date(startYear, targetEndMonth, 0) // last day of target month
+    const targetEndDate = new Date(startYear, targetEndMonth, 0)
 
     const cols: DayColumn[] = []
     const cur = new Date(startDate)
@@ -421,7 +423,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center gap-3 font-sans">
-        <div className="w-9 h-9 border-3 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-3 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
         <div className="text-slate-400 text-xs font-semibold">กำลังโหลดข้อมูลแผ่นงาน...</div>
       </div>
     )
@@ -430,7 +432,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   if (!task) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] p-12 text-center flex flex-col items-center justify-center font-sans">
-        <div className="text-4xl mb-3">📄</div>
+        <div className="text-5xl mb-3">📄</div>
         <div className="text-[#0F172A] font-bold text-sm mb-4">ไม่พบข้อมูลงานที่ระบุในแผ่นงาน</div>
         <a href="/" className="px-4 py-2 bg-[#005B9A] text-white rounded-xl text-xs font-semibold hover:bg-[#004A7D] transition-colors shadow-xs">
           ← กลับหน้ารวมงาน
@@ -443,71 +445,27 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const currentTaskNum = task.taskNo?.replace("งานที่", "") || task.id
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans select-none antialiased text-[12px] pb-8 selection:bg-[#005B9A] selection:text-white">
-      {/* 1. Modern Frosted Header Bar */}
-      <header className="bg-[#0F172A] text-white px-5 py-3 flex items-center justify-between sticky top-0 z-40 border-b border-slate-800 shadow-md">
-        <div className="flex items-center gap-3">
-          <a
-            href="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white text-xs font-bold transition-all border border-slate-700/80 shadow-2xs"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#F0B323]" />
-            <span>กลับตารางหลัก</span>
-          </a>
-          <div className="h-5 w-px bg-slate-800 hidden sm:block"></div>
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-xs bg-[#005B9A] text-white px-2.5 py-0.5 rounded-lg shadow-2xs">
-              {task.taskNo || `งานที่${task.id}`}
-            </span>
-            <div className="hidden md:block">
-              <span className="text-xs font-bold text-white max-w-[400px] truncate block" title={task.title}>
-                {task.title}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={handleOpenEditTaskModal}
-            className="px-3.5 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs"
-            title="แก้ไขวันที่และรายละเอียดใบสั่งงาน"
-          >
-            <Edit2 className="w-3.5 h-3.5 text-[#F0B323]" />
-            <span>แก้ไขวันที่/ข้อมูลงาน</span>
-          </button>
-
-          <button
-            onClick={() => setHandoverOpen(true)}
-            className="px-3.5 py-1.5 bg-gradient-to-r from-[#F0B323] to-[#D99C12] hover:from-[#D99C12] text-[#0F172A] rounded-xl font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-[0_2px_8px_rgba(240,179,35,0.3)] active:scale-95"
-          >
-            <span>🤝 ส่งมอบงาน (Handover)</span>
-          </button>
-
-          {task.link && (
-            <a
-              href={task.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700/80 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">เปิดชีทจริง</span>
-            </a>
-          )}
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans select-none antialiased text-[12px] pb-12 selection:bg-[#005B9A] selection:text-white">
+      {/* 1. Modern Floating Glassmorphic Navbar */}
+      <FloatingNavbar
+        type="task-detail"
+        taskNo={task.taskNo || `งานที่${task.id}`}
+        title={task.title}
+        sheetLink={task.link}
+        onEditTask={handleOpenEditTaskModal}
+        onHandover={() => setHandoverOpen(true)}
+      />
 
       {/* Main Workspace Body */}
-      <main className="flex-1 p-5 max-w-[1700px] w-full mx-auto space-y-4">
-        {/* 2. Modern Minimalist Sheet Header Card (Clickable Metadata Boxes) */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
+      <main className="flex-1 px-4 sm:px-6 max-w-[1700px] w-full mx-auto space-y-4 pt-4">
+        {/* 2. Modern Bento Metadata Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_6px_16px_rgba(15,23,42,0.02)] overflow-hidden">
           {/* Card Top Accent Strip */}
           <div className="h-1 bg-gradient-to-r from-[#005B9A] via-[#F0B323] to-[#10B981]"></div>
           
-          <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          <div className="p-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left: Job Title & W/O Details */}
-            <div className="lg:col-span-8 space-y-3">
+            <div className="lg:col-span-8 space-y-3.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">งานที่</span>
                 <span className="bg-slate-100 text-[#0F172A] font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-sm border border-slate-200">
@@ -517,7 +475,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <span className="text-xs font-bold text-slate-400">เลข W/O:</span>
                 <button
                   onClick={handleOpenEditTaskModal}
-                  className="bg-sky-50 hover:bg-sky-100 text-[#005B9A] font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80 transition-colors flex items-center gap-1 group"
+                  className="bg-sky-50 hover:bg-sky-100 text-[#005B9A] font-extrabold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80 transition-colors flex items-center gap-1 group cursor-pointer"
                   title="คลิกเพื่อแก้ไข W/O"
                 >
                   <span>{task.wo || "-"}</span>
@@ -530,15 +488,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </span>
               </div>
 
-              {/* Title Box with subtle peach glow (Clickable to Edit) */}
+              {/* Title Box with subtle glow (Clickable to Edit) */}
               <div
                 onClick={handleOpenEditTaskModal}
-                className="bg-amber-50/40 hover:bg-amber-50/70 border border-amber-200/70 rounded-xl p-3.5 cursor-pointer transition-all group"
+                className="bg-amber-50/40 hover:bg-amber-50/70 border border-amber-200/70 rounded-xl p-3.5 cursor-pointer transition-all group shadow-2xs"
                 title="คลิกเพื่อแก้ไขชื่องานและวันที่"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-bold text-amber-800/80 uppercase tracking-wider">
-                    ชื่องาน / รายละเอียดใบสั่งงาน (คลิกเพื่อแก้ไข):
+                  <span className="text-[11px] font-bold text-amber-800/80 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>ชื่องาน / รายละเอียดใบสั่งงาน:</span>
+                    <span className="text-[10px] text-amber-600 font-normal">(คลิกเพื่อแก้ไข)</span>
                   </span>
                   <Edit2 className="w-3.5 h-3.5 text-amber-700 opacity-60 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -547,13 +506,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </h2>
               </div>
 
-              {/* Meta Grid Pills - 5 Separate Clear Boxes */}
+              {/* Meta Grid Pills - 5 Clear Interactive Boxes */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-                {/* 1. วันที่เริ่มงาน (Row 3) */}
+                {/* 1. วันที่เริ่มงาน */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group cursor-pointer shadow-2xs"
                   title="คลิกเพื่อแก้ไขวันที่เริ่มงาน"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
@@ -565,11 +524,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 </button>
 
-                {/* 2. แสดงข้อมูลตั้งแต่วันที่ (Row 6) */}
+                {/* 2. แสดงข้อมูลตั้งแต่วันที่ */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group cursor-pointer shadow-2xs"
                   title="คลิกเพื่อแก้ไขวันที่เริ่มแสดงผลไทม์ไลน์"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
@@ -594,11 +553,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 </div>
 
-                {/* 4. วันที่แล้วเสร็จ (Row 5) */}
+                {/* 4. วันที่แล้วเสร็จ */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group"
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all group cursor-pointer shadow-2xs"
                   title="คลิกเพื่อแก้ไขวันที่แล้วเสร็จ"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
@@ -614,7 +573,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all truncate group"
+                  className="bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-sky-300 p-2.5 rounded-xl text-left transition-all truncate group cursor-pointer shadow-2xs"
                   title="คลิกเพื่อแก้ไขอุปกรณ์"
                 >
                   <div className="flex items-center justify-between text-[10px] font-bold text-slate-400 group-hover:text-[#005B9A]">
@@ -629,7 +588,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* Right: Progress & Stepper */}
-            <div className="lg:col-span-4 bg-gradient-to-br from-slate-50/90 to-white border border-slate-200/80 rounded-xl p-4 flex flex-col justify-between h-full space-y-3">
+            <div className="lg:col-span-4 bg-gradient-to-br from-slate-50/90 to-white border border-slate-200/80 rounded-xl p-4 flex flex-col justify-between h-full space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">ความคืบหน้ารวม</span>
@@ -665,7 +624,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               {/* Handover Stepper Pipeline */}
               <div className="pt-2 border-t border-slate-200/70">
                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  ลำดับหมวดงาน:
+                  ลำดับหมวดงาน (Discipline Stepper):
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {task.w_codes &&
@@ -695,16 +654,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        {/* 3. Modern High-Density Spreadsheet & Timeline Matrix Grid */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
-          {/* Table Header Bar with Extend Month Controls */}
+        {/* 3. Modern Split-Table Architecture: Left Operational Table | Right Daily Matrix */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_6px_16px_rgba(15,23,42,0.02)] overflow-hidden">
+          {/* Table Header Bar with Timeline Controls */}
           <div className="bg-gradient-to-r from-slate-50 to-white px-5 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#005B9A] ring-4 ring-sky-100"></span>
-              <span className="text-xs font-bold text-[#0F172A]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#005B9A] ring-4 ring-sky-100"></span>
+              <span className="text-xs font-extrabold text-[#0F172A]">
                 ตารางแผนงานย่อยและไทม์ไลน์รายวัน (Subtasks Breakdown & Daily Schedule)
               </span>
-              <span className="text-[11px] font-bold text-[#005B9A] bg-sky-50 border border-sky-200/80 px-2 py-0.2 rounded-full font-mono">
+              <span className="text-[11px] font-bold text-[#005B9A] bg-sky-50 border border-sky-200/80 px-2.5 py-0.5 rounded-full font-mono shadow-2xs">
                 {subtasks.length} แถว
               </span>
             </div>
@@ -721,7 +680,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={() => setVisibleMonthsCount((prev) => Math.max(2, prev - 1))}
-                  className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+                  className="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                   title="ย่อลด 1 เดือน"
                 >
                   <span>➖ ย่อเดือน</span>
@@ -732,7 +691,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={() => setVisibleMonthsCount(2)}
-                  className="px-2 py-1 bg-white hover:bg-slate-100 text-slate-500 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+                  className="px-2 py-1 bg-white hover:bg-slate-100 text-slate-500 border border-slate-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                   title="รีเซ็ตกลับเป็น 2 เดือน"
                 >
                   <RotateCcw className="w-3 h-3" />
@@ -743,7 +702,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <button
                 type="button"
                 onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
-                className="px-3 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95"
+                className="px-3 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
                 title="ขยายแสดงไทม์ไลน์เพิ่มอีก 1 เดือน"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -752,21 +711,23 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           </div>
 
+          {/* Unified Split-Table Matrix with Synchronized Row Hover */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[11px] font-sans text-slate-700">
               <thead>
                 {/* Month Group Headers Row */}
                 <tr className="bg-slate-100/90 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
+                  {/* Left Table Headers */}
                   <th className="py-2 px-3 w-10 text-center border-r border-slate-200 bg-slate-200/60 font-mono">#</th>
-                  <th className="py-2 px-4 min-w-[240px] text-left border-r border-slate-200">งานที่ต้องทำ</th>
+                  <th className="py-2 px-4 min-w-[240px] text-left border-r border-slate-200">งานที่ต้องทำ (Subtask)</th>
                   <th className="py-2 px-3 w-28 text-center border-r border-slate-200">วันที่เริ่มงาน</th>
                   <th className="py-2 px-2 w-16 text-center border-r border-slate-200 font-mono">วันที่ใช้</th>
                   <th className="py-2 px-3 w-28 text-center border-r border-slate-200">วันที่เสร็จ</th>
                   <th className="py-2 px-3 w-32 text-center border-r border-slate-200">ความคืบหน้า%</th>
                   <th className="py-2 px-3 w-28 text-center border-r border-slate-200">สถานะ</th>
-                  <th className="py-2 px-2 w-20 text-center border-r border-slate-300 bg-slate-200/60">จัดการ</th>
+                  <th className="py-2 px-2 w-20 text-center border-r-2 border-r-slate-400/80 bg-slate-200/60 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">จัดการ</th>
                   
-                  {/* Month Spans on Right */}
+                  {/* Right Timeline Month Spans */}
                   {monthGroups.map((grp, gIdx) => (
                     <th
                       key={gIdx}
@@ -787,7 +748,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   <th className="py-2 px-3 border-r border-slate-200 text-center">เสร็จ</th>
                   <th className="py-2 px-3 border-r border-slate-200 text-center">% ดำเนินการ</th>
                   <th className="py-2 px-3 border-r border-slate-200 text-center">สถานะ</th>
-                  <th className="py-2 px-2 border-r border-slate-300 text-center">แถว</th>
+                  <th className="py-2 px-2 border-r-2 border-r-slate-400/80 text-center shadow-[2px_0_4px_rgba(0,0,0,0.03)]">แถว</th>
 
                   {/* Day Columns */}
                   {dayColumns.map((col, idx) => (
@@ -812,24 +773,29 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   const isInProgress = st.status === "ดำเนินการ"
                   const isPending = st.status === "รอดำเนินการ"
                   const isNotStarted = st.status === "ยังไม่ดำเนินการ"
+                  const isHovered = hoveredRowId === st.id
 
                   return (
                     <tr
                       key={st.id}
+                      onMouseEnter={() => setHoveredRowId(st.id)}
+                      onMouseLeave={() => setHoveredRowId(null)}
                       onClick={() => !isHeader && handleOpenEditSubtask(st)}
-                      className={`group transition-colors duration-150 ${
+                      className={`group transition-all duration-150 h-11 ${
                         isHeader
                           ? "bg-sky-50/80 font-bold border-t border-b border-sky-200"
+                          : isHovered
+                          ? "bg-sky-50/70 cursor-pointer"
                           : "hover:bg-sky-50/40 cursor-pointer bg-white"
                       }`}
                     >
-                      {/* Row Num */}
-                      <td className="py-2.5 px-3 border-r border-slate-100 text-center font-mono text-[10px] text-slate-400 bg-slate-50/50">
+                      {/* 1. Row Num */}
+                      <td className={`py-2 px-3 border-r border-slate-100 text-center font-mono text-[10px] text-slate-400 ${isHovered ? "bg-sky-100/50" : "bg-slate-50/50"}`}>
                         {sIdx + 1}
                       </td>
 
-                      {/* งานที่ต้องทำ */}
-                      <td className="py-2.5 px-4 border-r border-slate-100 font-medium">
+                      {/* 2. งานที่ต้องทำ (Subtask Title) */}
+                      <td className="py-2 px-4 border-r border-slate-100 font-medium">
                         <div className="flex items-center justify-between gap-2">
                           {isHeader ? (
                             <span className="text-[#005B9A] font-extrabold flex items-center gap-1.5">
@@ -837,7 +803,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                               <span>{st.category}</span>
                             </span>
                           ) : (
-                            <span className="text-slate-800 pl-3 flex items-center gap-1.5 group-hover:text-[#005B9A] transition-colors">
+                            <span className="text-slate-800 pl-2 flex items-center gap-1.5 group-hover:text-[#005B9A] transition-colors">
                               <span className="text-slate-300">•</span>
                               <span className="font-semibold">{st.category}</span>
                               <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1" />
@@ -846,28 +812,28 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </div>
                       </td>
 
-                      {/* วันที่เริ่มงาน */}
-                      <td className="py-2.5 px-3 border-r border-slate-100 text-center text-slate-600 whitespace-nowrap">
+                      {/* 3. วันที่เริ่มงาน */}
+                      <td className="py-2 px-3 border-r border-slate-100 text-center text-slate-600 whitespace-nowrap">
                         {st.start || "-"}
                       </td>
 
-                      {/* วันที่ใช้ */}
-                      <td className="py-2.5 px-2 border-r border-slate-100 text-center font-mono text-slate-600">
+                      {/* 4. วันที่ใช้ */}
+                      <td className="py-2 px-2 border-r border-slate-100 text-center font-mono text-slate-600 font-semibold">
                         {st.days || 1}
                       </td>
 
-                      {/* วันที่เสร็จ */}
-                      <td className="py-2.5 px-3 border-r border-slate-100 text-center text-slate-600 whitespace-nowrap">
+                      {/* 5. วันที่เสร็จ */}
+                      <td className="py-2 px-3 border-r border-slate-100 text-center text-slate-600 whitespace-nowrap">
                         {st.end || "-"}
                       </td>
 
-                      {/* ความคืบหน้า% */}
-                      <td className="py-2.5 px-3 border-r border-slate-100">
+                      {/* 6. ความคืบหน้า% */}
+                      <td className="py-2 px-3 border-r border-slate-100">
                         <div className="flex items-center gap-2 justify-center">
                           <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-300 ${
-                                isDone ? "bg-emerald-500" : "bg-[#005B9A]"
+                                isDone ? "bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" : "bg-[#005B9A] shadow-[0_0_6px_rgba(0,91,154,0.3)]"
                               }`}
                               style={{ width: `${st.progress}%` }}
                             ></div>
@@ -878,17 +844,17 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </div>
                       </td>
 
-                      {/* สถานะ */}
-                      <td className="py-2.5 px-3 border-r border-slate-100 text-center">
+                      {/* 7. สถานะ */}
+                      <td className="py-2 px-3 border-r border-slate-100 text-center">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border inline-flex items-center gap-1 shadow-2xs ${
                             isDone
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200/90"
                               : isInProgress
-                              ? "bg-sky-50 text-[#005B9A] border-sky-200"
+                              ? "bg-sky-50 text-[#005B9A] border-sky-200/90"
                               : isPending
-                              ? "bg-amber-50 text-amber-800 border-amber-200"
-                              : "bg-rose-50 text-rose-700 border-rose-200"
+                              ? "bg-amber-50 text-amber-800 border-amber-200/90"
+                              : "bg-rose-50 text-rose-700 border-rose-200/90"
                           }`}
                         >
                           <span>{isDone ? "✅" : isInProgress ? "⚙️" : isPending ? "⏳" : "🔴"}</span>
@@ -896,13 +862,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </span>
                       </td>
 
-                      {/* ปุ่มจัดการแถว (⬆️, ⬇️, 🗑️) */}
-                      <td className="py-1.5 px-2 border-r border-slate-300 text-center bg-slate-50/30">
+                      {/* 8. จัดการแถว (Row Actions: Insert / Delete) with split border shadow */}
+                      <td className="py-1.5 px-2 border-r-2 border-r-slate-400/80 text-center bg-slate-50/40 shadow-[2px_0_4px_rgba(0,0,0,0.03)]">
                         <div className="flex items-center justify-center gap-0.5">
                           <button
                             type="button"
                             onClick={(e) => handleOpenInsertModal(st, "above", e)}
-                            className="p-1 rounded-md text-slate-400 hover:text-[#005B9A] hover:bg-sky-50 transition-colors"
+                            className="p-1 rounded-md text-slate-400 hover:text-[#005B9A] hover:bg-sky-100/70 transition-colors cursor-pointer"
                             title="แทรกแถวด้านบน"
                           >
                             <ArrowUpToLine className="w-3.5 h-3.5" />
@@ -910,7 +876,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                           <button
                             type="button"
                             onClick={(e) => handleOpenInsertModal(st, "below", e)}
-                            className="p-1 rounded-md text-slate-400 hover:text-[#005B9A] hover:bg-sky-50 transition-colors"
+                            className="p-1 rounded-md text-slate-400 hover:text-[#005B9A] hover:bg-sky-100/70 transition-colors cursor-pointer"
                             title="แทรกแถวด้านล่าง"
                           >
                             <ArrowDownToLine className="w-3.5 h-3.5" />
@@ -919,7 +885,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                             <button
                               type="button"
                               onClick={(e) => handleDeleteSubtask(st.id, e)}
-                              className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              className="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                               title="ลบแถวนี้"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -928,29 +894,29 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </div>
                       </td>
 
-                      {/* Timeline Day Matrix Cells (Sleek Modern Gantt Capsules) */}
+                      {/* Right Timeline Day Matrix Cells (Gantt Capsules) */}
                       {dayColumns.map((dayCol, dIdx) => {
                         const isActive = isSubtaskActiveOnDay(st, dayCol)
 
                         let capsuleColor = ""
                         if (isActive) {
-                          if (isDone) capsuleColor = "bg-emerald-500 shadow-xs"
-                          else if (isInProgress) capsuleColor = "bg-[#005B9A] shadow-xs"
-                          else if (isPending) capsuleColor = "bg-amber-500 shadow-xs"
-                          else if (isNotStarted) capsuleColor = "bg-rose-500 shadow-xs"
+                          if (isDone) capsuleColor = "bg-emerald-500 shadow-[0_1px_4px_rgba(16,185,129,0.4)]"
+                          else if (isInProgress) capsuleColor = "bg-[#005B9A] shadow-[0_1px_4px_rgba(0,91,154,0.4)]"
+                          else if (isPending) capsuleColor = "bg-amber-500 shadow-[0_1px_4px_rgba(245,158,11,0.4)]"
+                          else if (isNotStarted) capsuleColor = "bg-rose-500 shadow-[0_1px_4px_rgba(244,63,94,0.4)]"
                           else capsuleColor = "bg-sky-400 shadow-xs"
                         }
 
                         return (
                           <td
                             key={dIdx}
-                            className={`border-r border-slate-100 text-center p-0.5 h-7 relative ${
-                              dayCol.isWeekend ? "bg-slate-50/50" : "bg-white"
+                            className={`border-r border-slate-100 text-center p-0.5 h-11 relative ${
+                              isHovered ? "bg-sky-50/50" : dayCol.isWeekend ? "bg-slate-50/50" : "bg-white"
                             }`}
                           >
                             {isActive && (
                               <div
-                                className={`w-full h-4 rounded-md ${capsuleColor} transition-all duration-150 hover:scale-110`}
+                                className={`w-full h-5 rounded-md ${capsuleColor} transition-all duration-150 hover:scale-105 hover:brightness-110`}
                                 title={`${st.category} (${dayCol.dateStr}) - ${st.status}`}
                               ></div>
                             )}
@@ -972,7 +938,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             <button
               type="button"
               onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
-              className="px-3.5 py-1 bg-white hover:bg-sky-50 text-[#005B9A] border border-sky-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1"
+              className="px-3.5 py-1 bg-white hover:bg-sky-50 text-[#005B9A] border border-sky-200 rounded-xl text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>กดดูวันเพิ่ม (+1 เดือน)</span>
@@ -1026,15 +992,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       {/* 6. Edit Task Header Metadata Modal */}
       {editTaskModalOpen && (
         <div
-          className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+          className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditTaskModalOpen(false)
           }}
         >
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold shadow-2xs">
                   <CalendarIcon className="w-4 h-4" />
                 </div>
                 <div>
@@ -1045,7 +1011,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <button
                 type="button"
                 onClick={() => setEditTaskModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1066,13 +1032,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 />
               </div>
 
-              {/* 1. วันที่เริ่มงาน & 2. แสดงข้อมูลตั้งแต่วันที่ (แยกช่องชัดเจน) */}
+              {/* 1. วันที่เริ่มงาน & 2. แสดงข้อมูลตั้งแต่วันที่ */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* วันที่เริ่มงาน */}
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
                     <span>วันที่เริ่มงาน <span className="text-rose-500">*</span></span>
-                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">เลือกปฏิทิน</span>
                   </label>
                   <div
                     onClick={() => handleOpenCalendarPicker("report_date", "เลือกวันที่เริ่มงาน", editReportDate)}
@@ -1083,11 +1049,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 </div>
 
-                {/* แสดงข้อมูลตั้งแต่วันที่ (แยกจากวันที่เริ่มงาน) */}
+                {/* แสดงข้อมูลตั้งแต่วันที่ */}
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
                     <span>แสดงข้อมูลตั้งแต่วันที่ <span className="text-rose-500">*</span></span>
-                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">เลือกปฏิทิน</span>
                   </label>
                   <div
                     onClick={() => handleOpenCalendarPicker("display_date", "เลือกวันที่เริ่มต้นแสดงผลไทม์ไลน์", editDisplayDate)}
@@ -1099,13 +1065,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
 
-              {/* 3. วันที่แล้วเสร็จ & 4. ระยะเวลา (ห้ามพิมพ์ แสดงเฉพาะที่คำนวณแล้ว) */}
+              {/* 3. วันที่แล้วเสร็จ & 4. ระยะเวลา */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* วันที่แล้วเสร็จ */}
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
                     <span>วันที่แล้วเสร็จ <span className="text-rose-500">*</span></span>
-                    <span className="text-[10px] text-[#005B9A] font-semibold">คลิกเพื่อเลือกปฏิทิน</span>
+                    <span className="text-[10px] text-[#005B9A] font-semibold">เลือกปฏิทิน</span>
                   </label>
                   <div
                     onClick={() => handleOpenCalendarPicker("completion_date", "เลือกวันที่แล้วเสร็จ", editCompletionDate)}
@@ -1116,7 +1082,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 </div>
 
-                {/* ระยะเวลาการทำงาน (ห้ามพิมพ์ แสดงเฉพาะที่คำนวณแล้ว) */}
+                {/* ระยะเวลาการทำงาน */}
                 <div>
                   <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
                     <span>ระยะเวลาการทำงาน (วัน)</span>
@@ -1162,14 +1128,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={() => setEditTaskModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingTaskDetails}
-                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5"
+                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{isSavingTaskDetails ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
@@ -1190,21 +1156,21 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         />
       )}
 
-      {/* 8. Quick Subtask Edit Modal (Presets + Slider + Direct typing) */}
+      {/* 8. Quick Subtask Edit Modal */}
       {editingSubtask && (
         <div
-          className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+          className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditingSubtask(null)
           }}
         >
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
               <h3 className="font-bold text-xs text-[#0F172A]">แก้ไขความคืบหน้างานย่อย</h3>
               <button
                 type="button"
                 onClick={() => setEditingSubtask(null)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1252,7 +1218,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   className="w-full accent-[#005B9A] cursor-pointer"
                 />
 
-                {/* Preset Pills (0%, 25%, 50%, 75%, 100%) */}
+                {/* Preset Pills */}
                 <div className="grid grid-cols-5 gap-1.5 mt-2.5">
                   {[0, 25, 50, 75, 100].map((val) => (
                     <button
@@ -1262,7 +1228,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         setEditProgress(val)
                         setEditStatus(getDerivedStatus(val))
                       }}
-                      className={`py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${
+                      className={`py-1.5 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
                         editProgress === val
                           ? "bg-[#005B9A] text-white border-[#005B9A] shadow-xs"
                           : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
@@ -1278,7 +1244,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between">
                 <div className="text-xs font-bold text-slate-500">สถานะ:</div>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1 ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1 shadow-2xs ${
                     editStatus === "เสร็จ"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : editStatus === "ดำเนินการ"
@@ -1295,7 +1261,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={() => setEditingSubtask(null)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   ยกเลิก
                 </button>
@@ -1303,7 +1269,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   type="button"
                   onClick={handleSaveSubtask}
                   disabled={isSavingSubtask}
-                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs"
+                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
                   {isSavingSubtask ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
                 </button>
@@ -1316,12 +1282,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       {/* 9. Insert Subtask Row Modal (Above / Below) */}
       {insertModalOpen && targetSubtask && (
         <div
-          className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+          className="fixed inset-0 bg-slate-950/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={(e) => {
             if (e.target === e.currentTarget) setInsertModalOpen(false)
           }}
         >
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
               <div>
                 <h3 className="font-bold text-xs text-[#0F172A]">
@@ -1334,7 +1300,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <button
                 type="button"
                 onClick={() => setInsertModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1347,7 +1313,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   <button
                     type="button"
                     onClick={() => setInsertPosition("above")}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       insertPosition === "above"
                         ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
                         : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -1359,7 +1325,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   <button
                     type="button"
                     onClick={() => setInsertPosition("below")}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       insertPosition === "below"
                         ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
                         : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
@@ -1422,14 +1388,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={() => setInsertModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="submit"
                   disabled={isInsertingSubtask}
-                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs"
+                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
                 >
                   {isInsertingSubtask ? "กำลังเพิ่ม..." : "✓ บันทึกแทรกแถว"}
                 </button>
@@ -1509,12 +1475,12 @@ function ThaiCalendarPickerModal({
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950/40 z-60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-100"
+      className="fixed inset-0 bg-slate-950/50 z-60 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-100">
+      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200/90 animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
           <div className="flex items-center gap-2">
@@ -1526,7 +1492,7 @@ function ThaiCalendarPickerModal({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100"
+            className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1537,7 +1503,7 @@ function ThaiCalendarPickerModal({
           <button
             type="button"
             onClick={prevMonth}
-            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors"
+            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -1551,7 +1517,7 @@ function ThaiCalendarPickerModal({
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors"
+            className="p-1 rounded-lg text-slate-600 hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -1577,7 +1543,7 @@ function ThaiCalendarPickerModal({
                 key={idx}
                 type="button"
                 onClick={() => setSelectedDay(cell.date)}
-                className={`py-2 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center relative ${
+                className={`py-2 rounded-xl font-bold transition-all text-xs flex flex-col items-center justify-center relative cursor-pointer ${
                   isSelected
                     ? "bg-[#005B9A] text-white shadow-xs scale-105"
                     : cell.isCurrentMonth
@@ -1601,14 +1567,14 @@ function ThaiCalendarPickerModal({
             <button
               type="button"
               onClick={() => setSelectedDay(new Date())}
-              className="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+              className="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
             >
               วันนี้
             </button>
             <button
               type="button"
               onClick={() => onSelectDate(selectedDay)}
-              className="px-3.5 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-lg text-xs font-bold transition-all shadow-xs"
+              className="px-3.5 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
             >
               ยืนยัน
             </button>

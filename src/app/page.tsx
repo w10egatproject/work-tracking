@@ -6,6 +6,7 @@ import SummaryCards from "@/components/SummaryCards"
 import TaskTable from "@/components/TaskTable"
 import KanbanBoardView from "@/components/KanbanBoardView"
 import AddTaskDialog from "@/components/AddTaskDialog"
+import FloatingNavbar from "@/components/FloatingNavbar"
 import { Search, Filter, Plus, Table as TableIcon, LayoutGrid, RefreshCw, Calendar, X, Sparkles, Command } from "lucide-react"
 
 export default function Home() {
@@ -95,58 +96,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans antialiased selection:bg-[#005B9A] selection:text-white">
-      {/* Modern Frosted Top Navigation Bar (Linear / Raycast Style) */}
-      <header className="bg-[#0F172A] text-white px-6 py-3 sticky top-0 z-30 border-b border-slate-800 shadow-md">
-        <div className="max-w-[1700px] w-full mx-auto flex flex-wrap items-center justify-between gap-4">
-          {/* Logo & App Title */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#005B9A] to-[#004A7D] border border-sky-400/30 flex items-center justify-center text-xl font-bold shadow-[0_2px_10px_rgba(0,91,154,0.3)]">
-              ⚡
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-white flex items-center gap-2">
-                  <span>ระบบจัดการใบสั่งงานซ่อม W10</span>
-                  <span className="text-slate-400 text-xs font-normal hidden md:inline">| Operations Console Pro</span>
-                </h1>
-                <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Sheets Live Sync
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-normal mt-0.5">
-                กฟผ. แม่เมาะ • W11 วิศวกรรม • W12 เครื่องกล • W13 ซ่อมเครื่องจักรกล • W14 ซ่อมอุปกรณ์
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Actions & Date */}
-          <div className="flex items-center gap-2.5">
-            <div className="text-xs text-slate-300 hidden lg:flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80 font-medium">
-              <Calendar className="w-3.5 h-3.5 text-[#F0B323]" />
-              <span>{todayStr}</span>
-            </div>
-
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="px-3.5 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 hover:text-white transition-all duration-150 border border-slate-700/80 text-xs font-semibold flex items-center gap-1.5 shadow-2xs active:scale-95"
-              title="รีเฟรชข้อมูลจาก Google Sheets"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin text-[#F0B323]" : ""}`} />
-              <span className="hidden sm:inline">รีเฟรชข้อมูล</span>
-            </button>
-
-            <button
-              onClick={() => setAddDialogOpen(true)}
-              className="px-4 py-2 bg-gradient-to-r from-[#005B9A] to-[#004A7D] hover:from-[#004A7D] hover:to-[#003860] text-white rounded-xl text-xs font-bold transition-all duration-150 shadow-[0_2px_8px_rgba(0,91,154,0.3)] flex items-center gap-1.5 active:scale-95"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>สร้างรายการใหม่</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* 1. Modern Floating Glassmorphic Navbar (shadcn + Magic UI style) */}
+      <FloatingNavbar
+        type="dashboard"
+        todayStr={todayStr}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        onAddTask={() => setAddDialogOpen(true)}
+      />
 
       {/* Main Content Dashboard Area */}
       <main className="flex-1 pb-16 max-w-[1700px] w-full mx-auto space-y-4 pt-4">
