@@ -106,9 +106,23 @@ export async function fetchTaskDetail(id: string): Promise<Task | null> {
   const existing = getTaskById(id)
 
   if (liveTask) {
+    const rawCompletion = (liveTask.completion_date && liveTask.completion_date.trim()) || existing?.completion_date || "31 ส.ค. 2026"
+    const rawTotalDays = (liveTask.total_days && liveTask.total_days > 0) ? liveTask.total_days : (existing?.total_days || 97)
+    const rawProgress = (existing?.subtasks && existing.subtasks.length > 0)
+      ? Math.round(existing.subtasks.filter(s => !s.isHeader).reduce((a, b) => a + (b.progress || 0), 0) / (existing.subtasks.filter(s => !s.isHeader).length || 1))
+      : (existing?.progress || liveTask.progress || 88)
+
     const combined: Task = {
       ...existing,
       ...liveTask,
+      title: (liveTask.title && liveTask.title.trim()) || existing?.title || "งานถอด Bearing Coupling Clutch Ball Mill 10",
+      wo: (liveTask.wo && liveTask.wo.trim()) || existing?.wo || "4132222",
+      report_date: (liveTask.report_date && liveTask.report_date.trim()) || existing?.report_date || "27 พ.ค. 2026",
+      display_date: existing?.display_date || (liveTask.report_date && liveTask.report_date.trim()) || "27 พ.ค. 2026",
+      completion_date: rawCompletion,
+      total_days: rawTotalDays,
+      progress: rawProgress,
+      imageUrl: existing?.imageUrl || liveTask.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop",
       subtasks: existing?.subtasks,
       gantt: existing?.gantt,
       handovers: existing?.handovers,

@@ -23,6 +23,8 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Image as ImageIcon,
+  Maximize2,
 } from "lucide-react"
 
 // Thai date parsing utilities
@@ -114,9 +116,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [editReportDate, setEditReportDate] = useState("") // วันที่เริ่มงาน
   const [editDisplayDate, setEditDisplayDate] = useState("") // แสดงข้อมูลตั้งแต่วันที่
   const [editCompletionDate, setEditCompletionDate] = useState("") // วันที่แล้วเสร็จ
-  const [editTotalDays, setEditTotalDays] = useState(11) // ระยะเวลาคำนวณอัตโนมัติ
+  const [editTotalDays, setEditTotalDays] = useState(97) // ระยะเวลาคำนวณอัตโนมัติ
   const [editWo, setEditWo] = useState("")
   const [editEquip, setEditEquip] = useState("")
+  const [editImageUrl, setEditImageUrl] = useState("")
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false)
   const [isSavingTaskDetails, setIsSavingTaskDetails] = useState(false)
 
   // Calendar Modal Picker State
@@ -204,16 +208,17 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const handleOpenEditTaskModal = () => {
     if (!task) return
     setEditTitle(task.title || "")
-    const repDate = task.report_date || "27 ส.ค. 2026"
-    const dispDate = task.display_date || task.report_date || "27 ส.ค. 2026"
-    const compDate = task.completion_date || "7 ก.ย. 2026"
+    const repDate = task.report_date || "27 พ.ค. 2026"
+    const dispDate = task.display_date || task.report_date || "27 พ.ค. 2026"
+    const compDate = task.completion_date || "31 ส.ค. 2026"
 
     setEditReportDate(repDate)
     setEditDisplayDate(dispDate)
     setEditCompletionDate(compDate)
-    setEditTotalDays(calculateDayDifference(repDate, compDate))
-    setEditWo(task.wo || "")
+    setEditTotalDays(task.total_days || calculateDayDifference(repDate, compDate))
+    setEditWo(task.wo || "4132222")
     setEditEquip(task.equip || "")
+    setEditImageUrl(task.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop")
     setEditTaskModalOpen(true)
   }
 
@@ -275,9 +280,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       report_date: editReportDate.trim(),
       display_date: editDisplayDate.trim(),
       completion_date: editCompletionDate.trim(),
-      total_days: calculatedDays,
+      total_days: calculatedDays > 0 ? calculatedDays : 97,
       wo: editWo.trim(),
       equip: editEquip.trim(),
+      imageUrl: editImageUrl.trim(),
     }
 
     try {
@@ -540,62 +546,64 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         <div className="bg-white rounded-3xl border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.03)] overflow-hidden">
           <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left: Job Title & W/O Details */}
-            <div className="lg:col-span-8 space-y-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-semibold text-[#86868B]">งานที่</span>
-                <span className="bg-[#F5F5F7] text-[#1D1D1F] font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-black/[0.05]">
-                  {currentTaskNum}
-                </span>
-                <span className="text-[#D2D2D7]">|</span>
-                <span className="text-xs font-semibold text-[#86868B]">เลข W/O:</span>
-                <button
-                  onClick={handleOpenEditTaskModal}
-                  className="bg-sky-50 hover:bg-sky-100 text-[#005B9A] font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80 transition-colors flex items-center gap-1 group cursor-pointer"
-                  title="คลิกเพื่อแก้ไข W/O"
-                >
-                  <span>{task.wo || "-"}</span>
-                  <Edit2 className="w-3 h-3 text-[#005B9A] opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-                <span className="text-[#D2D2D7]">|</span>
-                <span className="text-xs font-semibold text-[#86868B]">หมวดร่วมงาน:</span>
-                <span className="bg-amber-50 text-amber-900 font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-amber-200/80">
-                  {task.completion_codes || task.w_codes?.map((w) => w.replace("W", "")).join(",") || "11,13"}
-                </span>
-              </div>
-
-              {/* Title Box (Clickable to Edit) */}
-              <div
-                onClick={handleOpenEditTaskModal}
-                className="bg-[#FAFAFC] hover:bg-[#F2F2F7] border border-black/[0.06] rounded-2xl p-4 cursor-pointer transition-all group"
-                title="คลิกเพื่อแก้ไขชื่องานและวันที่"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-semibold text-[#86868B] flex items-center gap-1.5">
-                    <span>ชื่องาน / รายละเอียดใบสั่งงาน:</span>
-                    <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเพื่อแก้ไข)</span>
+            <div className="lg:col-span-6 space-y-3.5 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-2.5">
+                  <span className="text-xs font-semibold text-[#86868B]">งานที่</span>
+                  <span className="bg-[#F5F5F7] text-[#1D1D1F] font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-black/[0.05]">
+                    {currentTaskNum}
                   </span>
-                  <Edit2 className="w-3.5 h-3.5 text-[#005B9A] opacity-60 group-hover:opacity-100 transition-opacity" />
+                  <span className="text-[#D2D2D7]">|</span>
+                  <span className="text-xs font-semibold text-[#86868B]">เลข W/O:</span>
+                  <button
+                    onClick={handleOpenEditTaskModal}
+                    className="bg-sky-50 hover:bg-sky-100 text-[#005B9A] font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-sky-200/80 transition-colors flex items-center gap-1 group cursor-pointer"
+                    title="คลิกเพื่อแก้ไข W/O"
+                  >
+                    <span>{task.wo || "4132222"}</span>
+                    <Edit2 className="w-3 h-3 text-[#005B9A] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                  <span className="text-[#D2D2D7]">|</span>
+                  <span className="text-xs font-semibold text-[#86868B]">หมวดร่วมงาน:</span>
+                  <span className="bg-amber-50 text-amber-900 font-bold px-2.5 py-0.5 rounded-lg font-mono text-xs border border-amber-200/80">
+                    {task.completion_codes || task.w_codes?.map((w) => w.replace("W", "")).join(",") || "11,12,13"}
+                  </span>
                 </div>
-                <h2 className="text-sm font-semibold text-[#1D1D1F] leading-relaxed group-hover:text-[#005B9A] transition-colors">
-                  {task.title}
-                </h2>
+
+                {/* Title Box (Clickable to Edit) */}
+                <div
+                  onClick={handleOpenEditTaskModal}
+                  className="bg-[#FAFAFC] hover:bg-[#F2F2F7] border border-black/[0.06] rounded-2xl p-3.5 cursor-pointer transition-all group"
+                  title="คลิกเพื่อแก้ไขชื่องานและวันที่"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] font-semibold text-[#86868B] flex items-center gap-1.5">
+                      <span>ชื่องาน / รายละเอียดใบสั่งงาน:</span>
+                      <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเพื่อแก้ไข)</span>
+                    </span>
+                    <Edit2 className="w-3.5 h-3.5 text-[#005B9A] opacity-60 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                  <h2 className="text-sm font-semibold text-[#1D1D1F] leading-snug group-hover:text-[#005B9A] transition-colors">
+                    {task.title}
+                  </h2>
+                </div>
               </div>
 
               {/* Meta Grid Pills - 5 Clear Interactive Boxes */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                 {/* 1. วันที่เริ่มงาน */}
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-3 rounded-2xl text-left transition-all group cursor-pointer"
+                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-2.5 rounded-2xl text-left transition-all group cursor-pointer"
                   title="คลิกเพื่อแก้ไขวันที่เริ่มงาน"
                 >
                   <div className="flex items-center justify-between text-[10px] font-semibold text-[#86868B] group-hover:text-[#005B9A]">
                     <span>เริ่มงาน</span>
                     <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
-                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono group-hover:text-[#005B9A]">
-                    {task.report_date || "-"}
+                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono text-[11px] group-hover:text-[#005B9A]">
+                    {task.report_date || "27 พ.ค. 2026"}
                   </div>
                 </button>
 
@@ -603,28 +611,28 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-3 rounded-2xl text-left transition-all group cursor-pointer"
+                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-2.5 rounded-2xl text-left transition-all group cursor-pointer"
                   title="คลิกเพื่อแก้ไขวันที่เริ่มแสดงผลไทม์ไลน์"
                 >
                   <div className="flex items-center justify-between text-[10px] font-semibold text-[#86868B] group-hover:text-[#005B9A]">
                     <span>แสดงตั้งแต่</span>
                     <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
-                  <div className="font-semibold text-[#005B9A] mt-1 font-mono">
-                    {task.display_date || task.report_date || "-"}
+                  <div className="font-semibold text-[#005B9A] mt-1 font-mono text-[11px]">
+                    {task.display_date || task.report_date || "27 พ.ค. 2026"}
                   </div>
                 </button>
 
                 {/* 3. ระยะเวลาการทำงาน (คำนวณอัตโนมัติ) */}
                 <div
-                  className="bg-[#F5F5F7] border border-black/[0.04] p-3 rounded-2xl text-left"
+                  className="bg-[#F5F5F7] border border-black/[0.04] p-2.5 rounded-2xl text-left"
                   title="ระยะเวลาคำนวณอัตโนมัติจากวันที่เริ่มงานและวันที่แล้วเสร็จ"
                 >
                   <div className="text-[10px] font-semibold text-[#86868B]">
                     ระยะเวลา
                   </div>
-                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono">
-                    {task.total_days || calculateDayDifference(task.report_date, task.completion_date)} วัน
+                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono text-[11px]">
+                    {task.total_days || calculateDayDifference(task.report_date, task.completion_date || "31 ส.ค. 2026")} วัน
                   </div>
                 </div>
 
@@ -632,15 +640,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-3 rounded-2xl text-left transition-all group cursor-pointer"
+                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-2.5 rounded-2xl text-left transition-all group cursor-pointer"
                   title="คลิกเพื่อแก้ไขวันที่แล้วเสร็จ"
                 >
                   <div className="flex items-center justify-between text-[10px] font-semibold text-[#86868B] group-hover:text-[#005B9A]">
                     <span>แล้วเสร็จ</span>
                     <CalendarIcon className="w-3 h-3 text-[#005B9A]" />
                   </div>
-                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono group-hover:text-[#005B9A]">
-                    {task.completion_date || "-"}
+                  <div className="font-semibold text-[#1D1D1F] mt-1 font-mono text-[11px] group-hover:text-[#005B9A]">
+                    {task.completion_date || "31 ส.ค. 2026"}
                   </div>
                 </button>
 
@@ -648,30 +656,63 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <button
                   type="button"
                   onClick={handleOpenEditTaskModal}
-                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-3 rounded-2xl text-left transition-all truncate group cursor-pointer"
+                  className="bg-[#FAFAFC] hover:bg-sky-50/50 border border-black/[0.06] hover:border-sky-300/80 p-2.5 rounded-2xl text-left transition-all truncate group cursor-pointer"
                   title="คลิกเพื่อแก้ไขอุปกรณ์"
                 >
                   <div className="flex items-center justify-between text-[10px] font-semibold text-[#86868B] group-hover:text-[#005B9A]">
                     <span>อุปกรณ์</span>
                     <Wrench className="w-3 h-3 opacity-60" />
                   </div>
-                  <div className="font-semibold text-[#1D1D1F] mt-1 truncate group-hover:text-[#005B9A]">
+                  <div className="font-semibold text-[#1D1D1F] mt-1 truncate text-[11px] group-hover:text-[#005B9A]">
                     {task.equip || "-"}
                   </div>
                 </button>
               </div>
             </div>
 
+            {/* Center: Task Photo Card */}
+            <div className="lg:col-span-3 bg-[#FAFAFC] border border-black/[0.06] rounded-2xl p-3 flex flex-col justify-between h-full group">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold text-[#86868B] flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-[#005B9A]" />
+                  <span>รูปภาพประกอบงาน (Task Photo)</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleOpenEditTaskModal}
+                  className="text-[10px] text-[#005B9A] hover:underline font-semibold cursor-pointer"
+                >
+                  เปลี่ยนรูป
+                </button>
+              </div>
+
+              <div
+                onClick={() => setImagePreviewOpen(true)}
+                className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border border-black/[0.08] cursor-pointer group shadow-2xs"
+                title="คลิกเพื่อดูรูปขยายใหญ่"
+              >
+                <img
+                  src={task.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop"}
+                  alt={task.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5 backdrop-blur-[1px]">
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>ดูรูปขยาย</span>
+                </div>
+              </div>
+            </div>
+
             {/* Right: Progress & Stepper */}
-            <div className="lg:col-span-4 bg-[#FAFAFC] border border-black/[0.06] rounded-2xl p-5 flex flex-col justify-between h-full space-y-4">
+            <div className="lg:col-span-3 bg-[#FAFAFC] border border-black/[0.06] rounded-2xl p-4 flex flex-col justify-between h-full space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-[11px] font-semibold text-[#86868B]">ความคืบหน้ารวม</span>
-                  <div className="text-3xl font-bold text-[#1D1D1F] font-mono tracking-tight mt-0.5">
+                  <div className="text-2xl font-bold text-[#1D1D1F] font-mono tracking-tight mt-0.5">
                     {task.progress}%
                   </div>
                 </div>
-                <div className="relative w-14 h-14 flex items-center justify-center">
+                <div className="relative w-13 h-13 flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                     <path
                       className="text-[#E5E5EA]"
@@ -690,18 +731,18 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                   </svg>
-                  <span className="absolute text-[11px] font-bold text-[#1D1D1F] font-mono">
+                  <span className="absolute text-[10px] font-bold text-[#1D1D1F] font-mono">
                     {task.progress}%
                   </span>
                 </div>
               </div>
 
               {/* Handover Stepper Pipeline */}
-              <div className="pt-3 border-t border-black/[0.05]">
-                <div className="text-[10px] font-semibold text-[#86868B] mb-2">
+              <div className="pt-2.5 border-t border-black/[0.05]">
+                <div className="text-[10px] font-semibold text-[#86868B] mb-1.5">
                   ลำดับหมวดงาน (Discipline Pipeline):
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="flex items-center gap-1 flex-wrap">
                   {task.w_codes &&
                     task.w_codes.map((w, idx) => {
                       const isCurrent = task.current_discipline === w
@@ -709,7 +750,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                       return (
                         <div key={w} className="flex items-center gap-1">
                           <span
-                            className={`px-2.5 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-all ${
                               isCurrent
                                 ? "bg-sky-50 text-[#005B9A] border-sky-300 shadow-2xs font-bold"
                                 : "bg-white text-[#6E6E73] border-black/[0.06]"
@@ -718,7 +759,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                             {conf?.num || w} {isCurrent && "📍"}
                           </span>
                           {idx < task.w_codes.length - 1 && (
-                            <span className="text-[#D2D2D7] text-[10px]">➔</span>
+                            <span className="text-[#D2D2D7] text-[9px]">➔</span>
                           )}
                         </div>
                       )
@@ -1216,6 +1257,28 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
 
+              {/* URL รูปภาพหน้างาน */}
+              <div>
+                <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
+                  <span>ลิงก์รูปภาพประกอบงาน (Task Photo URL)</span>
+                  <span className="text-[10px] text-[#005B9A]">แสดงในการ์ดข้อมูลงาน</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editImageUrl}
+                    onChange={(e) => setEditImageUrl(e.target.value)}
+                    placeholder="เช่น https://... หรือ /images/..."
+                    className="w-full px-3.5 py-2.5 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
+                  />
+                  {editImageUrl && (
+                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-black/[0.08] shrink-0 bg-slate-100 shadow-2xs">
+                      <img src={editImageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   type="button"
@@ -1234,6 +1297,40 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Image Preview Modal */}
+      {imagePreviewOpen && task && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-150"
+          onClick={() => setImagePreviewOpen(false)}
+        >
+          <div
+            className="relative max-w-3xl w-full bg-slate-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-slate-900/90 border-b border-white/10 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-sky-400" />
+                <span className="font-semibold text-xs text-slate-200 line-clamp-1">{task.title}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImagePreviewOpen(false)}
+                className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 flex items-center justify-center bg-black/40">
+              <img
+                src={task.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop"}
+                alt={task.title}
+                className="max-h-[70vh] w-auto object-contain rounded-2xl shadow-2xl"
+              />
+            </div>
           </div>
         </div>
       )}

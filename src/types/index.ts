@@ -122,6 +122,7 @@ export interface Task {
   status: TaskStatus
   current_discipline?: DisciplineCode
   sheet_name?: string
+  imageUrl?: string
   subtasks?: Subtask[]
   gantt?: GanttData
   handovers?: DisciplineHandover[]

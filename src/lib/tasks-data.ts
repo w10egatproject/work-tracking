@@ -4,8 +4,8 @@ export const INITIAL_TASKS: Task[] = [
   {
     id: "1",
     taskNo: "งานที่1",
-    title: "สร้างอุปกรณ์จับยก Bearing จำนวน 1 SE",
-    wo: "3816627",
+    title: "งานถอด Bearing Coupling Clutch Ball Mill 10",
+    wo: "4132222",
     report_date: "27 พ.ค. 2026",
     display_date: "27 พ.ค. 2026",
     completion_codes: "11,12,13",
@@ -16,6 +16,7 @@ export const INITIAL_TASKS: Task[] = [
     status: "ดำเนินการ",
     current_discipline: "W12",
     equip: "",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop",
     link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=0#gid=0",
     subtasks: [
       // 1. W12 : เครื่องกล
@@ -599,6 +600,7 @@ export function updateTaskDetailsInStore(taskId: string, updates: Partial<Task>)
   if (updates.wo !== undefined) task.wo = updates.wo
   if (updates.equip !== undefined) task.equip = updates.equip
   if (updates.completion_codes !== undefined) task.completion_codes = updates.completion_codes
+  if (updates.imageUrl !== undefined) task.imageUrl = updates.imageUrl
 
   return task
 }
