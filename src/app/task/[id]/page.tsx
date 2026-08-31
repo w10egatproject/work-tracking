@@ -25,6 +25,9 @@ import {
   RotateCcw,
   Image as ImageIcon,
   Maximize2,
+  Camera,
+  Upload,
+  UploadCloud,
 } from "lucide-react"
 
 // Thai date parsing utilities
@@ -218,8 +221,76 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     setEditTotalDays(task.total_days || calculateDayDifference(repDate, compDate))
     setEditWo(task.wo || "4132222")
     setEditEquip(task.equip || "")
-    setEditImageUrl(task.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop")
+    setEditImageUrl(task.imageUrl || "")
     setEditTaskModalOpen(true)
+  }
+
+  // Handle uploading image directly from file input or drag-and-drop
+  const handleFileUpload = (file?: File) => {
+    if (!file) return
+    if (!file.type.startsWith("image/")) {
+      alert("กรุณาเลือกไฟล์รูปภาพ (.jpg, .png, .webp)")
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("ไฟล์รูปภาพมีขนาดใหญ่เกิน 5MB กรุณาเลือกไฟล์ที่เล็กลง")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const base64 = e.target?.result as string
+      if (base64) {
+        setEditImageUrl(base64)
+        if (task) {
+          try {
+            const res = await fetch(`/api/tasks/${task.id}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "updateTaskDetails",
+                updates: { imageUrl: base64 },
+              }),
+            })
+            if (res.ok) {
+              const updated = await res.json()
+              setTask(updated)
+            } else {
+              setTask({ ...task, imageUrl: base64 })
+            }
+          } catch (err) {
+            setTask({ ...task, imageUrl: base64 })
+          }
+        }
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Handle removing the image and reverting to the placeholder
+  const handleRemoveImage = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
+    setEditImageUrl("")
+    if (task) {
+      try {
+        const res = await fetch(`/api/tasks/${task.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "updateTaskDetails",
+            updates: { imageUrl: "" },
+          }),
+        })
+        if (res.ok) {
+          const updated = await res.json()
+          setTask(updated)
+        } else {
+          setTask({ ...task, imageUrl: "" })
+        }
+      } catch (err) {
+        setTask({ ...task, imageUrl: "" })
+      }
+    }
   }
 
   // Open Calendar Picker Modal for a specific date field
@@ -670,37 +741,104 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            {/* Center: Task Photo Card */}
+            {/* Center: Task Photo Card / Upload Placeholder */}
             <div className="lg:col-span-3 bg-[#FAFAFC] border border-black/[0.06] rounded-2xl p-3 flex flex-col justify-between h-full group">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-semibold text-[#86868B] flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-[#005B9A]" />
                   <span>รูปภาพประกอบงาน (Task Photo)</span>
                 </span>
-                <button
-                  type="button"
-                  onClick={handleOpenEditTaskModal}
-                  className="text-[10px] text-[#005B9A] hover:underline font-semibold cursor-pointer"
-                >
-                  เปลี่ยนรูป
-                </button>
+                {task.imageUrl ? (
+                  <div className="flex items-center gap-2">
+                    <label className="text-[10px] text-[#005B9A] hover:underline font-semibold cursor-pointer flex items-center gap-0.5">
+                      <Upload className="w-2.5 h-2.5" />
+                      <span>เปลี่ยนรูป</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0])
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="text-[10px] text-rose-500 hover:text-rose-700 hover:underline font-medium cursor-pointer"
+                      title="ลบรูปภาพ"
+                    >
+                      ลบรูป
+                    </button>
+                  </div>
+                ) : (
+                  <label className="text-[10px] text-[#005B9A] hover:underline font-semibold cursor-pointer flex items-center gap-0.5">
+                    <Upload className="w-2.5 h-2.5" />
+                    <span>อัปโหลด</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleFileUpload(e.target.files[0])
+                        }
+                      }}
+                    />
+                  </label>
+                )}
               </div>
 
-              <div
-                onClick={() => setImagePreviewOpen(true)}
-                className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border border-black/[0.08] cursor-pointer group shadow-2xs"
-                title="คลิกเพื่อดูรูปขยายใหญ่"
-              >
-                <img
-                  src={task.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop"}
-                  alt={task.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5 backdrop-blur-[1px]">
-                  <Maximize2 className="w-3.5 h-3.5" />
-                  <span>ดูรูปขยาย</span>
+              {task.imageUrl ? (
+                <div
+                  onClick={() => setImagePreviewOpen(true)}
+                  className="relative w-full h-32 rounded-xl overflow-hidden bg-slate-100 border border-black/[0.08] cursor-pointer group shadow-2xs"
+                  title="คลิกเพื่อดูรูปขยายใหญ่"
+                >
+                  <img
+                    src={task.imageUrl}
+                    alt={task.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold gap-1.5 backdrop-blur-[1px]">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>ดูรูปขยาย</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <label
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                      handleFileUpload(e.dataTransfer.files[0])
+                    }
+                  }}
+                  className="relative w-full h-32 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#005B9A] bg-white hover:bg-sky-50/50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group shadow-2xs text-center p-2"
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleFileUpload(e.target.files[0])
+                      }
+                    }}
+                  />
+                  <div className="w-9 h-9 rounded-full bg-[#F5F5F7] border border-black/[0.05] flex items-center justify-center text-[#86868B] group-hover:text-[#005B9A] group-hover:scale-110 group-hover:bg-white transition-all shadow-2xs mb-1">
+                    <Camera className="w-4.5 h-4.5" />
+                  </div>
+                  <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#005B9A] transition-colors">
+                    รอใส่รูปภาพ
+                  </span>
+                  <span className="text-[9.5px] text-[#86868B] group-hover:text-[#005B9A] transition-colors mt-0.5">
+                    คลิกหรือลากรูปมาวางที่นี่
+                  </span>
+                </label>
+              )}
             </div>
 
             {/* Right: Progress & Stepper */}
@@ -1257,25 +1395,111 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
 
-              {/* URL รูปภาพหน้างาน */}
-              <div>
-                <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
-                  <span>ลิงก์รูปภาพประกอบงาน (Task Photo URL)</span>
-                  <span className="text-[10px] text-[#005B9A]">แสดงในการ์ดข้อมูลงาน</span>
+              {/* รูปภาพประกอบงาน (Task Photo) - Upload + URL */}
+              <div className="space-y-2">
+                <label className="block font-semibold text-[#1D1D1F] flex items-center justify-between">
+                  <span>รูปภาพประกอบงาน (Task Photo)</span>
+                  <span className="text-[10px] text-[#005B9A]">อัปโหลดไฟล์หรือใส่ URL</span>
                 </label>
-                <div className="flex items-center gap-2">
+
+                {/* Upload Box or Current Image Preview */}
+                {editImageUrl ? (
+                  <div className="relative rounded-2xl border border-black/[0.08] overflow-hidden bg-slate-100 p-2.5 flex items-center gap-3">
+                    <img
+                      src={editImageUrl}
+                      alt="Task Photo Preview"
+                      className="w-20 h-16 object-cover rounded-xl border border-black/[0.06] shadow-2xs shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-[#1D1D1F] truncate">มีรูปภาพประกอบงานแล้ว</div>
+                      <div className="text-[10px] text-[#86868B] truncate">คลิกด้านล่างเพื่อเปลี่ยนหรือลบรูป</div>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <label className="text-[11px] font-semibold text-[#005B9A] hover:underline cursor-pointer flex items-center gap-1">
+                          <Upload className="w-3 h-3" />
+                          <span>เปลี่ยนไฟล์รูป</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0]
+                                const reader = new FileReader()
+                                reader.onload = (ev) => {
+                                  if (ev.target?.result) setEditImageUrl(ev.target.result as string)
+                                }
+                                reader.readAsDataURL(file)
+                              }
+                            }}
+                          />
+                        </label>
+                        <span className="text-slate-300">•</span>
+                        <button
+                          type="button"
+                          onClick={() => setEditImageUrl("")}
+                          className="text-[11px] font-semibold text-rose-500 hover:underline cursor-pointer flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>ลบรูป</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        const file = e.dataTransfer.files[0]
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          if (ev.target?.result) setEditImageUrl(ev.target.result as string)
+                        }
+                        reader.readAsDataURL(file)
+                      }
+                    }}
+                    className="w-full py-4 px-3 rounded-2xl border-2 border-dashed border-slate-300 hover:border-[#005B9A] bg-[#FAFAFC] hover:bg-sky-50/50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group text-center shadow-2xs"
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0]
+                          const reader = new FileReader()
+                          reader.onload = (ev) => {
+                            if (ev.target?.result) setEditImageUrl(ev.target.result as string)
+                          }
+                          reader.readAsDataURL(file)
+                        }
+                      }}
+                    />
+                    <div className="w-8 h-8 rounded-full bg-white border border-black/[0.05] flex items-center justify-center text-[#86868B] group-hover:text-[#005B9A] group-hover:scale-110 transition-all shadow-2xs mb-1">
+                      <Camera className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-semibold text-[#1D1D1F] group-hover:text-[#005B9A]">
+                      รอใส่รูปภาพ (คลิกเพื่ออัปโหลด)
+                    </span>
+                    <span className="text-[10px] text-[#86868B] group-hover:text-[#005B9A] mt-0.5">
+                      รองรับไฟล์ .JPG, .PNG, .WEBP หรือลากไฟล์มาวาง
+                    </span>
+                  </label>
+                )}
+
+                {/* Optional URL input */}
+                <div className="pt-1">
+                  <div className="text-[10px] font-semibold text-[#86868B] mb-1">
+                    หรือระบุลิงก์รูปภาพโดยตรง (Image URL):
+                  </div>
                   <input
                     type="text"
                     value={editImageUrl}
                     onChange={(e) => setEditImageUrl(e.target.value)}
-                    placeholder="เช่น https://... หรือ /images/..."
-                    className="w-full px-3.5 py-2.5 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
+                    placeholder="https://example.com/photo.jpg"
+                    className="w-full px-3.5 py-2 bg-[#F5F5F7] border border-black/[0.06] rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A]"
                   />
-                  {editImageUrl && (
-                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-black/[0.08] shrink-0 bg-slate-100 shadow-2xs">
-                      <img src={editImageUrl} alt="Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
                 </div>
               </div>
 

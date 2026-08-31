@@ -16,7 +16,7 @@ export const INITIAL_TASKS: Task[] = [
     status: "ดำเนินการ",
     current_discipline: "W12",
     equip: "",
-    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "",
     link: "https://docs.google.com/spreadsheets/d/1ZhMhL76i8n5qaRIRGsWe6tYCi1k53v8yOiX7w8pg/edit?gid=0#gid=0",
     subtasks: [
       // 1. W12 : เครื่องกล

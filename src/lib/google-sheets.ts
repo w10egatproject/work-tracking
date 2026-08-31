@@ -122,7 +122,7 @@ export async function fetchTaskDetail(id: string): Promise<Task | null> {
       completion_date: rawCompletion,
       total_days: rawTotalDays,
       progress: rawProgress,
-      imageUrl: existing?.imageUrl || liveTask.imageUrl || "https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800&auto=format&fit=crop",
+      imageUrl: existing?.imageUrl || liveTask.imageUrl || "",
       subtasks: existing?.subtasks,
       gantt: existing?.gantt,
       handovers: existing?.handovers,
