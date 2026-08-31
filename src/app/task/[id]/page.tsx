@@ -549,6 +549,34 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleExpandTimelineMonth = async () => {
+    setVisibleMonthsCount((prev) => prev + 1)
+    if (!task) return
+    try {
+      await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "expandTimelineMonth" }),
+      })
+    } catch (err) {
+      console.error("Error expanding timeline month in Google Sheets:", err)
+    }
+  }
+
+  const handleShrinkTimelineMonth = async () => {
+    setVisibleMonthsCount((prev) => Math.max(1, prev - 1))
+    if (!task) return
+    try {
+      await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "shrinkTimelineMonth" }),
+      })
+    } catch (err) {
+      console.error("Error shrinking timeline month in Google Sheets:", err)
+    }
+  }
+
   const isSubtaskActiveOnDay = (st: Subtask, day: DayColumn) => {
     const s = parseThaiDate(st.start)
     const e = parseThaiDate(st.end)
@@ -643,7 +671,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               {visibleMonthsCount > 1 && (
                 <button
                   type="button"
-                  onClick={() => setVisibleMonthsCount((prev) => Math.max(1, prev - 1))}
+                  onClick={handleShrinkTimelineMonth}
                   className="px-3 py-1 bg-white hover:bg-[#F5F5F7] text-[#1D1D1F] border border-black/[0.08] rounded-full text-[11px] font-medium transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                   title="ย่อลด 1 เดือน"
                 >
@@ -653,7 +681,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
               <button
                 type="button"
-                onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
+                onClick={handleExpandTimelineMonth}
                 className="px-3.5 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-[11px] font-medium transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
                 title="ขยายแสดงไทม์ไลน์เพิ่มอีก 1 เดือน"
               >
@@ -922,7 +950,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             </div>
             <button
               type="button"
-              onClick={() => setVisibleMonthsCount((prev) => prev + 1)}
+              onClick={handleExpandTimelineMonth}
               className="px-4 py-1.5 bg-white hover:bg-sky-50 text-[#005B9A] border border-sky-200 rounded-full text-[11px] font-semibold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />

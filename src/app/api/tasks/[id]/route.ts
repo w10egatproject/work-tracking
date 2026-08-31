@@ -57,5 +57,17 @@ export async function PATCH(
     return NextResponse.json(updated)
   }
 
+  if (body.action === "expandTimelineMonth") {
+    const { expandTimelineMonthInGoogleSheet } = await import("@/lib/google-sheets")
+    const ok = await expandTimelineMonthInGoogleSheet(id)
+    return NextResponse.json({ success: ok })
+  }
+
+  if (body.action === "shrinkTimelineMonth") {
+    const { shrinkTimelineMonthInGoogleSheet } = await import("@/lib/google-sheets")
+    const ok = await shrinkTimelineMonthInGoogleSheet(id)
+    return NextResponse.json({ success: ok })
+  }
+
   return NextResponse.json({ error: "Invalid action" }, { status: 400 })
 }

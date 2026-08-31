@@ -421,3 +421,118 @@ export async function updateTaskDetails(
   }
   return updated
 }
+
+const THAI_MONTHS_SHORT = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+const THAI_DAYS_WEEK = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัส", "ศุกร์", "เสาร์"]
+
+function columnIndexToLetter(colIndex: number): string {
+  let temp = 0
+  let letter = ""
+  while (colIndex > 0) {
+    temp = (colIndex - 1) % 26
+    letter = String.fromCharCode(65 + temp) + letter
+    colIndex = Math.floor((colIndex - temp) / 26)
+  }
+  return letter
+}
+
+export async function expandTimelineMonthInGoogleSheet(taskId: string): Promise<boolean> {
+  const auth = await getAuth()
+  if (!auth || !SPREADSHEET_ID) return false
+
+  try {
+    const sheets = google.sheets({ version: "v4", auth })
+    const numId = taskId.replace("งานที่", "").trim()
+    const tabName = `งานที่${numId}`
+
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!H6:ZZ8`,
+    })
+    const rows = res.data.values || []
+    const currentMonths = rows[0] || []
+    const count = currentMonths.length
+
+    const lastMonthName = currentMonths[count - 1] || "ส.ค."
+    let lastMonthIdx = THAI_MONTHS_SHORT.indexOf(lastMonthName)
+    if (lastMonthIdx === -1) lastMonthIdx = 7
+    const nextMonthIdx = (lastMonthIdx + 1) % 12
+    const nextYear = 2026
+    const daysInNextMonth = new Date(nextYear, nextMonthIdx + 1, 0).getDate()
+
+    const nextMonthRow: string[] = []
+    const nextDayRow: string[] = []
+    const nextWeekdayRow: string[] = []
+
+    for (let d = 1; d <= daysInNextMonth; d++) {
+      const dateObj = new Date(nextYear, nextMonthIdx, d)
+      nextMonthRow.push(THAI_MONTHS_SHORT[nextMonthIdx])
+      nextDayRow.push(String(d))
+      nextWeekdayRow.push(THAI_DAYS_WEEK[dateObj.getDay()])
+    }
+
+    const startColIdx = 8 + count
+    const endColIdx = startColIdx + daysInNextMonth - 1
+    const startLetter = columnIndexToLetter(startColIdx)
+    const endLetter = columnIndexToLetter(endColIdx)
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!${startLetter}6:${endLetter}8`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [nextMonthRow, nextDayRow, nextWeekdayRow],
+      },
+    })
+    return true
+  } catch (err) {
+    console.error(`Error expanding month in Google Sheet tab ${taskId}:`, err)
+    return false
+  }
+}
+
+export async function shrinkTimelineMonthInGoogleSheet(taskId: string): Promise<boolean> {
+  const auth = await getAuth()
+  if (!auth || !SPREADSHEET_ID) return false
+
+  try {
+    const sheets = google.sheets({ version: "v4", auth })
+    const numId = taskId.replace("งานที่", "").trim()
+    const tabName = `งานที่${numId}`
+
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!H6:ZZ8`,
+    })
+    const rows = res.data.values || []
+    const currentMonths = rows[0] || []
+    const count = currentMonths.length
+    if (count <= 31) return false // Do not shrink base schedule
+
+    const lastMonthName = currentMonths[count - 1]
+    let lastMonthCount = 0
+    for (let i = count - 1; i >= 0; i--) {
+      if (currentMonths[i] === lastMonthName) {
+        lastMonthCount++
+      } else {
+        break
+      }
+    }
+
+    if (lastMonthCount === 0) return false
+
+    const startColIdx = 8 + count - lastMonthCount
+    const endColIdx = 8 + count - 1
+    const startLetter = columnIndexToLetter(startColIdx)
+    const endLetter = columnIndexToLetter(endColIdx)
+
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!${startLetter}6:${endLetter}60`,
+    })
+    return true
+  } catch (err) {
+    console.error(`Error shrinking month in Google Sheet tab ${taskId}:`, err)
+    return false
+  }
+}
