@@ -591,7 +591,7 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
           }
         }
 
-        // Reset trailing rows formatting (e.g. when subtasks are deleted)
+        // Reset trailing rows formatting to restore native Google Sheets gridlines
         requests.push({
           repeatCell: {
             range: {
@@ -601,19 +601,8 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
               startColumnIndex: 0,
               endColumnIndex: 10,
             },
-            cell: {
-              userEnteredFormat: {
-                backgroundColor: { red: 1, green: 1, blue: 1 },
-                textFormat: { bold: false, foregroundColor: { red: 0, green: 0, blue: 0 } },
-                borders: {
-                  top: { style: "NONE" },
-                  bottom: { style: "NONE" },
-                  left: { style: "NONE" },
-                  right: { style: "NONE" },
-                },
-              },
-            },
-            fields: "userEnteredFormat(backgroundColor,textFormat,borders)",
+            cell: {},
+            fields: "userEnteredFormat",
           },
         })
 
