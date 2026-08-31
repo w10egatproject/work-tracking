@@ -328,6 +328,276 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
         valueInputOption: "USER_ENTERED",
         requestBody: { values: rows },
       })
+
+      // Get sheetId for this tab
+      const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+      const sheetObj = sheetMeta.data.sheets?.find((s) => s.properties?.title === tabName)
+      const sheetId = sheetObj?.properties?.sheetId
+
+      if (sheetId !== undefined) {
+        const requests: any[] = []
+
+        for (let i = 0; i < subtasks.length; i++) {
+          const rowIndex = 8 + i
+          const st = subtasks[i]
+          const isHeader = st.isHeader || /^(W1[1-4]|แผนก)/i.test(st.category || "")
+          const status = st.status || "รอดำเนินการ"
+
+          if (isHeader) {
+            // Header row: light blue background
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 0,
+                  endColumnIndex: 5,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 0.8117647, green: 0.8862745, blue: 0.9529412 },
+                    textFormat: { bold: true, fontSize: 10 },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 0,
+                  endColumnIndex: 1,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    horizontalAlignment: "LEFT",
+                  },
+                },
+                fields: "userEnteredFormat(horizontalAlignment)",
+              },
+            })
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 6,
+                  endColumnIndex: 7,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 0.62352943, green: 0.77254903, blue: 0.9098039 },
+                    textFormat: { bold: true, fontSize: 10, foregroundColor: { red: 0, green: 0, blue: 0.8 } },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+          } else {
+            // Regular subtask row
+            // Col A: White, Left
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 0,
+                  endColumnIndex: 1,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 1, green: 1, blue: 1 },
+                    textFormat: { fontSize: 10 },
+                    horizontalAlignment: "LEFT",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+
+            // Col B: Pure Yellow (Start Date)
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 1,
+                  endColumnIndex: 2,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 1, green: 1, blue: 0 },
+                    textFormat: { fontSize: 10 },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+
+            // Col C: Light Grey (Days)
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 2,
+                  endColumnIndex: 3,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 0.9529412, green: 0.9529412, blue: 0.9529412 },
+                    textFormat: { fontSize: 10 },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+
+            // Col D: Pure Yellow (End Date)
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 3,
+                  endColumnIndex: 4,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 1, green: 1, blue: 0 },
+                    textFormat: { fontSize: 10 },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+
+            // Col E: Pure Yellow (% Progress)
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 4,
+                  endColumnIndex: 5,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: { red: 1, green: 1, blue: 0 },
+                    textFormat: { fontSize: 10 },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+
+            // Col G: Status styling
+            let statusBg = { red: 1, green: 0.6, blue: 0 }
+            let statusFg = { red: 0, green: 0, blue: 0.8 }
+            if (status === "เสร็จ") {
+              statusBg = { red: 0.41568628, green: 0.65882355, blue: 0.30980393 }
+              statusFg = { red: 1, green: 0.8980392, blue: 0.6 }
+            } else if (status === "ดำเนินการ") {
+              statusBg = { red: 0.62352943, green: 0.77254903, blue: 0.9098039 }
+              statusFg = { red: 0, green: 0, blue: 0.8 }
+            } else if (status === "ยังไม่ดำเนินการ") {
+              statusBg = { red: 1, green: 0, blue: 0 }
+              statusFg = { red: 1, green: 1, blue: 1 }
+            }
+
+            requests.push({
+              repeatCell: {
+                range: {
+                  sheetId,
+                  startRowIndex: rowIndex,
+                  endRowIndex: rowIndex + 1,
+                  startColumnIndex: 6,
+                  endColumnIndex: 7,
+                },
+                cell: {
+                  userEnteredFormat: {
+                    backgroundColor: statusBg,
+                    textFormat: { bold: true, fontSize: 10, foregroundColor: statusFg },
+                    horizontalAlignment: "CENTER",
+                    borders: {
+                      top: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      bottom: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      left: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                      right: { style: "SOLID", color: { red: 0, green: 0, blue: 0 } },
+                    },
+                  },
+                },
+                fields: "userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,borders)",
+              },
+            })
+          }
+        }
+
+        if (requests.length > 0) {
+          await sheets.spreadsheets.batchUpdate({
+            spreadsheetId: SPREADSHEET_ID,
+            requestBody: { requests },
+          })
+        }
+      }
     }
   } catch (err) {
     console.error(`Error syncing subtasks to Google Sheet tab ${taskId}:`, err)
