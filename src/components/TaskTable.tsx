@@ -75,7 +75,7 @@ export default function TaskTable({ tasks, onDeleteTask }: Props) {
                 <th className="py-3 px-3.5 w-36 text-center">หมวดร่วมงาน</th>
                 <th className="py-3 px-4 min-w-[180px]">อุปกรณ์ (Equip)</th>
                 <th className="py-3 px-3 w-24 text-center">แผ่นงาน</th>
-                <th className="py-3 px-4 w-28 text-right">การจัดการ</th>
+                <th className="py-3 px-4 w-36 min-w-[130px] text-right whitespace-nowrap">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/90 text-xs font-normal">
@@ -185,23 +185,23 @@ export default function TaskTable({ tasks, onDeleteTask }: Props) {
                     </td>
 
                     {/* ปุ่มการจัดการ - Refined Actions with Delete */}
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                         <a
                           href={`/task/${task.id}`}
-                          className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-sky-50 hover:bg-[#005B9A] text-[#005B9A] hover:text-white border border-sky-200/80 hover:border-transparent rounded-xl text-xs font-semibold transition-all duration-150 shadow-2xs group/btn active:scale-95"
+                          className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-sky-50 hover:bg-[#005B9A] text-[#005B9A] hover:text-white border border-sky-200/80 hover:border-transparent rounded-xl text-xs font-semibold transition-all duration-150 shadow-2xs group/btn active:scale-95 whitespace-nowrap shrink-0"
                           title="เปิดดูบันทึกความคืบหน้า"
                         >
                           <span>เปิดดู</span>
-                          <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                          <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform shrink-0" />
                         </a>
                         <button
                           type="button"
                           onClick={() => setDeletingTask(task)}
-                          className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-xl transition-all duration-150 cursor-pointer shadow-2xs active:scale-95"
+                          className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-xl transition-all duration-150 cursor-pointer shadow-2xs active:scale-95 shrink-0"
                           title="ลบใบสั่งงานนี้"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5 shrink-0" />
                         </button>
                       </div>
                     </td>
