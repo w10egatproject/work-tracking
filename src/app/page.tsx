@@ -114,7 +114,7 @@ export default function Home() {
       />
 
       {/* Main Content Dashboard Area */}
-      <main className="flex-1 pb-16 max-w-[1600px] w-full mx-auto space-y-3.5 pt-3.5 px-4 sm:px-6">
+      <main className="flex-1 pb-16 max-w-[1600px] w-full mx-auto space-y-4 sm:space-y-5 pt-6 sm:pt-7 px-4 sm:px-6">
         {/* Symmetrical KPI Summary Bento Cards */}
         <SummaryCards tasks={tasks} />
 
