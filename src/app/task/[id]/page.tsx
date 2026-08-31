@@ -569,19 +569,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   const handleConfirmDeleteTask = async () => {
     if (!task) return
-    setIsDeletingTask(true)
+    const targetId = task.id
+    setDeleteTaskModalOpen(false)
     try {
-      const res = await fetch(`/api/tasks/${task.id}`, {
+      await fetch(`/api/tasks/${encodeURIComponent(targetId)}`, {
         method: "DELETE",
       })
-      if (res.ok) {
-        router.push("/")
-      }
     } catch (err) {
       console.error("Error deleting task:", err)
     } finally {
-      setIsDeletingTask(false)
-      setDeleteTaskModalOpen(false)
+      router.push("/")
     }
   }
 

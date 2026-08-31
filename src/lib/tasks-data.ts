@@ -1346,10 +1346,20 @@ export function generateDefaultGantt(task: Task) {
 }
 
 export function deleteTaskFromStore(id: string): boolean {
-  const index = tasksStore.findIndex(
-    (t) => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}` || t.id.replace(/\D/g, "") === id.replace(/\D/g, "")
-  )
-  if (index === -1) return false
-  tasksStore.splice(index, 1)
+  const cleanId = id.replace(/\D/g, "")
+  const index = tasksStore.findIndex((t) => {
+    const tCleanId = t.id.replace(/\D/g, "")
+    const tTaskCleanId = (t.taskNo || "").replace(/\D/g, "")
+    return (
+      t.id === id ||
+      t.taskNo === id ||
+      t.taskNo === `งานที่${id}` ||
+      (cleanId !== "" && tCleanId === cleanId) ||
+      (cleanId !== "" && tTaskCleanId === cleanId)
+    )
+  })
+  if (index !== -1) {
+    tasksStore.splice(index, 1)
+  }
   return true
 }

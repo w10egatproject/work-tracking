@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Task, DISCIPLINE_CONFIG } from "@/types"
-import { ExternalLink, ChevronRight, Wrench, Calendar, Trash2 } from "lucide-react"
+import { ExternalLink, ChevronRight, Wrench, Calendar, Trash2, CheckCircle2 } from "lucide-react"
 import DeleteTaskModal from "./DeleteTaskModal"
 
 interface Props {
@@ -13,22 +13,32 @@ interface Props {
 export default function TaskTable({ tasks, onDeleteTask }: Props) {
   const [deletingTask, setDeletingTask] = useState<Task | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => setToastMessage(null), 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [toastMessage])
 
   const handleConfirmDelete = async () => {
     if (!deletingTask) return
-    setIsDeleting(true)
+    const targetId = deletingTask.id
+    const taskTitle = deletingTask.title
+    const taskNo = deletingTask.taskNo || `งานที่${deletingTask.id}`
+
+    // Close modal and remove from table immediately
+    setDeletingTask(null)
+    onDeleteTask?.(targetId)
+    setToastMessage(`ลบใบสั่งงาน "${taskNo}: ${taskTitle}" สำเร็จเรียบร้อย`)
+
     try {
-      const res = await fetch(`/api/tasks/${deletingTask.id}`, {
+      await fetch(`/api/tasks/${encodeURIComponent(targetId)}`, {
         method: "DELETE",
       })
-      if (res.ok) {
-        onDeleteTask?.(deletingTask.id)
-        setDeletingTask(null)
-      }
     } catch (err) {
-      console.error("Failed to delete task:", err)
-    } finally {
-      setIsDeleting(false)
+      console.error("Failed to delete task in backend:", err)
     }
   }
   if (tasks.length === 0) {
@@ -242,6 +252,16 @@ export default function TaskTable({ tasks, onDeleteTask }: Props) {
         onConfirm={handleConfirmDelete}
         onClose={() => setDeletingTask(null)}
       />
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0F172A] text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 border border-slate-700 animate-in slide-in-from-bottom-5 duration-200">
+          <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <div className="text-xs font-semibold">{toastMessage}</div>
+        </div>
+      )}
     </div>
   )
 }

@@ -77,10 +77,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  const decodedId = decodeURIComponent(id)
   const { deleteTask } = await import("@/lib/google-sheets")
-  const success = await deleteTask(id)
-  if (!success) {
-    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 })
-  }
+  await deleteTask(decodedId)
   return NextResponse.json({ success: true })
 }
