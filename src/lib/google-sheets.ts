@@ -369,7 +369,7 @@ async function syncTaskHeaderToGoogleSheet(taskId: string, task: Task) {
 export async function updateSubtask(taskId: string, subtaskId: string, updates: any): Promise<Task | null> {
   const updated = updateSubtaskInStore(taskId, subtaskId, updates)
   if (updated && updated.subtasks) {
-    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
   }
   return updated
 }
@@ -383,7 +383,7 @@ export async function insertSubtask(
 ): Promise<Task | null> {
   const updated = insertSubtaskInStore(taskId, discipline, newSubtask, targetSubtaskId, position)
   if (updated && updated.subtasks) {
-    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
   }
   return updated
 }
@@ -391,7 +391,7 @@ export async function insertSubtask(
 export async function deleteSubtask(taskId: string, subtaskId: string): Promise<Task | null> {
   const updated = deleteSubtaskInStore(taskId, subtaskId)
   if (updated && updated.subtasks) {
-    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
   }
   return updated
 }
@@ -406,7 +406,7 @@ export async function executeHandover(
 ): Promise<Task | null> {
   const updated = recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes, byUser)
   if (updated && updated.subtasks) {
-    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+    await syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
   }
   return updated
 }
@@ -417,7 +417,7 @@ export async function updateTaskDetails(
 ): Promise<Task | null> {
   const updated = updateTaskDetailsInStore(taskId, updates)
   if (updated) {
-    syncTaskHeaderToGoogleSheet(taskId, updated)
+    await syncTaskHeaderToGoogleSheet(taskId, updated)
   }
   return updated
 }
