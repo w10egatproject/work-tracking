@@ -178,6 +178,28 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     loadTask()
   }, [taskId])
 
+  // Auto-calculate initial visible months to encompass the entire task schedule and all subtasks
+  useEffect(() => {
+    if (!task) return
+
+    let s = parseThaiDate(task.display_date) || parseThaiDate(task.report_date)
+    let e = parseThaiDate(task.completion_date)
+
+    if (task.subtasks && task.subtasks.length > 0) {
+      for (const st of task.subtasks) {
+        const stStart = parseThaiDate(st.start)
+        const stEnd = parseThaiDate(st.end)
+        if (stStart && (!s || stStart < s)) s = stStart
+        if (stEnd && (!e || stEnd > e)) e = stEnd
+      }
+    }
+
+    if (s && e && e >= s) {
+      const monthDiff = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()) + 1
+      setVisibleMonthsCount(Math.max(1, monthDiff))
+    }
+  }, [task?.id, task?.report_date, task?.completion_date, task?.display_date, task?.subtasks])
+
   // Open Edit Task Header Metadata modal
   const handleOpenEditTaskModal = () => {
     if (!task) return
@@ -729,26 +751,14 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 <span className="text-[#86868B]">({dayColumns.length} วัน)</span>
               </div>
 
-              {visibleMonthsCount > 2 && (
+              {visibleMonthsCount > 1 && (
                 <button
                   type="button"
-                  onClick={() => setVisibleMonthsCount((prev) => Math.max(2, prev - 1))}
+                  onClick={() => setVisibleMonthsCount((prev) => Math.max(1, prev - 1))}
                   className="px-3 py-1 bg-white hover:bg-[#F5F5F7] text-[#1D1D1F] border border-black/[0.08] rounded-full text-[11px] font-medium transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                   title="ย่อลด 1 เดือน"
                 >
                   <span>➖ ย่อเดือน</span>
-                </button>
-              )}
-
-              {visibleMonthsCount > 2 && (
-                <button
-                  type="button"
-                  onClick={() => setVisibleMonthsCount(2)}
-                  className="px-2.5 py-1 bg-white hover:bg-[#F5F5F7] text-[#6E6E73] border border-black/[0.08] rounded-full text-[11px] font-medium transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
-                  title="รีเซ็ตกลับเป็น 2 เดือน"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>รีเซ็ต</span>
                 </button>
               )}
 
