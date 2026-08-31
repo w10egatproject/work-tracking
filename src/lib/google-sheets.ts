@@ -101,24 +101,144 @@ export async function fetchAllTasks(): Promise<Task[]> {
 }
 
 export async function fetchTaskDetail(id: string): Promise<Task | null> {
+  const existing = getTaskById(id)
+  const auth = await getAuth()
+
+  if (auth && SPREADSHEET_ID) {
+    try {
+      const sheets = google.sheets({ version: "v4", auth })
+      const numId = id.replace("งานที่", "").trim()
+      const tabName = `งานที่${numId}`
+
+      const tabRes = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${tabName}'!A1:G50`,
+      })
+      const tabData = tabRes.data.values || []
+
+      if (tabData.length >= 8) {
+        const title = (tabData[1] && tabData[1][1]) || existing?.title || ""
+        const wo = (tabData[2] && tabData[2][5]) || (tabData[2] && tabData[2][1]) || existing?.wo || ""
+        const reportDate = (tabData[2] && tabData[2][1]) || existing?.report_date || ""
+        const totalDays = parseInt(tabData[3] && tabData[3][1]) || existing?.total_days || 0
+        const equip = (tabData[3] && tabData[3][5]) || existing?.equip || ""
+        const completionDate = (tabData[4] && tabData[4][1]) || existing?.completion_date || ""
+        const displayDate = (tabData[5] && tabData[5][1]) || reportDate
+
+        const subtasks: any[] = []
+        const wCodesSet = new Set<DisciplineCode>()
+        let activeDiscipline: DisciplineCode = "W11"
+        let currentDiscipline: DisciplineCode = existing?.current_discipline || "W11"
+        let subtaskIdCounter = 1
+
+        for (let r = 8; r < tabData.length; r++) {
+          const subRow = tabData[r]
+          if (!subRow || subRow.length === 0) continue
+          const category = (subRow[0] || "").trim()
+          const start = (subRow[1] || "").trim()
+          const days = parseInt(subRow[2]) || 1
+          const end = (subRow[3] || "").trim()
+          const progressStr = (subRow[4] || "").replace("%", "").trim()
+          const progress = progressStr !== "" && !isNaN(parseInt(progressStr)) ? parseInt(progressStr) : (subRow[6] === "เสร็จ" ? 100 : 0)
+          let status = (subRow[6] || "").trim()
+          if (!status) {
+            if (progress === 100) status = "เสร็จ"
+            else if (progress > 0) status = "ดำเนินการ"
+            else status = "รอดำเนินการ"
+          }
+
+          const isDisciplineHeader = /^(W1[1-4]|แผนก)/i.test(category)
+          if (isDisciplineHeader) {
+            const match = category.match(/W(1[1-4])/i)
+            if (match) {
+              activeDiscipline = `W${match[1]}` as DisciplineCode
+              wCodesSet.add(activeDiscipline)
+            }
+          }
+
+          if (category || start || end) {
+            subtasks.push({
+              id: `${numId}-${subtaskIdCounter++}`,
+              category: category || "งานย่อย",
+              discipline: activeDiscipline,
+              start: start || reportDate,
+              days,
+              end: end || completionDate,
+              progress,
+              status,
+              isHeader: isDisciplineHeader,
+            })
+          }
+        }
+
+        const wCodes = Array.from(wCodesSet)
+        if (wCodes.length === 0) {
+          if (existing?.w_codes) wCodes.push(...existing.w_codes)
+        }
+
+        const nonHeaders = subtasks.filter((s) => !s.isHeader)
+        const avgProgress = nonHeaders.length > 0
+          ? Math.round(nonHeaders.reduce((acc, s) => acc + (s.progress || 0), 0) / nonHeaders.length)
+          : (completionDate ? 100 : 0)
+
+        const activeHeader = subtasks.find((s) => s.isHeader && s.status === "ดำเนินการ")
+        if (activeHeader && activeHeader.discipline) {
+          currentDiscipline = activeHeader.discipline
+        } else if (wCodes.length > 0) {
+          currentDiscipline = wCodes[0]
+        }
+
+        let taskStatus = "รอดำเนินการ"
+        if (completionDate && completionDate.trim() && avgProgress === 100) taskStatus = "เสร็จ"
+        else if (avgProgress > 0 || subtasks.some((s) => s.status === "ดำเนินการ")) taskStatus = "ดำเนินการ"
+
+        const liveDetailTask: Task = {
+          ...existing,
+          id: numId,
+          taskNo: tabName,
+          title,
+          wo,
+          report_date: reportDate,
+          display_date: displayDate,
+          completion_codes: wCodes.map((w) => w.replace("W", "")).join(","),
+          w_codes: wCodes,
+          completion_date: completionDate,
+          total_days: totalDays,
+          progress: avgProgress,
+          status: taskStatus as any,
+          current_discipline: currentDiscipline,
+          equip,
+          imageUrl: existing?.imageUrl || "",
+          link: existing?.link || "",
+          subtasks: subtasks.length > 0 ? subtasks : (existing?.subtasks || generateDefaultSubtasks(existing || {} as Task)),
+          handovers: existing?.handovers || [],
+        }
+
+        updateTaskInStore(liveDetailTask.id, liveDetailTask)
+        return liveDetailTask
+      }
+    } catch (err) {
+      console.warn(`Could not fetch dynamic tab for task ${id} from Google Sheets:`, err)
+    }
+  }
+
   const allTasks = await fetchAllTasks()
   const liveTask = allTasks.find(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
-  const existing = getTaskById(id)
 
   if (liveTask) {
-    const rawCompletion = (liveTask.completion_date && liveTask.completion_date.trim()) || existing?.completion_date || "31 ส.ค. 2026"
-    const rawTotalDays = (liveTask.total_days && liveTask.total_days > 0) ? liveTask.total_days : (existing?.total_days || 97)
+    const rawCompletion = (liveTask.completion_date && liveTask.completion_date.trim()) || existing?.completion_date || ""
+    const rawTotalDays = (liveTask.total_days && liveTask.total_days > 0) ? liveTask.total_days : (existing?.total_days || 0)
     const rawProgress = (existing?.subtasks && existing.subtasks.length > 0)
       ? Math.round(existing.subtasks.filter(s => !s.isHeader).reduce((a, b) => a + (b.progress || 0), 0) / (existing.subtasks.filter(s => !s.isHeader).length || 1))
-      : (existing?.progress || liveTask.progress || 88)
+      : (existing?.progress || liveTask.progress || 0)
 
     const combined: Task = {
       ...existing,
       ...liveTask,
-      title: (liveTask.title && liveTask.title.trim()) || existing?.title || "งานถอด Bearing Coupling Clutch Ball Mill 10",
-      wo: (liveTask.wo && liveTask.wo.trim()) || existing?.wo || "4132222",
-      report_date: (liveTask.report_date && liveTask.report_date.trim()) || existing?.report_date || "27 พ.ค. 2026",
-      display_date: existing?.display_date || (liveTask.report_date && liveTask.report_date.trim()) || "27 พ.ค. 2026",
+      title: (liveTask.title && liveTask.title.trim()) || existing?.title || "",
+      wo: (liveTask.wo && liveTask.wo.trim()) || existing?.wo || "",
+      report_date: (liveTask.report_date && liveTask.report_date.trim()) || existing?.report_date || "",
+      display_date: existing?.display_date || (liveTask.report_date && liveTask.report_date.trim()) || "",
       completion_date: rawCompletion,
       total_days: rawTotalDays,
       progress: rawProgress,
