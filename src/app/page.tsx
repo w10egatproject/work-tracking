@@ -65,6 +65,18 @@ export default function Home() {
     setTasks((prev) => [newTask, ...prev])
   }
 
+  const handleTaskDeleted = (deletedId: string) => {
+    setTasks((prev) =>
+      prev.filter(
+        (t) =>
+          t.id !== deletedId &&
+          t.taskNo !== deletedId &&
+          t.taskNo !== `งานที่${deletedId}` &&
+          t.id.replace(/\D/g, "") !== deletedId.replace(/\D/g, "")
+      )
+    )
+  }
+
   // Discipline counts
   const countW11 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("11") || (t.w_codes && t.w_codes.includes("W11"))).length, [tasks])
   const countW12 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("12") || (t.w_codes && t.w_codes.includes("W12"))).length, [tasks])
@@ -276,7 +288,7 @@ export default function Home() {
           </div>
         ) : (
           <>
-            {viewMode === "table" && <TaskTable tasks={filteredTasks} />}
+            {viewMode === "table" && <TaskTable tasks={filteredTasks} onDeleteTask={handleTaskDeleted} />}
             {viewMode === "kanban" && <KanbanBoardView tasks={filteredTasks} />}
           </>
         )}

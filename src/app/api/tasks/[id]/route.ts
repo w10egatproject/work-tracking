@@ -71,3 +71,16 @@ export async function PATCH(
 
   return NextResponse.json({ error: "Invalid action" }, { status: 400 })
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const { deleteTask } = await import("@/lib/google-sheets")
+  const success = await deleteTask(id)
+  if (!success) {
+    return NextResponse.json({ error: "Failed to delete task" }, { status: 500 })
+  }
+  return NextResponse.json({ success: true })
+}

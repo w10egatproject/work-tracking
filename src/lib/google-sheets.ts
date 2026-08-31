@@ -1,6 +1,6 @@
 import { google } from "googleapis"
 import { Task, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
-import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateTaskDetailsInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt } from "./tasks-data"
+import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateTaskDetailsInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt, deleteTaskFromStore } from "./tasks-data"
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ""
 const MASTER_SHEET_NAME = "ลำดับงาน"
@@ -264,9 +264,136 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
   if (auth && SPREADSHEET_ID) {
     try {
       const sheets = google.sheets({ version: "v4", auth })
-      const nextNum = getTasksStore().length + 1
-      const taskNo = `งานที่${nextNum}`
-      
+
+      // Step 1: Scan master sheet to find current MAX task number
+      let maxNum = 0
+      try {
+        const masterRes = await sheets.spreadsheets.values.get({
+          spreadsheetId: SPREADSHEET_ID,
+          range: `${MASTER_SHEET_NAME}!A:H`,
+        })
+        const rows = masterRes.data.values || []
+        for (let i = 1; i < rows.length; i++) {
+          const cellA = String(rows[i]?.[0] || "")
+          const match = cellA.match(/\d+/)
+          if (match) {
+            const n = parseInt(match[0], 10)
+            if (n > maxNum) maxNum = n
+          }
+        }
+      } catch (err) {
+        console.warn("Could not read master sheet rows for max task number:", err)
+      }
+
+      // Also consider store max
+      const storeMax = getTasksStore().reduce((max, t) => {
+        const num = parseInt(t.id.replace(/\D/g, "") || (t.taskNo || "").replace(/\D/g, "") || "0", 10)
+        return !isNaN(num) && num > max ? num : max
+      }, 0)
+      maxNum = Math.max(maxNum, storeMax)
+      const nextNum = maxNum + 1
+      const newTabName = `งานที่${nextNum}`
+      const taskNo = newTabName
+
+      // Step 2: Find template sheet to copy from
+      const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+      const allSheets = meta.data.sheets || []
+
+      // Look for latest task tab (งานที่{maxNum}) or any existing งานที่... tab or fallback to งานที่1
+      let templateSheet = allSheets.find((s) => s.properties?.title === `งานที่${maxNum}`)
+      if (!templateSheet) {
+        const taskSheets = allSheets
+          .filter((s) => s.properties?.title?.startsWith("งานที่"))
+          .sort((a, b) => {
+            const numA = parseInt((a.properties?.title || "").replace(/\D/g, "") || "0", 10)
+            const numB = parseInt((b.properties?.title || "").replace(/\D/g, "") || "0", 10)
+            return numB - numA
+          })
+        templateSheet = taskSheets[0] || allSheets.find((s) => s.properties?.title === "งานที่1")
+      }
+
+      let createdSheetId: number | null = null
+
+      if (templateSheet && templateSheet.properties?.sheetId !== undefined) {
+        const sourceSheetId = templateSheet.properties.sheetId
+        const duplicateRes = await sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: {
+            requests: [
+              {
+                duplicateSheet: {
+                  sourceSheetId,
+                  newSheetName: newTabName,
+                },
+              },
+            ],
+          },
+        })
+        createdSheetId = duplicateRes.data.replies?.[0]?.duplicateSheet?.properties?.sheetId ?? null
+      } else {
+        // Fallback: create empty sheet tab
+        const addRes = await sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: {
+            requests: [
+              {
+                addSheet: {
+                  properties: {
+                    title: newTabName,
+                  },
+                },
+              },
+            ],
+          },
+        })
+        createdSheetId = addRes.data.replies?.[0]?.addSheet?.properties?.sheetId ?? null
+      }
+
+      // Step 3: Direct Link with gid
+      let directLink = data.link || ""
+      if (createdSheetId !== null) {
+        directLink = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit?gid=${createdSheetId}#gid=${createdSheetId}`
+      }
+
+      // Step 4: Write header info to the newly created tab
+      const displayDate = data.display_date || data.report_date || ""
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          valueInputOption: "USER_ENTERED",
+          data: [
+            { range: `'${newTabName}'!B2`, values: [[data.title || ""]] },
+            { range: `'${newTabName}'!B3`, values: [[data.report_date || ""]] },
+            { range: `'${newTabName}'!F3`, values: [[data.wo || ""]] },
+            { range: `'${newTabName}'!B4`, values: [[data.total_days || 30]] },
+            { range: `'${newTabName}'!F4`, values: [[data.equip || ""]] },
+            { range: `'${newTabName}'!B5`, values: [[data.completion_date || ""]] },
+            { range: `'${newTabName}'!B6`, values: [[displayDate]] },
+          ],
+        },
+      })
+
+      // Step 5: Initialize subtasks with 0% progress
+      const initialTask: Task = {
+        id: String(nextNum),
+        taskNo: newTabName,
+        title: data.title || "",
+        wo: data.wo || "",
+        report_date: data.report_date || "",
+        completion_date: data.completion_date || "",
+        completion_codes: data.completion_codes || "",
+        w_codes: parseWCodes(data.completion_codes || ""),
+        total_days: Number(data.total_days) || 30,
+        progress: 0,
+        status: "รอดำเนินการ",
+        current_discipline: parseWCodes(data.completion_codes || "")[0] || "W11",
+        equip: data.equip || "",
+        link: directLink,
+      }
+      const initialSubtasks = generateDefaultSubtasks(initialTask)
+      await syncTaskSubtasksToGoogleSheet(newTabName, initialSubtasks)
+
+      // Step 6: Append to Master Sheet (ลำดับงาน)
       await sheets.spreadsheets.values.append({
         spreadsheetId: SPREADSHEET_ID,
         range: `${MASTER_SHEET_NAME}!A:H`,
@@ -279,13 +406,22 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
             data.report_date || "",
             data.completion_date || "",
             data.completion_codes || "",
+            directLink,
             data.equip || "",
-            data.link || "",
           ]],
         },
       })
+
+      // Step 7: Add to local store and return
+      return addTaskToStore({
+        ...data,
+        id: String(nextNum),
+        taskNo,
+        link: directLink,
+        subtasks: initialSubtasks,
+      })
     } catch (e) {
-      console.error("Error appending to Google Sheet:", e)
+      console.error("Error creating new task in Google Sheets:", e)
     }
   }
 
@@ -820,4 +956,75 @@ export async function shrinkTimelineMonthInGoogleSheet(taskId: string): Promise<
     console.error(`Error shrinking month in Google Sheet tab ${taskId}:`, err)
     return false
   }
+}
+
+export async function deleteTask(id: string): Promise<boolean> {
+  const auth = await getAuth()
+  const numId = id.replace("งานที่", "").trim()
+  const targetTabName = `งานที่${numId}`
+
+  if (auth && SPREADSHEET_ID) {
+    try {
+      const sheets = google.sheets({ version: "v4", auth })
+
+      // 1. Find row in Master Sheet (ลำดับงาน)
+      const masterRes = await sheets.spreadsheets.values.get({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `${MASTER_SHEET_NAME}!A:A`,
+      })
+      const rows = masterRes.data.values || []
+      let rowIndexToDelete = -1
+      for (let i = 1; i < rows.length; i++) {
+        const val = String(rows[i]?.[0] || "").trim()
+        if (val === `งานที่${numId}` || val === id || val.replace(/\D/g, "") === numId) {
+          rowIndexToDelete = i
+          break
+        }
+      }
+
+      // Get metadata to find sheetIds
+      const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+      const allSheets = meta.data.sheets || []
+      const masterSheet = allSheets.find((s) => s.properties?.title === MASTER_SHEET_NAME)
+      const taskSheet = allSheets.find(
+        (s) => s.properties?.title === targetTabName || s.properties?.title?.replace(/\D/g, "") === numId
+      )
+
+      const requests: any[] = []
+
+      // Delete the Task Detail Sheet tab
+      if (taskSheet?.properties?.sheetId !== undefined) {
+        requests.push({
+          deleteSheet: {
+            sheetId: taskSheet.properties.sheetId,
+          },
+        })
+      }
+
+      // Delete the row in Master Sheet
+      if (rowIndexToDelete !== -1 && masterSheet?.properties?.sheetId !== undefined) {
+        requests.push({
+          deleteDimension: {
+            range: {
+              sheetId: masterSheet.properties.sheetId,
+              dimension: "ROWS",
+              startIndex: rowIndexToDelete,
+              endIndex: rowIndexToDelete + 1,
+            },
+          },
+        })
+      }
+
+      if (requests.length > 0) {
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: { requests },
+        })
+      }
+    } catch (err) {
+      console.error(`Error deleting task ${id} from Google Sheets:`, err)
+    }
+  }
+
+  return deleteTaskFromStore(id)
 }

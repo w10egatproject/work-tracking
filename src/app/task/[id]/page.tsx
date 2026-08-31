@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, use, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { Task, Subtask, TaskStatus, DISCIPLINE_CONFIG, DisciplineCode } from "@/types"
 import DisciplineHandoverDialog from "@/components/DisciplineHandoverDialog"
 import FloatingNavbar from "@/components/FloatingNavbar"
@@ -9,6 +10,7 @@ import TaskEditDetailsModal from "@/components/task/TaskEditDetailsModal"
 import SubtaskEditModal from "@/components/task/SubtaskEditModal"
 import InsertSubtaskModal from "@/components/task/InsertSubtaskModal"
 import DeleteSubtaskModal from "@/components/task/DeleteSubtaskModal"
+import DeleteTaskModal from "@/components/DeleteTaskModal"
 import TaskPhotoLightboxModal from "@/components/task/TaskPhotoLightboxModal"
 import ThaiCalendarPickerModal from "@/components/task/ThaiCalendarPickerModal"
 import { Plus, Edit2, Trash2 } from "lucide-react"
@@ -84,11 +86,14 @@ function calculateDayDifference(startStr?: string, endStr?: string): number {
 export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
   const taskId = resolvedParams.id
+  const router = useRouter()
 
   const [task, setTask] = useState<Task | null>(null)
   const [allTasks, setAllTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [handoverOpen, setHandoverOpen] = useState(false)
+  const [deleteTaskModalOpen, setDeleteTaskModalOpen] = useState(false)
+  const [isDeletingTask, setIsDeletingTask] = useState(false)
 
   // Synchronized row hover across left/right tables
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null)
@@ -562,6 +567,24 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const handleConfirmDeleteTask = async () => {
+    if (!task) return
+    setIsDeletingTask(true)
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        router.push("/")
+      }
+    } catch (err) {
+      console.error("Error deleting task:", err)
+    } finally {
+      setIsDeletingTask(false)
+      setDeleteTaskModalOpen(false)
+    }
+  }
+
   const handleExpandTimelineMonth = async () => {
     setVisibleMonthsCount((prev) => prev + 1)
     if (!task) return
@@ -640,6 +663,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         sheetLink={task.link}
         onEditTask={handleOpenEditTaskModal}
         onHandover={() => setHandoverOpen(true)}
+        onDeleteTask={() => setDeleteTaskModalOpen(true)}
       />
 
       {/* Main Workspace Body */}
@@ -1104,6 +1128,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           onClose={() => setCalendarPickerOpen(false)}
         />
       )}
+
+      {/* 12. Delete Task Confirmation Modal */}
+      <DeleteTaskModal
+        isOpen={deleteTaskModalOpen}
+        task={task}
+        isDeleting={isDeletingTask}
+        onConfirm={handleConfirmDeleteTask}
+        onClose={() => setDeleteTaskModalOpen(false)}
+      />
     </div>
   )
 }

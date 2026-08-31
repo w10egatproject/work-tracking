@@ -1,13 +1,36 @@
 "use client"
 
+import { useState } from "react"
 import { Task, DISCIPLINE_CONFIG } from "@/types"
-import { ExternalLink, ChevronRight, Wrench, Calendar } from "lucide-react"
+import { ExternalLink, ChevronRight, Wrench, Calendar, Trash2 } from "lucide-react"
+import DeleteTaskModal from "./DeleteTaskModal"
 
 interface Props {
   tasks: Task[]
+  onDeleteTask?: (taskId: string) => void
 }
 
-export default function TaskTable({ tasks }: Props) {
+export default function TaskTable({ tasks, onDeleteTask }: Props) {
+  const [deletingTask, setDeletingTask] = useState<Task | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleConfirmDelete = async () => {
+    if (!deletingTask) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/tasks/${deletingTask.id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        onDeleteTask?.(deletingTask.id)
+        setDeletingTask(null)
+      }
+    } catch (err) {
+      console.error("Failed to delete task:", err)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
   if (tasks.length === 0) {
     return (
       <div className="py-20 text-center bg-white rounded-2xl border border-slate-200/80 shadow-xs">
@@ -161,15 +184,26 @@ export default function TaskTable({ tasks }: Props) {
                       )}
                     </td>
 
-                    {/* ปุ่มการจัดการ - Refined Ghost/Soft Button */}
+                    {/* ปุ่มการจัดการ - Refined Actions with Delete */}
                     <td className="py-3 px-4 text-right">
-                      <a
-                        href={`/task/${task.id}`}
-                        className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-sky-50 hover:bg-[#005B9A] text-[#005B9A] hover:text-white border border-sky-200/80 hover:border-transparent rounded-xl text-xs font-semibold transition-all duration-150 shadow-2xs group/btn active:scale-95"
-                      >
-                        <span>เปิดดู</span>
-                        <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                      </a>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <a
+                          href={`/task/${task.id}`}
+                          className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-sky-50 hover:bg-[#005B9A] text-[#005B9A] hover:text-white border border-sky-200/80 hover:border-transparent rounded-xl text-xs font-semibold transition-all duration-150 shadow-2xs group/btn active:scale-95"
+                          title="เปิดดูบันทึกความคืบหน้า"
+                        >
+                          <span>เปิดดู</span>
+                          <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingTask(task)}
+                          className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-xl transition-all duration-150 cursor-pointer shadow-2xs active:scale-95"
+                          title="ลบใบสั่งงานนี้"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -199,6 +233,15 @@ export default function TaskTable({ tasks }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Delete Task Confirmation Modal */}
+      <DeleteTaskModal
+        isOpen={!!deletingTask}
+        task={deletingTask}
+        isDeleting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => setDeletingTask(null)}
+      />
     </div>
   )
 }

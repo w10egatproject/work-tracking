@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { ArrowLeft, Edit2, ExternalLink, RefreshCw, Plus, Calendar, Table as TableIcon, LayoutGrid } from "lucide-react"
+import { ArrowLeft, Edit2, ExternalLink, RefreshCw, Plus, Calendar, Table as TableIcon, LayoutGrid, Trash2 } from "lucide-react"
 
 interface DashboardNavProps {
   type: "dashboard"
@@ -20,6 +20,7 @@ interface TaskDetailNavProps {
   sheetLink?: string
   onEditTask: () => void
   onHandover: () => void
+  onDeleteTask?: () => void
 }
 
 type FloatingNavbarProps = DashboardNavProps | TaskDetailNavProps
@@ -166,6 +167,17 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
               <ExternalLink className="w-3.5 h-3.5" />
               <span>เปิดชีท</span>
             </a>
+          )}
+
+          {props.onDeleteTask && (
+            <button
+              onClick={props.onDeleteTask}
+              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer"
+              title="ลบใบสั่งงานนี้"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ลบงาน</span>
+            </button>
           )}
         </div>
       </div>

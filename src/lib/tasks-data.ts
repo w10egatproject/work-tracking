@@ -1015,13 +1015,21 @@ export function getTaskById(id: string): Task | undefined {
 }
 
 export function addTaskToStore(newTask: Partial<Task>): Task {
-  const nextId = String(tasksStore.length + 1)
+  const maxNum = tasksStore.reduce((max, t) => {
+    const num = parseInt(t.id.replace(/\D/g, "") || (t.taskNo || "").replace(/\D/g, "") || "0", 10)
+    return !isNaN(num) && num > max ? num : max
+  }, 0)
+  const nextNum = maxNum + 1
+  const explicitId = newTask.id || (newTask.taskNo ? newTask.taskNo.replace(/\D/g, "") : "")
+  const finalId = explicitId || String(nextNum)
+  const taskNo = newTask.taskNo || `งานที่${finalId}`
+
   const wCodes = parseWCodes(newTask.completion_codes || "")
   const status = deriveTaskStatus(newTask.completion_date, newTask.link)
   const created: Task = {
-    id: nextId,
-    taskNo: `งานที่${nextId}`,
-    title: newTask.title || `งานซ่อมบำรุง #${nextId}`,
+    id: finalId,
+    taskNo,
+    title: newTask.title || `งานซ่อมบำรุง #${finalId}`,
     wo: newTask.wo || "",
     report_date: newTask.report_date || new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" }),
     completion_codes: newTask.completion_codes || (wCodes.map(w => w.replace("W", "")).join(",") || "11,12"),
@@ -1033,10 +1041,10 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
     current_discipline: wCodes[0] || "W11",
     equip: newTask.equip || "",
     link: newTask.link || "",
-    handovers: [],
+    handovers: newTask.handovers || [],
   }
-  created.subtasks = generateDefaultSubtasks(created)
-  created.gantt = generateDefaultGantt(created)
+  created.subtasks = newTask.subtasks || generateDefaultSubtasks(created)
+  created.gantt = newTask.gantt || generateDefaultGantt(created)
   tasksStore.unshift(created)
   return created
 }
@@ -1294,4 +1302,13 @@ export function generateDefaultGantt(task: Task) {
   }
 
   return { months, bars }
+}
+
+export function deleteTaskFromStore(id: string): boolean {
+  const index = tasksStore.findIndex(
+    (t) => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}` || t.id.replace(/\D/g, "") === id.replace(/\D/g, "")
+  )
+  if (index === -1) return false
+  tasksStore.splice(index, 1)
+  return true
 }
