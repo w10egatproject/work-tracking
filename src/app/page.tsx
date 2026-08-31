@@ -95,8 +95,8 @@ export default function Home() {
   })
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] flex flex-col font-sans antialiased selection:bg-[#005B9A] selection:text-white">
-      {/* 1. Modern Floating Glassmorphic Navbar (shadcn + Magic UI style) */}
+    <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] flex flex-col font-sans antialiased selection:bg-[#005B9A] selection:text-white">
+      {/* 1. Apple-Clean Floating Glassmorphic Navbar */}
       <FloatingNavbar
         type="dashboard"
         todayStr={todayStr}
@@ -106,34 +106,34 @@ export default function Home() {
       />
 
       {/* Main Content Dashboard Area */}
-      <main className="flex-1 pb-16 max-w-[1700px] w-full mx-auto space-y-4 pt-4">
-        {/* Modern Bento Hero Card (Apple Clean + Linear Accent) */}
-        <div className="mx-6 p-6 bg-white rounded-2xl border border-slate-200/80 border-b-[3px] border-b-[#F0B323] shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <main className="flex-1 pb-16 max-w-[1600px] w-full mx-auto space-y-4 pt-4 px-4 sm:px-6">
+        {/* Apple-Clean Bento Hero Card */}
+        <div className="p-6 bg-white rounded-3xl border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <h2 className="text-xl font-extrabold text-[#0F172A] tracking-tight">
+              <h2 className="text-xl font-semibold text-[#1D1D1F] tracking-tight">
                 ภาพรวมงานซ่อมบำรุงประจำแผนก (Shop Order Operations)
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center gap-1.5">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Active
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[#86868B] mt-1">
               ระบบติดตามงานแบบเรียลไทม์ เชื่อมต่อข้อมูล 2 ทาง (Two-Way Sync) กับ Google Sheets
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400 font-medium hidden sm:inline">มุมมอง:</span>
-            {/* View Mode Segmented Controls */}
-            <div className="flex items-center bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 shadow-2xs">
+            <span className="text-xs text-[#86868B] font-medium hidden sm:inline">มุมมอง:</span>
+            {/* View Mode Segmented Controls - macOS Pill Style */}
+            <div className="flex items-center bg-[#F5F5F7] p-1 rounded-full border border-black/[0.05]">
               <button
                 onClick={() => setViewMode("table")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-150 ${
+                className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-white text-[#0F172A] shadow-xs"
-                    : "text-slate-500 hover:text-slate-900"
+                    ? "bg-white text-[#1D1D1F] shadow-xs font-semibold"
+                    : "text-[#86868B] hover:text-[#1D1D1F]"
                 }`}
               >
                 <TableIcon className="w-3.5 h-3.5 text-[#005B9A]" />
@@ -142,10 +142,10 @@ export default function Home() {
 
               <button
                 onClick={() => setViewMode("kanban")}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all duration-150 ${
+                className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   viewMode === "kanban"
-                    ? "bg-white text-[#0F172A] shadow-xs"
-                    : "text-slate-500 hover:text-slate-900"
+                    ? "bg-white text-[#1D1D1F] shadow-xs font-semibold"
+                    : "text-[#86868B] hover:text-[#1D1D1F]"
                 }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5 text-[#005B9A]" />
@@ -163,29 +163,29 @@ export default function Home() {
         />
 
         {/* Search & Filter Toolbar */}
-        <div className="px-6 py-1">
-          <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.02)] flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="bg-white rounded-2xl p-3 border border-black/[0.08] shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-wrap items-center justify-between gap-3">
             {/* Quick Search Input with Shortcut Badge */}
             <div className="relative flex-1 min-w-[280px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="ค้นหาตามชื่องาน, เลข W/O, หรืออุปกรณ์..."
-                className="w-full pl-10 pr-20 py-2 bg-slate-50/70 border border-slate-200/80 rounded-xl text-xs text-[#0F172A] placeholder:text-slate-400 focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none transition-all"
+                className="w-full pl-10 pr-20 py-2 bg-[#F5F5F7] border border-black/[0.05] rounded-xl text-xs text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none transition-all"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {searchQuery ? (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-1 text-slate-400 hover:text-slate-600 rounded-md"
+                    className="p-1 text-[#86868B] hover:text-[#1D1D1F] rounded-full"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 ) : (
-                  <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white rounded border border-slate-200 shadow-2xs">
+                  <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#86868B] bg-white rounded border border-black/[0.08] shadow-2xs">
                     /
                   </kbd>
                 )}
@@ -194,13 +194,13 @@ export default function Home() {
 
             {/* Status Filter Dropdown */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-600 flex items-center gap-1">
+              <span className="text-xs font-semibold text-[#86868B] flex items-center gap-1">
                 <Filter className="w-3.5 h-3.5 text-[#005B9A]" /> สถานะ:
               </span>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-2 bg-slate-50/80 border border-slate-200/80 rounded-xl text-xs font-semibold text-[#0F172A] outline-none focus:border-[#005B9A] focus:bg-white cursor-pointer"
+                className="px-3.5 py-2 bg-[#F5F5F7] border border-black/[0.06] rounded-xl text-xs font-medium text-[#1D1D1F] outline-none focus:border-[#005B9A] focus:bg-white cursor-pointer"
               >
                 <option value="ALL">ทุกสถานะ (All Status)</option>
                 <option value="ดำเนินการ">⚙️ กำลังดำเนินการ (In Progress)</option>
@@ -214,8 +214,8 @@ export default function Home() {
         {/* Dynamic Views (Table / Kanban) */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-28 gap-3">
-            <div className="w-9 h-9 border-3 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-slate-400 text-xs font-semibold">กำลังเชื่อมต่อข้อมูลจาก Google Sheets...</div>
+            <div className="w-8 h-8 border-2 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-[#86868B] text-xs font-medium">กำลังเชื่อมต่อข้อมูลจาก Google Sheets...</div>
           </div>
         ) : (
           <>
