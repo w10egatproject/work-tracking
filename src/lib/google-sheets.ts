@@ -292,8 +292,86 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
   return addTaskToStore(data)
 }
 
+/**
+ * Two-Way Writeback: Synchronizes subtask rows back to Google Sheets tab ('งานที่' + id)
+ */
+async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
+  const auth = await getAuth()
+  if (!auth || !SPREADSHEET_ID) return
+
+  try {
+    const sheets = google.sheets({ version: "v4", auth })
+    const numId = taskId.replace("งานที่", "").trim()
+    const tabName = `งานที่${numId}`
+
+    const rows = subtasks.map((st) => [
+      st.category || "",
+      st.start || "",
+      st.days || 1,
+      st.end || "",
+      st.progress !== undefined ? `${st.progress}%` : "0%",
+      "",
+      st.status || "รอดำเนินการ",
+    ])
+
+    // Clear old subtasks range (e.g. A9:G60)
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `'${tabName}'!A9:G60`,
+    })
+
+    // Write updated subtasks starting at A9
+    if (rows.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${tabName}'!A9:G${8 + rows.length}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: rows },
+      })
+    }
+  } catch (err) {
+    console.error(`Error syncing subtasks to Google Sheet tab ${taskId}:`, err)
+  }
+}
+
+/**
+ * Two-Way Writeback: Synchronizes task header metadata back to Google Sheets
+ */
+async function syncTaskHeaderToGoogleSheet(taskId: string, task: Task) {
+  const auth = await getAuth()
+  if (!auth || !SPREADSHEET_ID) return
+
+  try {
+    const sheets = google.sheets({ version: "v4", auth })
+    const numId = taskId.replace("งานที่", "").trim()
+    const tabName = `งานที่${numId}`
+
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        valueInputOption: "USER_ENTERED",
+        data: [
+          { range: `'${tabName}'!B2`, values: [[task.title || ""]] },
+          { range: `'${tabName}'!B3`, values: [[task.report_date || ""]] },
+          { range: `'${tabName}'!F3`, values: [[task.wo || ""]] },
+          { range: `'${tabName}'!B4`, values: [[task.total_days || ""]] },
+          { range: `'${tabName}'!F4`, values: [[task.equip || ""]] },
+          { range: `'${tabName}'!B5`, values: [[task.completion_date || ""]] },
+          { range: `'${tabName}'!B6`, values: [[task.display_date || task.report_date || ""]] },
+        ],
+      },
+    })
+  } catch (err) {
+    console.error(`Error syncing header to Google Sheet tab ${taskId}:`, err)
+  }
+}
+
 export async function updateSubtask(taskId: string, subtaskId: string, updates: any): Promise<Task | null> {
-  return updateSubtaskInStore(taskId, subtaskId, updates)
+  const updated = updateSubtaskInStore(taskId, subtaskId, updates)
+  if (updated && updated.subtasks) {
+    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+  }
+  return updated
 }
 
 export async function insertSubtask(
@@ -303,11 +381,19 @@ export async function insertSubtask(
   targetSubtaskId?: string,
   position: "above" | "below" = "below"
 ): Promise<Task | null> {
-  return insertSubtaskInStore(taskId, discipline, newSubtask, targetSubtaskId, position)
+  const updated = insertSubtaskInStore(taskId, discipline, newSubtask, targetSubtaskId, position)
+  if (updated && updated.subtasks) {
+    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+  }
+  return updated
 }
 
 export async function deleteSubtask(taskId: string, subtaskId: string): Promise<Task | null> {
-  return deleteSubtaskInStore(taskId, subtaskId)
+  const updated = deleteSubtaskInStore(taskId, subtaskId)
+  if (updated && updated.subtasks) {
+    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+  }
+  return updated
 }
 
 export async function executeHandover(
@@ -318,12 +404,20 @@ export async function executeHandover(
   notes: string,
   byUser?: string
 ): Promise<Task | null> {
-  return recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes, byUser)
+  const updated = recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes, byUser)
+  if (updated && updated.subtasks) {
+    syncTaskSubtasksToGoogleSheet(taskId, updated.subtasks)
+  }
+  return updated
 }
 
 export async function updateTaskDetails(
   taskId: string,
   updates: Partial<Task>
 ): Promise<Task | null> {
-  return updateTaskDetailsInStore(taskId, updates)
+  const updated = updateTaskDetailsInStore(taskId, updates)
+  if (updated) {
+    syncTaskHeaderToGoogleSheet(taskId, updated)
+  }
+  return updated
 }
