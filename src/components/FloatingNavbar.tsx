@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { ArrowLeft, Edit2, ExternalLink, RefreshCw, Plus, Calendar, Sparkles } from "lucide-react"
+import { ArrowLeft, Edit2, ExternalLink, RefreshCw, Plus, Calendar, Table as TableIcon, LayoutGrid } from "lucide-react"
 
 interface DashboardNavProps {
   type: "dashboard"
@@ -9,6 +9,8 @@ interface DashboardNavProps {
   refreshing: boolean
   onRefresh: () => void
   onAddTask: () => void
+  viewMode: "table" | "kanban"
+  onViewModeChange: (mode: "table" | "kanban") => void
 }
 
 interface TaskDetailNavProps {
@@ -26,53 +28,84 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
   if (props.type === "dashboard") {
     return (
       <header className="sticky top-3.5 z-40 mx-auto w-[calc(100%-1.5rem)] sm:w-[calc(100%-3rem)] max-w-[1600px] transition-all">
-        <div className="backdrop-blur-2xl bg-white/85 border border-black/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-[#1D1D1F] transition-all">
-          {/* Logo & Branding - Apple Style */}
+        <div className="backdrop-blur-2xl bg-white/90 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3.5 text-[#1D1D1F] transition-all">
+          {/* Left: Branding & Subtitle */}
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#005B9A] to-[#0284C7] flex items-center justify-center text-white text-sm font-bold shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#005B9A] to-[#0284C7] flex items-center justify-center text-white text-base font-bold shadow-xs shrink-0">
               ⚡
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xs sm:text-sm font-semibold tracking-tight text-[#1D1D1F] flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#1D1D1F] flex items-center gap-2">
                   <span>W10 Operations</span>
-                  <span className="text-[#86868B] text-xs font-normal hidden md:inline">| ระบบติดตามงานซ่อม</span>
+                  <span className="text-[#86868B] text-xs font-normal hidden lg:inline">| ภาพรวมงานซ่อมบำรุงประจำแผนก</span>
                 </h1>
                 <span className="bg-emerald-50 text-emerald-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span className="hidden sm:inline">Live Sync</span>
-                  <span className="sm:hidden">Live</span>
+                  <span>Live Sync</span>
                 </span>
               </div>
-              <p className="text-[10px] text-[#86868B] font-normal hidden sm:block">
+              <p className="text-[11px] text-[#86868B] font-normal hidden sm:block mt-0.5">
                 กฟผ. แม่เมาะ • W11 วิศวกรรม • W12 เครื่องกล • W13 ซ่อมเครื่องจักร • W14 ซ่อมอุปกรณ์
               </p>
             </div>
           </div>
 
-          {/* Quick Actions & Date */}
-          <div className="flex items-center gap-2">
-            <div className="text-xs text-[#6E6E73] hidden xl:flex items-center gap-1.5 bg-[#F5F5F7] px-3 py-1.5 rounded-full font-medium">
+          {/* Right: View Switcher, Date, Refresh & Actions */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* View Mode Segmented Controls */}
+            <div className="flex items-center bg-[#F5F5F7] p-0.5 rounded-xl border border-black/[0.05]">
+              <button
+                onClick={() => props.onViewModeChange("table")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                  props.viewMode === "table"
+                    ? "bg-white text-[#1D1D1F] shadow-xs font-bold"
+                    : "text-[#86868B] hover:text-[#1D1D1F]"
+                }`}
+                title="มุมมองตาราง"
+              >
+                <TableIcon className="w-3.5 h-3.5 text-[#005B9A]" />
+                <span className="hidden md:inline">ตาราง</span>
+              </button>
+
+              <button
+                onClick={() => props.onViewModeChange("kanban")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                  props.viewMode === "kanban"
+                    ? "bg-white text-[#1D1D1F] shadow-xs font-bold"
+                    : "text-[#86868B] hover:text-[#1D1D1F]"
+                }`}
+                title="มุมมองบอร์ด Kanban"
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-[#005B9A]" />
+                <span className="hidden md:inline">บอร์ด</span>
+              </button>
+            </div>
+
+            {/* Date */}
+            <div className="text-xs text-[#6E6E73] hidden xl:flex items-center gap-1.5 bg-[#F5F5F7] px-3 py-1.5 rounded-xl font-medium border border-black/[0.04]">
               <Calendar className="w-3.5 h-3.5 text-[#005B9A]" />
               <span className="text-[11px]">{props.todayStr}</span>
             </div>
 
+            {/* Refresh */}
             <button
               onClick={props.onRefresh}
               disabled={props.refreshing}
-              className="px-3.5 py-1.5 rounded-full bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer border border-black/[0.04]"
               title="รีเฟรชข้อมูลจาก Google Sheets"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-[#005B9A] ${props.refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">รีเฟรช</span>
             </button>
 
+            {/* Add Task Button */}
             <button
               onClick={props.onAddTask}
-              className="px-4 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-xs font-medium transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3.5 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>สร้างรายการใหม่</span>
+              <span>สร้างงานใหม่</span>
             </button>
           </div>
         </div>

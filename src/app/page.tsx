@@ -102,65 +102,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] flex flex-col font-sans antialiased selection:bg-[#005B9A] selection:text-white">
-      {/* 1. Floating Navbar */}
+      {/* 1. Unified Single App Header */}
       <FloatingNavbar
         type="dashboard"
         todayStr={todayStr}
         refreshing={refreshing}
         onRefresh={handleRefresh}
         onAddTask={() => setAddDialogOpen(true)}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
       {/* Main Content Dashboard Area */}
       <main className="flex-1 pb-16 max-w-[1600px] w-full mx-auto space-y-3.5 pt-3.5 px-4 sm:px-6">
-        {/* Apple-Clean Bento Hero Card */}
-        <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-lg sm:text-xl font-semibold text-[#1D1D1F] tracking-tight">
-                ภาพรวมงานซ่อมบำรุงประจำแผนก (Shop Order Operations)
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Active
-              </span>
-            </div>
-            <p className="text-xs text-[#86868B] mt-1">
-              ระบบติดตามงานแบบเรียลไทม์ เชื่อมต่อข้อมูล 2 ทาง (Two-Way Sync) กับ Google Sheets
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 self-start lg:self-auto">
-            <span className="text-xs text-[#86868B] font-medium hidden sm:inline">มุมมอง:</span>
-            {/* View Mode Segmented Controls - macOS Pill Style */}
-            <div className="flex items-center bg-[#F5F5F7] p-1 rounded-full border border-black/[0.05]">
-              <button
-                onClick={() => setViewMode("table")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
-                  viewMode === "table"
-                    ? "bg-white text-[#1D1D1F] shadow-xs font-semibold"
-                    : "text-[#86868B] hover:text-[#1D1D1F]"
-                }`}
-              >
-                <TableIcon className="w-3.5 h-3.5 text-[#005B9A]" />
-                <span>ตาราง (Table)</span>
-              </button>
-
-              <button
-                onClick={() => setViewMode("kanban")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
-                  viewMode === "kanban"
-                    ? "bg-white text-[#1D1D1F] shadow-xs font-semibold"
-                    : "text-[#86868B] hover:text-[#1D1D1F]"
-                }`}
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#005B9A]" />
-                <span>บอร์ด (Kanban)</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Symmetrical KPI Summary Bento Cards */}
         <SummaryCards tasks={tasks} />
 
