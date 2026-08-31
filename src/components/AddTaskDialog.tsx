@@ -2,7 +2,47 @@
 
 import { useState } from "react"
 import { DisciplineCode, DISCIPLINE_CONFIG } from "@/types"
-import { X, Plus } from "lucide-react"
+import { X, Plus, Calendar as CalendarIcon } from "lucide-react"
+import ThaiCalendarPickerModal from "@/components/task/ThaiCalendarPickerModal"
+
+const THAI_MONTHS: Record<string, number> = {
+  "ม.ค.": 0, "ก.พ.": 1, "มี.ค.": 2, "เม.ย.": 3, "พ.ค.": 4, "มิ.ย.": 5,
+  "ก.ค.": 6, "ส.ค.": 7, "ก.ย.": 8, "ต.ค.": 9, "พ.ย.": 10, "ธ.ค.": 11,
+}
+const THAI_MONTH_NAMES = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+
+function parseThaiDate(str?: string): Date {
+  if (!str) return new Date()
+  const clean = str.trim()
+  const parts = clean.split(/\s+/)
+  if (parts.length >= 3) {
+    const day = parseInt(parts[0], 10)
+    const monthKey = parts[1].endsWith(".") ? parts[1] : parts[1] + "."
+    const month = THAI_MONTHS[monthKey] !== undefined ? THAI_MONTHS[monthKey] : THAI_MONTHS[parts[1]]
+    let year = parseInt(parts[2], 10)
+    if (year > 2500) year -= 543
+    if (!isNaN(day) && month !== undefined && !isNaN(year)) {
+      return new Date(year, month, day)
+    }
+  }
+  return new Date()
+}
+
+function formatThaiDate(d: Date): string {
+  const day = d.getDate()
+  const month = THAI_MONTH_NAMES[d.getMonth()]
+  const year = d.getFullYear() + (d.getFullYear() < 2500 ? 543 : 0)
+  return `${day} ${month} ${year}`
+}
+
+function calculateDayDifference(startStr?: string, endStr?: string): number {
+  const s = parseThaiDate(startStr)
+  const e = parseThaiDate(endStr)
+  if (!s || !e) return 1
+  const diffTime = e.getTime() - s.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1
+  return diffDays > 0 ? diffDays : 1
+}
 
 interface Props {
   open: boolean
@@ -14,7 +54,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
   const [title, setTitle] = useState("")
   const [wo, setWo] = useState("")
   const [reportDate, setReportDate] = useState(
-    new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })
+    formatThaiDate(new Date())
   )
   const [completionDate, setCompletionDate] = useState("")
   const [totalDays, setTotalDays] = useState(60)
@@ -22,6 +62,33 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
   const [equip, setEquip] = useState("")
   const [link, setLink] = useState("")
   const [submitting, setSubmitting] = useState(false)
+
+  // Calendar Picker state
+  const [calendarOpen, setCalendarOpen] = useState(false)
+  const [calendarTarget, setCalendarTarget] = useState<"reportDate" | "completionDate">("reportDate")
+  const [calendarTitle, setCalendarTitle] = useState("เลือกวันที่")
+
+  const handleOpenCalendar = (target: "reportDate" | "completionDate", titleText: string) => {
+    setCalendarTarget(target)
+    setCalendarTitle(titleText)
+    setCalendarOpen(true)
+  }
+
+  const handleSelectDate = (d: Date) => {
+    const formatted = formatThaiDate(d)
+    if (calendarTarget === "reportDate") {
+      setReportDate(formatted)
+      if (completionDate) {
+        setTotalDays(calculateDayDifference(formatted, completionDate))
+      }
+    } else {
+      setCompletionDate(formatted)
+      if (reportDate) {
+        setTotalDays(calculateDayDifference(reportDate, formatted))
+      }
+    }
+    setCalendarOpen(false)
+  }
 
   if (!open) return null
 
@@ -134,16 +201,18 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               />
             </div>
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1">
-                วันที่เริ่มงาน
+              <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                <span>วันที่เริ่มงาน <span className="text-rose-500">*</span></span>
+                <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเลือกปฏิทิน)</span>
               </label>
-              <input
-                type="text"
-                value={reportDate}
-                onChange={(e) => setReportDate(e.target.value)}
-                placeholder="เช่น 1 ส.ค. 2024"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
-              />
+              <button
+                type="button"
+                onClick={() => handleOpenCalendar("reportDate", "เลือกวันที่เริ่มงาน")}
+                className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50/60 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs font-semibold text-[#0F172A] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-2 focus:ring-sky-100"
+              >
+                <span>{reportDate || "เลือกวันที่เริ่มงาน"}</span>
+                <CalendarIcon className="w-4 h-4 text-[#005B9A]" />
+              </button>
             </div>
           </div>
 
@@ -187,16 +256,20 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1">
-                วันที่คาดว่าจะแล้วเสร็จ
+              <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+                <span>วันที่คาดว่าจะแล้วเสร็จ</span>
+                <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเลือกปฏิทิน)</span>
               </label>
-              <input
-                type="text"
-                value={completionDate}
-                onChange={(e) => setCompletionDate(e.target.value)}
-                placeholder="เช่น 30 มี.ค. 2026"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
-              />
+              <button
+                type="button"
+                onClick={() => handleOpenCalendar("completionDate", "เลือกวันที่คาดว่าจะแล้วเสร็จ")}
+                className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50/60 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs font-semibold text-[#0F172A] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-2 focus:ring-sky-100"
+              >
+                <span className={completionDate ? "text-[#0F172A]" : "text-slate-400 font-normal"}>
+                  {completionDate || "เช่น 30 มี.ค. 2026"}
+                </span>
+                <CalendarIcon className="w-4 h-4 text-[#005B9A]" />
+              </button>
             </div>
             <div>
               <label className="block font-bold text-[#0F172A] mb-1">
@@ -257,6 +330,16 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
           </div>
         </form>
       </div>
+
+      {/* Modern Thai Calendar Picker Modal */}
+      {calendarOpen && (
+        <ThaiCalendarPickerModal
+          title={calendarTitle}
+          initialDate={parseThaiDate(calendarTarget === "reportDate" ? reportDate : completionDate)}
+          onSelectDate={handleSelectDate}
+          onClose={() => setCalendarOpen(false)}
+        />
+      )}
     </div>
   )
 }
