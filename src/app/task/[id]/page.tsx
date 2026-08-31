@@ -511,6 +511,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       task.current_discipline ||
       "W11"
 
+    const calculatedDays = calculateDayDifference(insertStart, insertEnd) || Number(insertDays) || 1
+
     try {
       const res = await fetch(`/api/tasks/${encodeURIComponent(task.id)}`, {
         method: "PATCH",
@@ -520,9 +522,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           discipline: disciplineCode,
           newSubtask: {
             category: insertCategory.trim(),
-            start: insertStart,
-            days: Number(insertDays) || 1,
-            end: insertEnd,
+            start: insertStart || task.report_date || "",
+            days: calculatedDays,
+            end: insertEnd || "",
             progress: 0,
             status: "รอดำเนินการ",
           },

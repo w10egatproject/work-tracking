@@ -1071,8 +1071,21 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
 }
 
 export function updateTaskInStore(id: string, updates: Partial<Task>): Task | null {
-  const index = tasksStore.findIndex(t => t.id === id || t.taskNo === id || t.taskNo === `งานที่${id}`)
-  if (index === -1) return null
+  const cleanId = id.replace(/\D/g, "")
+  let index = tasksStore.findIndex(
+    (t) =>
+      t.id === id ||
+      t.taskNo === id ||
+      t.taskNo === `งานที่${id}` ||
+      t.id === `งานที่${id}` ||
+      (cleanId !== "" && t.id.replace(/\D/g, "") === cleanId) ||
+      (cleanId !== "" && (t.taskNo || "").replace(/\D/g, "") === cleanId)
+  )
+  if (index === -1) {
+    const newTask = { ...updates, id: cleanId || id } as Task
+    tasksStore.push(newTask)
+    return newTask
+  }
   const merged = { ...tasksStore[index], ...updates }
   merged.status = deriveTaskStatus(merged.completion_date, merged.link)
   if (merged.status === "เสร็จ" && merged.progress < 100) {
@@ -1102,6 +1115,7 @@ export function updateSubtaskInStore(taskId: string, subtaskId: string, updates:
       else task.status = "รอดำเนินการ"
     }
   }
+  updateTaskInStore(task.id, task)
   return task
 }
 
@@ -1113,7 +1127,10 @@ export function insertSubtaskInStore(
   position: "above" | "below" = "below"
 ): Task | null {
   const task = getTaskById(taskId)
-  if (!task || !task.subtasks) return null
+  if (!task) return null
+  if (!task.subtasks) {
+    task.subtasks = generateInitialDisciplineHeaders(task)
+  }
 
   const p = newSubtask.progress || 0
   const status: TaskStatus = p === 100 ? "เสร็จ" : (p > 0 ? "ดำเนินการ" : "รอดำเนินการ")
@@ -1126,6 +1143,7 @@ export function insertSubtaskInStore(
     end: newSubtask.end || "",
     progress: p,
     status,
+    isHeader: false,
   }
 
   // Find insert position
@@ -1174,6 +1192,7 @@ export function insertSubtaskInStore(
     else task.status = "รอดำเนินการ"
   }
 
+  updateTaskInStore(task.id, task)
   return task
 }
 
@@ -1193,6 +1212,7 @@ export function deleteSubtaskInStore(taskId: string, subtaskId: string): Task | 
     else task.status = "รอดำเนินการ"
   }
 
+  updateTaskInStore(task.id, task)
   return task
 }
 

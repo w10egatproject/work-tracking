@@ -114,7 +114,16 @@ export async function fetchTaskDetail(id: string): Promise<Task | null> {
     try {
       const sheets = google.sheets({ version: "v4", auth })
       const numId = id.replace("งานที่", "").trim()
-      const tabName = `งานที่${numId}`
+      const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+      const allSheets = sheetMeta.data.sheets || []
+      const sheetObj = allSheets.find(
+        (s) =>
+          s.properties?.title === `งานที่${numId}` ||
+          s.properties?.title === `งานที่ ${numId}` ||
+          s.properties?.title === id ||
+          (numId !== "" && s.properties?.title?.replace(/\D/g, "") === numId)
+      )
+      const tabName = sheetObj?.properties?.title || `งานที่${numId}`
 
       const tabRes = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
@@ -502,7 +511,17 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
   try {
     const sheets = google.sheets({ version: "v4", auth })
     const numId = taskId.replace("งานที่", "").trim()
-    const tabName = `งานที่${numId}`
+    const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
+    const allSheets = sheetMeta.data.sheets || []
+    const sheetObj = allSheets.find(
+      (s) =>
+        s.properties?.title === `งานที่${numId}` ||
+        s.properties?.title === `งานที่ ${numId}` ||
+        s.properties?.title === taskId ||
+        (numId !== "" && s.properties?.title?.replace(/\D/g, "") === numId)
+    )
+    const tabName = sheetObj?.properties?.title || `งานที่${numId}`
+    const sheetId = sheetObj?.properties?.sheetId
 
     const rows = subtasks.map((st) => [
       st.category || "",
@@ -528,11 +547,6 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
         valueInputOption: "USER_ENTERED",
         requestBody: { values: rows },
       })
-
-      // Get sheetId for this tab
-      const sheetMeta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID })
-      const sheetObj = sheetMeta.data.sheets?.find((s) => s.properties?.title === tabName)
-      const sheetId = sheetObj?.properties?.sheetId
 
       if (sheetId !== undefined) {
         const requests: any[] = []
