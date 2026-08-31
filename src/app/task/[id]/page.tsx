@@ -333,7 +333,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         date: new Date(cur),
         dateStr: formatThaiDate(cur),
         dayNum: cur.getDate(),
-        monthName: THAI_MONTH_NAMES[cur.getMonth()],
+        monthName: `${THAI_MONTH_FULL[cur.getMonth()]} ${cur.getFullYear() + 543}`,
         weekday: THAI_DAYS[dayOfWeek],
         weekdayFull: THAI_DAYS_FULL[dayOfWeek],
         isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
@@ -961,12 +961,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <table className="w-full border-collapse text-[11px]">
                 <thead>
                   {/* Top Tier: Month Spans */}
-                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#1D1D1F] font-semibold text-[10px] h-[32px]">
+                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#1D1D1F] font-bold text-xs h-[32px]">
                     {monthGroups.map((grp, gIdx) => (
                       <th
                         key={gIdx}
                         colSpan={grp.span}
-                        className="py-1 px-1 text-center font-bold text-[#1D1D1F] border-r border-slate-200 uppercase tracking-wider h-[32px]"
+                        className="py-1 px-2 text-center font-bold text-[#005B9A] bg-sky-50/80 border-r border-slate-200 text-xs tracking-wide h-[32px] shadow-2xs whitespace-nowrap"
                       >
                         {grp.month}
                       </th>
@@ -978,13 +978,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                     {dayColumns.map((col, idx) => (
                       <th
                         key={idx}
-                        className={`py-0.5 px-0.5 w-8 text-center border-r border-slate-200 leading-tight h-[32px] ${
+                        className={`py-0.5 px-0.5 w-10 min-w-[40px] text-center border-r border-slate-200 leading-tight h-[32px] ${
                           col.isWeekend ? "bg-amber-50/60 text-amber-900" : "text-[#1D1D1F]"
                         }`}
                         title={`${col.weekdayFull} ${col.dateStr}`}
                       >
-                        <div className="font-bold text-[10px]">{col.dayNum}</div>
-                        <div className="text-[8px] font-normal text-[#86868B]">{col.weekday}</div>
+                        <div className="font-bold text-xs text-[#1D1D1F] font-mono">{col.dayNum}</div>
+                        <div className="text-[9.5px] font-semibold text-[#86868B]">{col.weekday}</div>
                       </th>
                     ))}
                   </tr>
@@ -1042,13 +1042,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                           return (
                             <td
                               key={dIdx}
-                              className={`border-r border-slate-100 text-center p-0 h-[50px] relative overflow-visible ${
+                              className={`border-r border-slate-100 text-center p-0 h-[50px] w-10 min-w-[40px] relative overflow-visible ${
                                 isHovered ? "bg-sky-50/80" : dayCol.isWeekend ? "bg-amber-50/20" : "bg-white"
                               }`}
                             >
                               {isActive && (
                                 <div
-                                  className={`h-5.5 ${barRounding} ${capsuleColor} transition-all duration-150 relative z-10`}
+                                  className={`h-6.5 ${barRounding} ${capsuleColor} transition-all duration-150 relative z-10`}
                                   title={`${st.category} (${dayCol.dateStr}) - ${st.status}`}
                                 ></div>
                               )}
