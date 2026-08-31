@@ -1,7 +1,7 @@
 "use client"
 
 import { Task, DISCIPLINE_CONFIG } from "@/types"
-import { ExternalLink, ChevronRight, Wrench, Calendar, CheckCircle2, Clock, PlayCircle, Sparkles } from "lucide-react"
+import { ExternalLink, ChevronRight, Wrench, Calendar } from "lucide-react"
 
 interface Props {
   tasks: Task[]
@@ -10,7 +10,7 @@ interface Props {
 export default function TaskTable({ tasks }: Props) {
   if (tasks.length === 0) {
     return (
-      <div className="px-6 py-20 text-center bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl mx-6 my-2 shadow-xs">
+      <div className="py-20 text-center bg-white rounded-2xl border border-slate-200/80 shadow-xs">
         <div className="w-12 h-12 rounded-2xl bg-sky-50 text-[#005B9A] flex items-center justify-center mx-auto mb-3 text-xl">
           🔍
         </div>
@@ -21,11 +21,11 @@ export default function TaskTable({ tasks }: Props) {
   }
 
   return (
-    <div className="px-6 py-2">
-      {/* Sleek High-Density Operational Master Table (Linear + Notion Style) */}
+    <div className="w-full">
+      {/* Sleek High-Density Operational Master Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] overflow-hidden">
         {/* Table Subheader Bar */}
-        <div className="bg-gradient-to-r from-[#F8FAFC] to-white border-b border-slate-200/80 px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+        <div className="bg-gradient-to-r from-[#F8FAFC] to-white border-b border-slate-200/80 px-5 py-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-[#005B9A] ring-4 ring-sky-100"></span>
             <span className="text-xs font-bold text-[#0F172A] tracking-tight">
@@ -35,8 +35,8 @@ export default function TaskTable({ tasks }: Props) {
               {tasks.length} รายการ
             </span>
           </div>
-          <div className="text-xs text-slate-400 font-medium">
-            คลิกที่แถวหรืองานเพื่อเปิดหน้าบันทึกความคืบหน้าและประวัติการส่งมอบ
+          <div className="text-xs text-slate-400 font-medium hidden sm:block">
+            คลิกที่แถวหรือปุ่มเปิดดูเพื่อเข้าสู่บันทึกความคืบหน้า
           </div>
         </div>
 
@@ -44,22 +44,20 @@ export default function TaskTable({ tasks }: Props) {
           <table className="w-full text-left border-collapse text-xs text-slate-700">
             <thead>
               <tr className="bg-[#F8FAFC]/90 backdrop-blur-xs border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="py-3.5 px-4 w-28 text-center font-mono">ลำดับ</th>
-                <th className="py-3.5 px-4 min-w-[320px]">รายการ / ชื่องานซ่อมบำรุง</th>
-                <th className="py-3.5 px-3.5 w-32 text-center font-mono">เลข W/O</th>
-                <th className="py-3.5 px-3.5 w-32 text-center">วันที่เริ่ม</th>
-                <th className="py-3.5 px-3.5 w-32 text-center">กำหนดเสร็จ</th>
-                <th className="py-3.5 px-3.5 w-36 text-center">หมวดร่วมงาน</th>
-                <th className="py-3.5 px-4 min-w-[220px]">อุปกรณ์ (Equip)</th>
-                <th className="py-3.5 px-3 w-28 text-center">แผ่นงาน</th>
-                <th className="py-3.5 px-4 w-32 text-right">การจัดการ</th>
+                <th className="py-3 px-4 w-24 text-center font-mono">ลำดับ</th>
+                <th className="py-3 px-4 min-w-[280px]">รายการ / ชื่องานซ่อมบำรุง</th>
+                <th className="py-3 px-3.5 w-28 text-center font-mono">เลข W/O</th>
+                <th className="py-3 px-3.5 w-28 text-center">วันที่เริ่ม</th>
+                <th className="py-3 px-3.5 w-28 text-center">กำหนดเสร็จ</th>
+                <th className="py-3 px-3.5 w-36 text-center">หมวดร่วมงาน</th>
+                <th className="py-3 px-4 min-w-[180px]">อุปกรณ์ (Equip)</th>
+                <th className="py-3 px-3 w-24 text-center">แผ่นงาน</th>
+                <th className="py-3 px-4 w-28 text-right">การจัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/90 text-xs font-normal">
               {tasks.map((task, index) => {
                 const isEven = index % 2 === 0
-                const isDone = task.status === "เสร็จ"
-                const isInProgress = task.status === "ดำเนินการ"
 
                 return (
                   <tr
@@ -163,14 +161,14 @@ export default function TaskTable({ tasks }: Props) {
                       )}
                     </td>
 
-                    {/* ปุ่มการจัดการ */}
+                    {/* ปุ่มการจัดการ - Refined Ghost/Soft Button */}
                     <td className="py-3 px-4 text-right">
                       <a
                         href={`/task/${task.id}`}
-                        className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-semibold transition-all duration-150 shadow-xs hover:shadow-sm active:scale-95"
+                        className="inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-sky-50 hover:bg-[#005B9A] text-[#005B9A] hover:text-white border border-sky-200/80 hover:border-transparent rounded-xl text-xs font-semibold transition-all duration-150 shadow-2xs group/btn active:scale-95"
                       >
                         <span>เปิดดู</span>
-                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </a>
                     </td>
                   </tr>
@@ -181,7 +179,7 @@ export default function TaskTable({ tasks }: Props) {
         </div>
 
         {/* Bottom Status Summary Bar */}
-        <div className="bg-[#F8FAFC] border-t border-slate-200/80 px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="bg-[#F8FAFC] border-t border-slate-200/80 px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5 font-medium">
               <span className="w-2 h-2 rounded-full bg-[#005B9A]"></span> ดำเนินการ (
