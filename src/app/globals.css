@@ -1,13 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://cdn.jsdelivr.net/gh/vsalvino/computer-modern@main/fonts/sans.css');
-@import url('https://cdn.jsdelivr.net/gh/vsalvino/computer-modern@main/fonts/serif.css');
-@import url('https://cdn.jsdelivr.net/gh/vsalvino/computer-modern@main/fonts/bright.css');
 @import "tailwindcss";
 
+/* 🐘 Official CMU Font (Chiang Mai University) */
+@font-face {
+  font-family: 'CMU';
+  src: url('/fonts/CMU-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU';
+  src: url('/fonts/CMU-Regular.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU';
+  src: url('/fonts/CMU-Italic.woff2') format('woff2');
+  font-weight: 400 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU';
+  src: url('/fonts/CMU-Bold.woff2') format('woff2');
+  font-weight: 600 700 800 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CMU';
+  src: url('/fonts/CMU-BoldItalic.woff2') format('woff2');
+  font-weight: 600 700 800 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: "CMU Font", "Computer Modern Sans", "CMU Sans Serif", "CMU Bright", "Prompt", "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "CMU Serif", "Computer Modern Serif", serif;
-  --font-mono: "JetBrains Mono", "Computer Modern Typewriter", monospace;
+  --font-sans: 'CMU', 'Prompt', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 :root {
@@ -45,7 +82,7 @@
 body {
   background-color: var(--surface-mist);
   color: var(--text-primary);
-  font-family: "CMU Font", "Computer Modern Sans", "CMU Sans Serif", "CMU Bright", "Prompt", "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  font-family: 'CMU', 'Prompt', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
