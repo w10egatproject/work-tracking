@@ -414,7 +414,7 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
       })
 
       if (createdSheetId !== null) {
-        // Clear all cell background colors across rows 9 to 60 (columns A to CV)
+        // Clear all cell formatting, borders, and backgrounds across rows 9 to 60 (columns A to CV)
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId: SPREADSHEET_ID,
           requestBody: {
@@ -428,12 +428,8 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
                     startColumnIndex: 0,
                     endColumnIndex: 100,
                   },
-                  cell: {
-                    userEnteredFormat: {
-                      backgroundColor: { red: 1, green: 1, blue: 1 },
-                    },
-                  },
-                  fields: "userEnteredFormat.backgroundColor",
+                  cell: {},
+                  fields: "userEnteredFormat",
                 },
               },
             ],
@@ -795,7 +791,7 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
           }
         }
 
-        // Reset trailing rows formatting to restore native Google Sheets gridlines
+        // Reset trailing rows formatting to restore native Google Sheets gridlines and wipe stray borders across all columns
         requests.push({
           repeatCell: {
             range: {
@@ -803,7 +799,7 @@ async function syncTaskSubtasksToGoogleSheet(taskId: string, subtasks: any[]) {
               startRowIndex: 8 + subtasks.length,
               endRowIndex: 60,
               startColumnIndex: 0,
-              endColumnIndex: 10,
+              endColumnIndex: 100,
             },
             cell: {},
             fields: "userEnteredFormat",

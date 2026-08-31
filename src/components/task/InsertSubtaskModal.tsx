@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import React from "react"
 import { Subtask } from "@/types"
@@ -48,10 +48,12 @@ export default function InsertSubtaskModal({
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
           <div>
             <h3 className="font-semibold text-xs text-[#1D1D1F]">
-              แทรกแถวงานย่อย ({insertPosition === "above" ? "ด้านบน" : "ด้านล่าง"})
+              {targetSubtask.isHeader
+                ? `เพิ่มงานย่อยในหมวด`
+                : `แทรกแถวงานย่อย (${insertPosition === "above" ? "ด้านบน" : "ด้านล่าง"})`}
             </h3>
-            <p className="text-[11px] text-[#86868B] mt-0.5 line-clamp-1">
-              อ้างอิง: <span className="font-semibold text-[#1D1D1F]">{targetSubtask.category}</span>
+            <p className="text-[11px] text-[#005B9A] font-bold mt-0.5 line-clamp-1">
+              หมวดงาน: <span className="text-[#1D1D1F]">{targetSubtask.category}</span>
             </p>
           </div>
           <button
@@ -64,35 +66,37 @@ export default function InsertSubtaskModal({
         </div>
 
         <form onSubmit={onSave} className="space-y-3.5 text-xs">
-          <div>
-            <label className="block font-semibold text-[#1D1D1F] mb-1.5">ตำแหน่งการแทรกแถว:</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setInsertPosition("above")}
-                className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  insertPosition === "above"
-                    ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
-                    : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
-                }`}
-              >
-                <ArrowUpToLine className="w-4 h-4 text-[#005B9A]" />
-                <span>แทรกด้านบน</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setInsertPosition("below")}
-                className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                  insertPosition === "below"
-                    ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
-                    : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
-                }`}
-              >
-                <ArrowDownToLine className="w-4 h-4 text-[#005B9A]" />
-                <span>แทรกด้านล่าง</span>
-              </button>
+          {!targetSubtask.isHeader && (
+            <div>
+              <label className="block font-semibold text-[#1D1D1F] mb-1.5">ตำแหน่งการแทรกแถว:</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setInsertPosition("above")}
+                  className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    insertPosition === "above"
+                      ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
+                      : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
+                  }`}
+                >
+                  <ArrowUpToLine className="w-4 h-4 text-[#005B9A]" />
+                  <span>แทรกด้านบน</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInsertPosition("below")}
+                  className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    insertPosition === "below"
+                      ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
+                      : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
+                  }`}
+                >
+                  <ArrowDownToLine className="w-4 h-4 text-[#005B9A]" />
+                  <span>แทรกด้านล่าง</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <label className="block font-semibold text-[#1D1D1F] mb-1">

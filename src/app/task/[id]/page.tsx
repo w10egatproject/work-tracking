@@ -505,13 +505,19 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     if (!insertCategory.trim() || !task || !targetSubtask) return
     setIsInsertingSubtask(true)
 
+    const disciplineCode =
+      targetSubtask.discipline ||
+      (targetSubtask.category.match(/W1[1-4]/)?.[0] as DisciplineCode) ||
+      task.current_discipline ||
+      "W11"
+
     try {
-      const res = await fetch(`/api/tasks/${task.id}`, {
+      const res = await fetch(`/api/tasks/${encodeURIComponent(task.id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "insertSubtask",
-          discipline: targetSubtask.discipline || "W13",
+          discipline: disciplineCode,
           newSubtask: {
             category: insertCategory.trim(),
             start: insertStart,
@@ -856,7 +862,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                               </button>
                             </div>
                           ) : (
-                            <span className="text-[11px] text-[#86868B] font-normal">-</span>
+                            <button
+                              type="button"
+                              onClick={(e) => handleOpenInsertModal(st, "below", e)}
+                              className="px-2.5 py-1.5 rounded-lg bg-[#005B9A] hover:bg-[#004A7D] text-white text-[10px] font-bold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+                              title="เพิ่มงานย่อยใต้หมวดนี้"
+                            >
+                              <Plus className="w-3 h-3 stroke-[2.5]" />
+                              <span>+ เพิ่มงานย่อย</span>
+                            </button>
                           )}
                         </td>
                       </tr>
