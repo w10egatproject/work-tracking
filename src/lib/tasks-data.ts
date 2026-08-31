@@ -1051,7 +1051,7 @@ export function addTaskToStore(newTask: Partial<Task>): Task {
     link: newTask.link || "",
     handovers: newTask.handovers || [],
   }
-  created.subtasks = newTask.subtasks || generateDefaultSubtasks(created)
+  created.subtasks = newTask.subtasks || generateInitialDisciplineHeaders(created)
   created.gantt = newTask.gantt || generateDefaultGantt(created)
   tasksStore.unshift(created)
   tasksStore.sort((a, b) => {
@@ -1234,6 +1234,34 @@ export function recordHandoverInStore(
     })
   }
   return task
+}
+
+export function generateInitialDisciplineHeaders(task: Task): Subtask[] {
+  const subtasks: Subtask[] = []
+  const wCodes = task.w_codes && task.w_codes.length > 0 ? task.w_codes : ["W11", "W12", "W13"]
+
+  const disciplineNames: Record<string, string> = {
+    W11: "W11 : วิศวกรรม",
+    W12: "W12 : เครื่องกล",
+    W13: "W13 : ซ่อมเครื่องจักรกล",
+    W14: "W14 : ซ่อมอุปกรณ์เครื่องจักรกล",
+  }
+
+  let idCounter = 1
+  for (const w of wCodes) {
+    subtasks.push({
+      id: `${task.id}-${idCounter++}`,
+      category: disciplineNames[w] || `${w} : หมวดงาน`,
+      discipline: w as DisciplineCode,
+      start: task.report_date || "",
+      days: task.total_days || 30,
+      end: task.completion_date || "",
+      progress: 0,
+      status: "รอดำเนินการ",
+      isHeader: true,
+    })
+  }
+  return subtasks
 }
 
 export function generateDefaultSubtasks(task: Task): Subtask[] {

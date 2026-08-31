@@ -1,6 +1,6 @@
 import { google } from "googleapis"
 import { Task, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
-import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateTaskDetailsInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt, deleteTaskFromStore } from "./tasks-data"
+import { INITIAL_TASKS, getTasksStore, getTaskById, addTaskToStore, updateTaskInStore, updateTaskDetailsInStore, updateSubtaskInStore, insertSubtaskInStore, deleteSubtaskInStore, recordHandoverInStore, generateDefaultSubtasks, generateDefaultGantt, generateInitialDisciplineHeaders, deleteTaskFromStore } from "./tasks-data"
 
 const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID || ""
 const MASTER_SHEET_NAME = "ลำดับงาน"
@@ -394,18 +394,54 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
         requestBody: {
           valueInputOption: "USER_ENTERED",
           data: [
+            { range: `'${newTabName}'!B1`, values: [[nextNum]] },
             { range: `'${newTabName}'!B2`, values: [[data.title || ""]] },
             { range: `'${newTabName}'!B3`, values: [[data.report_date || ""]] },
             { range: `'${newTabName}'!F3`, values: [[data.wo || ""]] },
             { range: `'${newTabName}'!B4`, values: [[data.total_days || 30]] },
             { range: `'${newTabName}'!F4`, values: [[data.equip || ""]] },
             { range: `'${newTabName}'!B5`, values: [[data.completion_date || ""]] },
+            { range: `'${newTabName}'!F5`, values: [[data.completion_codes || ""]] },
             { range: `'${newTabName}'!B6`, values: [[displayDate]] },
           ],
         },
       })
 
-      // Step 5: Initialize subtasks with 0% progress
+      // Step 5: Clear old template data and Gantt bars in rows 9-60
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `'${newTabName}'!A9:ZZ60`,
+      })
+
+      if (createdSheetId !== null) {
+        // Clear all cell background colors across rows 9 to 60 (columns A to CV)
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId: SPREADSHEET_ID,
+          requestBody: {
+            requests: [
+              {
+                repeatCell: {
+                  range: {
+                    sheetId: createdSheetId,
+                    startRowIndex: 8,
+                    endRowIndex: 60,
+                    startColumnIndex: 0,
+                    endColumnIndex: 100,
+                  },
+                  cell: {
+                    userEnteredFormat: {
+                      backgroundColor: { red: 1, green: 1, blue: 1 },
+                    },
+                  },
+                  fields: "userEnteredFormat.backgroundColor",
+                },
+              },
+            ],
+          },
+        })
+      }
+
+      // Initialize with ONLY clean discipline header rows (no fake subtasks)
       const initialTask: Task = {
         id: String(nextNum),
         taskNo: newTabName,
@@ -422,7 +458,7 @@ export async function createNewTask(data: Partial<Task>): Promise<Task> {
         equip: data.equip || "",
         link: directLink,
       }
-      const initialSubtasks = generateDefaultSubtasks(initialTask)
+      const initialSubtasks = generateInitialDisciplineHeaders(initialTask)
       await syncTaskSubtasksToGoogleSheet(newTabName, initialSubtasks)
 
       // Step 6: Append to Master Sheet (ลำดับงาน)
