@@ -51,10 +51,26 @@ interface DayColumn {
 function parseThaiDate(str?: string): Date | null {
   if (!str) return null
   const clean = str.trim()
+
+  // Handle slash format like 20/06/2025 or 20/6/2568
+  if (clean.includes("/")) {
+    const p = clean.split("/")
+    if (p.length === 3) {
+      const d = parseInt(p[0], 10)
+      const m = parseInt(p[1], 10) - 1
+      let y = parseInt(p[2], 10)
+      if (y > 2500) y -= 543
+      if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+        return new Date(y, m, d)
+      }
+    }
+  }
+
   const parts = clean.split(/\s+/)
   if (parts.length < 3) return null
   const day = parseInt(parts[0], 10)
-  const month = THAI_MONTHS[parts[1]]
+  const monthKey = parts[1].endsWith(".") ? parts[1] : parts[1] + "."
+  const month = THAI_MONTHS[monthKey] !== undefined ? THAI_MONTHS[monthKey] : THAI_MONTHS[parts[1]]
   let year = parseInt(parts[2], 10)
   if (year > 2500) year -= 543
   if (isNaN(day) || month === undefined || isNaN(year)) return null
@@ -416,8 +432,15 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     const e = parseThaiDate(st.end)
     if (!s) return false
     const d = day.date
-    if (e) return d >= s && d <= e
-    return d.getTime() === s.getTime()
+    
+    const dTime = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+    const sTime = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime()
+    
+    if (e) {
+      const eTime = new Date(e.getFullYear(), e.getMonth(), e.getDate()).getTime()
+      return dTime >= sTime && dTime <= eTime
+    }
+    return dTime === sTime
   }
 
   if (loading) {
@@ -915,11 +938,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
                           let capsuleColor = ""
                           if (isActive) {
-                            if (isDone) capsuleColor = "bg-emerald-500 shadow-xs"
-                            else if (isInProgress) capsuleColor = "bg-[#005B9A] shadow-xs"
-                            else if (isPending) capsuleColor = "bg-amber-500 shadow-xs"
-                            else if (isNotStarted) capsuleColor = "bg-rose-500 shadow-xs"
-                            else capsuleColor = "bg-sky-400 shadow-xs"
+                            if (st.isHeader || st.category.includes("ส่งมอบ")) {
+                              capsuleColor = "bg-[#8EA9DB] shadow-xs" // Google Sheets Light Blue for Headers & Handover
+                            } else {
+                              capsuleColor = "bg-[#70AD47] shadow-xs" // Google Sheets Green for Operations
+                            }
                           }
 
                           return (
@@ -931,7 +954,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                             >
                               {isActive && (
                                 <div
-                                  className={`w-full h-5 rounded-md ${capsuleColor} transition-all duration-150 hover:scale-105`}
+                                  className={`w-full h-5 rounded-sm ${capsuleColor} transition-all duration-150 hover:scale-105`}
                                   title={`${st.category} (${dayCol.dateStr}) - ${st.status}`}
                                 ></div>
                               )}
