@@ -939,17 +939,22 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   key={ho.id || idx}
                   className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-3.5 text-xs flex flex-wrap items-center justify-between gap-2"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-[#86868B]">โอนย้าย:</span>
-                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-purple-700">
+                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-purple-700 font-mono">
                       {ho.fromDiscipline}
                     </span>
                     <span className="text-[#D2D2D7]">➔</span>
-                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-[#005B9A]">
+                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-[#005B9A] font-mono">
                       {ho.toDiscipline}
                     </span>
+                    {ho.byUser && (
+                      <span className="px-2.5 py-0.5 bg-sky-50 text-[#005B9A] rounded-lg border border-sky-200/80 font-semibold text-[11px]">
+                        ผู้ส่งมอบ: {ho.byUser}
+                      </span>
+                    )}
                     {ho.notes && (
-                      <span className="text-[#6E6E73] ml-2 italic">&quot;{ho.notes}&quot;</span>
+                      <span className="text-[#6E6E73] ml-1 italic">&quot;{ho.notes}&quot;</span>
                     )}
                   </div>
                   <div className="text-[#86868B] font-mono text-[11px] bg-white border border-black/[0.05] px-2.5 py-0.5 rounded-lg">

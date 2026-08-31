@@ -195,9 +195,10 @@ export async function executeHandover(
   fromDiscipline: DisciplineCode,
   toDiscipline: DisciplineCode,
   handoverDate: string,
-  notes: string
+  notes: string,
+  byUser?: string
 ): Promise<Task | null> {
-  return recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes)
+  return recordHandoverInStore(taskId, fromDiscipline, toDiscipline, handoverDate, notes, byUser)
 }
 
 export async function updateTaskDetails(

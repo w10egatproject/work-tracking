@@ -21,8 +21,8 @@ export async function PATCH(
   const body = await req.json()
 
   if (body.action === "handover") {
-    const { fromDiscipline, toDiscipline, handoverDate, notes } = body
-    const updated = await executeHandover(id, fromDiscipline, toDiscipline, handoverDate, notes)
+    const { fromDiscipline, toDiscipline, handoverDate, notes, byUser } = body
+    const updated = await executeHandover(id, fromDiscipline, toDiscipline, handoverDate, notes, byUser)
     if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 })
     return NextResponse.json(updated)
   }

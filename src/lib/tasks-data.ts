@@ -1,4 +1,4 @@
-import { Task, Subtask, TaskStatus, parseWCodes, deriveTaskStatus, DisciplineCode } from "@/types"
+import { Task, Subtask, TaskStatus, parseWCodes, deriveTaskStatus, DisciplineCode, DisciplineHandover } from "@/types"
 
 export const INITIAL_TASKS: Task[] = [
   {
@@ -605,18 +605,26 @@ export function updateTaskDetailsInStore(taskId: string, updates: Partial<Task>)
   return task
 }
 
-export function recordHandoverInStore(taskId: string, fromDiscipline: DisciplineCode, toDiscipline: DisciplineCode, handoverDate: string, notes: string): Task | null {
+export function recordHandoverInStore(
+  taskId: string,
+  fromDiscipline: DisciplineCode,
+  toDiscipline: DisciplineCode,
+  handoverDate: string,
+  notes: string,
+  byUser?: string
+): Task | null {
   const task = getTaskById(taskId)
   if (!task) return null
   if (!task.handovers) task.handovers = []
   
-  const handoverRecord = {
+  const handoverRecord: DisciplineHandover = {
     id: `ho-${Date.now()}`,
     taskId: task.id,
     fromDiscipline,
     toDiscipline,
     handoverDate,
     notes,
+    byUser: byUser || "",
     timestamp: new Date().toISOString(),
   }
   task.handovers.push(handoverRecord)

@@ -18,6 +18,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
   const [toDiscipline, setToDiscipline] = useState<DisciplineCode>(
     remainingDisciplines[0] || "W13"
   )
+  const [byUser, setByUser] = useState("")
   const [handoverDate, setHandoverDate] = useState(
     new Date().toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" })
   )
@@ -43,6 +44,7 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
           toDiscipline,
           handoverDate,
           notes,
+          byUser: byUser.trim(),
         }),
       })
 
@@ -149,15 +151,28 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
             >
               {(["W11", "W12", "W13", "W14"] as DisciplineCode[]).map((code) => {
                 const conf = DISCIPLINE_CONFIG[code]
-                const isParticipating = task.w_codes.includes(code)
                 return (
                   <option key={code} value={code} disabled={code === currentDiscipline}>
-                    {conf.fullName} {isParticipating ? "(หมวดร่วมงานเดิม)" : "(หมวดใหม่)"}{" "}
-                    {code === currentDiscipline ? "- หมวดปัจจุบัน" : ""}
+                    {conf.fullName}{code === currentDiscipline ? " - หมวดปัจจุบัน" : ""}
                   </option>
                 )
               })}
             </select>
+          </div>
+
+          {/* Handover By / ผู้ส่งมอบ */}
+          <div>
+            <label className="block text-xs font-bold text-[#0F172A] mb-1.5 flex items-center justify-between">
+              <span>ผู้ส่งมอบงาน (Handover By)</span>
+              <span className="text-[10px] text-slate-400 font-normal">เช่น วิศวกรผู้ควบคุมงาน / นายสมชาย</span>
+            </label>
+            <input
+              type="text"
+              value={byUser}
+              onChange={(e) => setByUser(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:border-[#005B9A] outline-none"
+              placeholder="ระบุชื่อผู้ส่งมอบงาน..."
+            />
           </div>
 
           {/* Handover Date */}
