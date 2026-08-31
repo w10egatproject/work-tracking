@@ -737,8 +737,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             <div className="w-full lg:w-[680px] shrink-0 bg-white overflow-x-auto">
               <table className="w-full border-collapse text-[11px] text-left">
                 <thead>
-                  {/* Header Row (Two tiers merged into h-16 for exact alignment) */}
-                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#86868B] font-semibold text-[10px] h-16">
+                  {/* Header Row (Two tiers merged into h-[65px] for exact alignment) */}
+                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#86868B] font-semibold text-[10px] h-[65px] max-h-[65px]">
                     <th className="py-2 px-3 w-10 text-center border-r border-slate-200 font-mono">#</th>
                     <th className="py-2 px-3 min-w-[200px] border-r border-slate-200">งานที่ต้องทำ (Subtask)</th>
                     <th className="py-2 px-2.5 w-24 text-center border-r border-slate-200">เริ่ม - เสร็จ</th>
@@ -762,7 +762,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         onMouseEnter={() => setHoveredRowId(st.id)}
                         onMouseLeave={() => setHoveredRowId(null)}
                         onClick={() => !isHeader && handleOpenEditSubtask(st)}
-                        className={`transition-all duration-150 h-12 ${
+                        className={`transition-all duration-150 h-[50px] min-h-[50px] max-h-[50px] box-border ${
                           isHeader
                             ? "bg-sky-50/80 font-bold border-t border-b border-sky-200"
                             : isHovered
@@ -771,12 +771,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         }`}
                       >
                         {/* 1. Row Num */}
-                        <td className="py-2 px-3 border-r border-slate-100 text-center font-mono text-[10px] text-[#86868B] bg-[#FAFAFC]">
+                        <td className="py-1 px-3 border-r border-slate-100 text-center font-mono text-[10px] text-[#86868B] bg-[#FAFAFC] h-[50px]">
                           {sIdx + 1}
                         </td>
 
                         {/* 2. งานที่ต้องทำ */}
-                        <td className="py-2 px-3 border-r border-slate-100 font-medium">
+                        <td className="py-1 px-3 border-r border-slate-100 font-medium h-[50px]">
                           <div className="flex items-center justify-between gap-1.5">
                             {isHeader ? (
                               <span className="text-[#005B9A] font-bold flex items-center gap-1.5">
@@ -794,18 +794,18 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </td>
 
                         {/* 3. วันที่เริ่ม - เสร็จ */}
-                        <td className="py-2 px-2.5 border-r border-slate-100 text-center text-[#6E6E73] text-[10px] whitespace-nowrap">
-                          <div>{st.start || "-"}</div>
-                          <div className="text-[9px] text-[#86868B]">{st.end || "-"}</div>
+                        <td className="py-1 px-2 border-r border-slate-100 text-center text-[#6E6E73] text-[10px] whitespace-nowrap h-[50px]">
+                          <div className="leading-tight">{st.start || "-"}</div>
+                          <div className="text-[9px] text-[#86868B] leading-tight">{st.end || "-"}</div>
                         </td>
 
                         {/* 4. วันที่ใช้ */}
-                        <td className="py-2 px-2 border-r border-slate-100 text-center font-mono text-[#1D1D1F] font-semibold text-[10px]">
+                        <td className="py-1 px-2 border-r border-slate-100 text-center font-mono text-[#1D1D1F] font-semibold text-[10px] h-[50px]">
                           {st.days || 1}
                         </td>
 
                         {/* 5. ความคืบหน้า% */}
-                        <td className="py-2 px-3 border-r border-slate-100">
+                        <td className="py-1 px-3 border-r border-slate-100 h-[50px]">
                           <div className="flex items-center gap-1.5 justify-center">
                             <div className="flex-1 h-1.5 bg-[#E5E5EA] rounded-full overflow-hidden">
                               <div
@@ -822,7 +822,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </td>
 
                         {/* 6. สถานะ */}
-                        <td className="py-2 px-2.5 border-r border-slate-100 text-center">
+                        <td className="py-1 px-2.5 border-r border-slate-100 text-center h-[50px]">
                           <span
                             className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border inline-flex items-center gap-1 ${
                               isDone
@@ -840,7 +840,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         </td>
 
                         {/* 7. ปุ่มจัดการแถว */}
-                        <td className={`py-1.5 px-2 text-center whitespace-nowrap ${isHeader ? "bg-sky-50/40" : "bg-[#FAFAFC]"}`}>
+                        <td className={`py-1 px-2 text-center whitespace-nowrap h-[50px] ${isHeader ? "bg-sky-50/40" : "bg-[#FAFAFC]"}`}>
                           {!isHeader ? (
                             <div className="flex items-center justify-center gap-1.5">
                               <button
@@ -877,12 +877,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <table className="w-full border-collapse text-[11px]">
                 <thead>
                   {/* Top Tier: Month Spans */}
-                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#1D1D1F] font-semibold text-[10px] h-8">
+                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#1D1D1F] font-semibold text-[10px] h-[32px]">
                     {monthGroups.map((grp, gIdx) => (
                       <th
                         key={gIdx}
                         colSpan={grp.span}
-                        className="py-1 px-1 text-center font-bold text-[#1D1D1F] border-r border-slate-200 uppercase tracking-wider"
+                        className="py-1 px-1 text-center font-bold text-[#1D1D1F] border-r border-slate-200 uppercase tracking-wider h-[32px]"
                       >
                         {grp.month}
                       </th>
@@ -890,11 +890,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </tr>
 
                   {/* Bottom Tier: Day Columns */}
-                  <tr className="bg-[#FAFAFC] border-b border-slate-200 text-[10px] text-[#86868B] font-medium h-8">
+                  <tr className="bg-[#FAFAFC] border-b border-slate-200 text-[10px] text-[#86868B] font-medium h-[32px]">
                     {dayColumns.map((col, idx) => (
                       <th
                         key={idx}
-                        className={`py-1 px-0.5 w-8 text-center border-r border-slate-200 leading-tight ${
+                        className={`py-0.5 px-0.5 w-8 text-center border-r border-slate-200 leading-tight h-[32px] ${
                           col.isWeekend ? "bg-amber-50/60 text-amber-900" : "text-[#1D1D1F]"
                         }`}
                         title={`${col.weekdayFull} ${col.dateStr}`}
@@ -920,7 +920,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         onMouseEnter={() => setHoveredRowId(st.id)}
                         onMouseLeave={() => setHoveredRowId(null)}
                         onClick={() => !st.isHeader && handleOpenEditSubtask(st)}
-                        className={`transition-all duration-150 h-12 ${
+                        className={`transition-all duration-150 h-[50px] min-h-[50px] max-h-[50px] box-border ${
                           st.isHeader
                             ? "bg-sky-50/80 border-t border-b border-sky-200"
                             : isHovered
@@ -930,26 +930,41 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                       >
                         {dayColumns.map((dayCol, dIdx) => {
                           const isActive = isSubtaskActiveOnDay(st, dayCol)
+                          const prevActive = isActive && dIdx > 0 && isSubtaskActiveOnDay(st, dayColumns[dIdx - 1])
+                          const nextActive = isActive && dIdx < dayColumns.length - 1 && isSubtaskActiveOnDay(st, dayColumns[dIdx + 1])
 
                           let capsuleColor = ""
                           if (isActive) {
                             if (st.isHeader || st.category.includes("ส่งมอบ")) {
-                              capsuleColor = "bg-[#8EA9DB] shadow-xs" // Google Sheets Light Blue for Headers & Handover
+                              capsuleColor = "bg-[#8EA9DB]" // Google Sheets Light Blue for Headers & Handover
                             } else {
-                              capsuleColor = "bg-[#70AD47] shadow-xs" // Google Sheets Green for Operations
+                              capsuleColor = "bg-[#70AD47]" // Google Sheets Green for Operations
+                            }
+                          }
+
+                          let barRounding = "rounded-md mx-0.5"
+                          if (isActive) {
+                            if (prevActive && nextActive) {
+                              barRounding = "rounded-none -mx-[1px] w-[calc(100%+2px)]"
+                            } else if (!prevActive && nextActive) {
+                              barRounding = "rounded-l-md rounded-r-none ml-0.5 -mr-[1px] w-[calc(100%+1px)]"
+                            } else if (prevActive && !nextActive) {
+                              barRounding = "rounded-r-md rounded-l-none -ml-[1px] mr-0.5 w-[calc(100%+1px)]"
+                            } else {
+                              barRounding = "rounded-md mx-0.5 w-[calc(100%-4px)]"
                             }
                           }
 
                           return (
                             <td
                               key={dIdx}
-                              className={`border-r border-slate-100 text-center p-0.5 h-12 relative ${
+                              className={`border-r border-slate-100 text-center p-0 h-[50px] relative overflow-visible ${
                                 isHovered ? "bg-sky-50/80" : dayCol.isWeekend ? "bg-amber-50/20" : "bg-white"
                               }`}
                             >
                               {isActive && (
                                 <div
-                                  className={`w-full h-5 rounded-sm ${capsuleColor} transition-all duration-150 hover:scale-105`}
+                                  className={`h-5.5 ${barRounding} ${capsuleColor} transition-all duration-150 relative z-10`}
                                   title={`${st.category} (${dayCol.dateStr}) - ${st.status}`}
                                 ></div>
                               )}
