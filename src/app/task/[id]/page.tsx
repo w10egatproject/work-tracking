@@ -869,8 +869,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                           if (isActive) {
                             if (st.isHeader || st.category.includes("ส่งมอบ")) {
                               capsuleColor = "bg-[#8EA9DB]" // Google Sheets Light Blue for Headers & Handover
+                            } else if (isDone) {
+                              capsuleColor = "bg-[#70AD47]" // Google Sheets Green for เสร็จ (Completed)
+                            } else if (isInProgress) {
+                              capsuleColor = "bg-[#5B9BD5]" // Google Sheets Blue for ดำเนินการ (In Progress)
                             } else {
-                              capsuleColor = "bg-[#70AD47]" // Google Sheets Green for Operations
+                              capsuleColor = "bg-[#ED7D31]" // Google Sheets Orange for รอดำเนินการ / ยังไม่ดำเนินการ (Pending/Not Started)
                             }
                           }
 
