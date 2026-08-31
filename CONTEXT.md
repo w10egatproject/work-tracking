@@ -37,10 +37,11 @@ The operational transfer of a task from a completed discipline (e.g. W12 finishi
 _Avoid_: Task assignment, routing, forwarding
 
 **Progress Status (สถานะการดำเนินงาน)**:
-The operational state of a task or subtask derived deterministically from the Master Sheet:
-- **`เสร็จ` (Completed)**: Has a recorded completion date (`completion_date` / วันที่สิ้นสุด) in the Master Sheet.
-- **`ดำเนินการ` (In Progress)**: Has a linked Task Detail Sheet (`link` / ลิ้งค์แผ่นงานย่อย) and is actively being executed across participating disciplines (W11–W14).
-- **`รอดำเนินการ` (Pending)**: A Work Order entry in the Master Sheet without a linked Task Detail Sheet and without a completion date.
+The operational state of a task or subtask derived deterministically from the Master Sheet and Task Detail Sheets:
+- **`เสร็จ` (Completed)**: Has a recorded completion date (`completion_date` / วันที่สิ้นสุด) or 100% progress.
+- **`ดำเนินการ` (In Progress)**: Active and currently being executed across participating disciplines (W11–W14).
+- **`รอดำเนินการ` (Pending)**: A Work Order entry in the Master Sheet awaiting commencement without a recorded completion date.
+- **`ยังไม่ดำเนินการ` (Not Started)**: Future scheduled subtasks or upcoming discipline handovers defined in the Task Detail Sheet that have not commenced execution (0% progress).
 _Avoid_: State, phase, stage
 
 **Timeline / Gantt (ตารางเวลาการดำเนินงาน)**:
