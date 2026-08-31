@@ -8,6 +8,7 @@ import TaskHeaderCard from "@/components/task/TaskHeaderCard"
 import TaskEditDetailsModal from "@/components/task/TaskEditDetailsModal"
 import SubtaskEditModal from "@/components/task/SubtaskEditModal"
 import InsertSubtaskModal from "@/components/task/InsertSubtaskModal"
+import DeleteSubtaskModal from "@/components/task/DeleteSubtaskModal"
 import TaskPhotoLightboxModal from "@/components/task/TaskPhotoLightboxModal"
 import ThaiCalendarPickerModal from "@/components/task/ThaiCalendarPickerModal"
 import { Plus, Edit2, Trash2 } from "lucide-react"
@@ -135,6 +136,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [insertDays, setInsertDays] = useState(1)
   const [insertEnd, setInsertEnd] = useState("")
   const [isInsertingSubtask, setIsInsertingSubtask] = useState(false)
+
+  // Delete subtask modal state
+  const [subtaskToDelete, setSubtaskToDelete] = useState<Subtask | null>(null)
+  const [isDeletingSubtask, setIsDeletingSubtask] = useState(false)
 
   const getDerivedStatus = (p: number): TaskStatus => {
     if (p === 100) return "เสร็จ"
@@ -529,14 +534,19 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const handleDeleteSubtask = async (subtaskId: string, e: React.MouseEvent) => {
+  const handleOpenDeleteModal = (st: Subtask, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm("คุณต้องการลบแถวงานย่อยนี้ใช่หรือไม่?")) return
+    setSubtaskToDelete(st)
+  }
+
+  const handleConfirmDeleteSubtask = async () => {
+    if (!subtaskToDelete || !task) return
+    setIsDeletingSubtask(true)
     try {
-      const res = await fetch(`/api/tasks/${task!.id}`, {
+      const res = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "deleteSubtask", subtaskId }),
+        body: JSON.stringify({ action: "deleteSubtask", subtaskId: subtaskToDelete.id }),
       })
       if (res.ok) {
         const updatedTask = await res.json()
@@ -546,6 +556,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       }
     } catch (err) {
       console.error("Error deleting subtask:", err)
+    } finally {
+      setIsDeletingSubtask(false)
+      setSubtaskToDelete(null)
     }
   }
 
@@ -814,7 +827,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                               </button>
                               <button
                                 type="button"
-                                onClick={(e) => handleDeleteSubtask(st.id, e)}
+                                onClick={(e) => handleOpenDeleteModal(st, e)}
                                 className="p-1.5 rounded-lg text-[#86868B] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
                                 title="ลบแถวนี้"
                               >
@@ -1073,7 +1086,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         onClose={() => setInsertModalOpen(false)}
       />
 
-      {/* 10. Modern Thai Calendar Picker Modal */}
+      {/* 10. Delete Subtask Confirmation Modal (Modular Component) */}
+      <DeleteSubtaskModal
+        isOpen={!!subtaskToDelete}
+        subtask={subtaskToDelete}
+        isDeleting={isDeletingSubtask}
+        onConfirm={handleConfirmDeleteSubtask}
+        onClose={() => setSubtaskToDelete(null)}
+      />
+
+      {/* 11. Modern Thai Calendar Picker Modal */}
       {calendarPickerOpen && (
         <ThaiCalendarPickerModal
           title={calendarPickerTitle}
