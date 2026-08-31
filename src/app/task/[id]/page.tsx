@@ -121,12 +121,18 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   // Calendar Modal Picker State
   const [calendarPickerOpen, setCalendarPickerOpen] = useState(false)
-  const [calendarTargetField, setCalendarTargetField] = useState<"report_date" | "display_date" | "completion_date">("report_date")
+  const [calendarTargetField, setCalendarTargetField] = useState<
+    "report_date" | "display_date" | "completion_date" | "subtask_start" | "subtask_end" | "insert_start" | "insert_end"
+  >("report_date")
   const [calendarPickerTitle, setCalendarPickerTitle] = useState("เลือกวันที่")
   const [calendarCurrentDate, setCalendarCurrentDate] = useState<Date>(new Date())
 
-  // Subtask progress editing state
+  // Subtask editing state
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null)
+  const [subtaskCategory, setSubtaskCategory] = useState("")
+  const [subtaskStart, setSubtaskStart] = useState("")
+  const [subtaskEnd, setSubtaskEnd] = useState("")
+  const [subtaskDays, setSubtaskDays] = useState(1)
   const [editProgress, setEditProgress] = useState(0)
   const [editStatus, setEditStatus] = useState<TaskStatus>("ดำเนินการ")
   const [isSavingSubtask, setIsSavingSubtask] = useState(false)
@@ -191,9 +197,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   // Open Calendar Picker Modal for a specific date field
   const handleOpenCalendarPicker = (
-    field: "report_date" | "display_date" | "completion_date",
+    field: "report_date" | "display_date" | "completion_date" | "subtask_start" | "subtask_end" | "insert_start" | "insert_end",
     title: string,
-    currentVal: string
+    currentVal?: string
   ) => {
     setCalendarTargetField(field)
     setCalendarPickerTitle(title)
@@ -215,6 +221,22 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       setEditCompletionDate(formatted)
       const diff = calculateDayDifference(editReportDate, formatted)
       setEditTotalDays(diff)
+    } else if (calendarTargetField === "subtask_start") {
+      setSubtaskStart(formatted)
+      const diff = calculateDayDifference(formatted, subtaskEnd || formatted)
+      setSubtaskDays(diff)
+    } else if (calendarTargetField === "subtask_end") {
+      setSubtaskEnd(formatted)
+      const diff = calculateDayDifference(subtaskStart || formatted, formatted)
+      setSubtaskDays(diff)
+    } else if (calendarTargetField === "insert_start") {
+      setInsertStart(formatted)
+      const diff = calculateDayDifference(formatted, insertEnd || formatted)
+      setInsertDays(diff)
+    } else if (calendarTargetField === "insert_end") {
+      setInsertEnd(formatted)
+      const diff = calculateDayDifference(insertStart || formatted, formatted)
+      setInsertDays(diff)
     }
     setCalendarPickerOpen(false)
   }
@@ -314,20 +336,31 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     return { dayColumns: cols, monthGroups: groups }
   }, [task, visibleMonthsCount])
 
-  const handleOpenEditSubtask = (st: Subtask) => {
+  const handleOpenEditSubtask = (st: Subtask, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation()
     setEditingSubtask(st)
+    setSubtaskCategory(st.category || "")
+    setSubtaskStart(st.start || task?.report_date || "")
+    setSubtaskEnd(st.end || st.start || task?.completion_date || "")
+    setSubtaskDays(st.days || (st.start && st.end ? calculateDayDifference(st.start, st.end) : 1))
     setEditProgress(st.progress || 0)
     setEditStatus(st.status || getDerivedStatus(st.progress || 0))
   }
 
-  const handleSaveSubtask = async () => {
+  const handleSaveSubtask = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (!editingSubtask || !task) return
     setIsSavingSubtask(true)
 
     const progressNum = Number(editProgress)
     const autoStatus = getDerivedStatus(progressNum)
+    const calculatedDays = calculateDayDifference(subtaskStart, subtaskEnd)
 
     const updates = {
+      category: subtaskCategory.trim() || editingSubtask.category,
+      start: subtaskStart.trim(),
+      end: subtaskEnd.trim(),
+      days: calculatedDays > 0 ? calculatedDays : Number(subtaskDays) || 1,
       progress: progressNum,
       status: autoStatus,
     }
@@ -1205,7 +1238,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         />
       )}
 
-      {/* 8. Quick Subtask Edit Modal */}
+      {/* 8. Full Subtask Edit Modal (Category, Start/End Dates, Days, Progress, Status) */}
       {editingSubtask && (
         <div
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-150"
@@ -1213,27 +1246,87 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             if (e.target === e.currentTarget) setEditingSubtask(null)
           }}
         >
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-black/[0.08] animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
-              <h3 className="font-semibold text-xs text-[#1D1D1F]">แก้ไขความคืบหน้างานย่อย</h3>
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-black/[0.08] animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
+                  <Edit2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-[#1D1D1F]">แก้ไขรายละเอียดงานย่อย</h3>
+                  <p className="text-[11px] text-[#86868B]">ปรับเปลี่ยนชื่อ, วันที่เริ่ม-เสร็จ และความคืบหน้า</p>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => setEditingSubtask(null)}
-                className="text-[#86868B] hover:text-[#1D1D1F] p-1 rounded-full cursor-pointer"
+                className="text-[#86868B] hover:text-[#1D1D1F] p-1.5 rounded-full hover:bg-[#F5F5F7] transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs">
-              <p className="text-[#86868B] text-[11px] font-medium line-clamp-1">
-                {editingSubtask.category}
-              </p>
-
+            <form onSubmit={handleSaveSubtask} className="space-y-3.5 text-xs">
+              {/* ชื่องานย่อย */}
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <label className="block font-semibold text-[#1D1D1F] mb-1">
+                  ชื่องานย่อย (Subtask Name) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={subtaskCategory}
+                  onChange={(e) => setSubtaskCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 font-medium"
+                />
+              </div>
+
+              {/* วันที่เริ่มงาน & วันที่แล้วเสร็จ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* วันที่เริ่ม */}
+                <div>
+                  <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
+                    <span>วันที่เริ่มงาน <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+                  </label>
+                  <div
+                    onClick={() => handleOpenCalendarPicker("subtask_start", "เลือกวันที่เริ่มงานย่อย", subtaskStart)}
+                    className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-semibold text-[#005B9A] truncate">{subtaskStart || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                  </div>
+                </div>
+
+                {/* วันที่แล้วเสร็จ */}
+                <div>
+                  <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
+                    <span>วันที่แล้วเสร็จ <span className="text-rose-500">*</span></span>
+                    <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+                  </label>
+                  <div
+                    onClick={() => handleOpenCalendarPicker("subtask_end", "เลือกวันที่แล้วเสร็จงานย่อย", subtaskEnd)}
+                    className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-semibold text-[#005B9A] truncate">{subtaskEnd || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                  </div>
+                </div>
+              </div>
+
+              {/* ระยะเวลาคำนวณอัตโนมัติ */}
+              <div className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-2.5 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#1D1D1F]">จำนวนวันที่ใช้:</span>
+                <span className="font-mono font-bold text-xs text-[#005B9A] bg-white border border-black/[0.06] px-3 py-0.5 rounded-xl shadow-2xs">
+                  {calculateDayDifference(subtaskStart, subtaskEnd)} วัน
+                </span>
+              </div>
+
+              {/* ความคืบหน้า (%) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-[#1D1D1F]">ระบุความคืบหน้า (%):</label>
-                  <div className="flex items-center gap-1 bg-sky-50 border border-sky-200 rounded-full px-2.5 py-1 focus-within:ring-2 focus-within:ring-sky-200">
+                  <div className="flex items-center gap-1 bg-sky-50 border border-sky-200 rounded-full px-2.5 py-0.5 focus-within:ring-2 focus-within:ring-sky-200">
                     <input
                       type="number"
                       min={0}
@@ -1247,7 +1340,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         setEditProgress(val)
                         setEditStatus(getDerivedStatus(val))
                       }}
-                      className="w-14 text-right text-sm font-bold text-[#005B9A] bg-transparent outline-none font-mono"
+                      className="w-12 text-right text-xs font-bold text-[#005B9A] bg-transparent outline-none font-mono"
                     />
                     <span className="text-xs font-bold text-[#005B9A]">%</span>
                   </div>
@@ -1268,7 +1361,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 />
 
                 {/* Preset Pills */}
-                <div className="grid grid-cols-5 gap-1.5 mt-2.5">
+                <div className="grid grid-cols-5 gap-1 mt-1.5">
                   {[0, 25, 50, 75, 100].map((val) => (
                     <button
                       key={val}
@@ -1277,7 +1370,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         setEditProgress(val)
                         setEditStatus(getDerivedStatus(val))
                       }}
-                      className={`py-1.5 rounded-full text-[11px] font-medium border transition-colors cursor-pointer ${
+                      className={`py-1 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
                         editProgress === val
                           ? "bg-[#005B9A] text-white border-[#005B9A] shadow-xs"
                           : "bg-[#F5F5F7] text-[#1D1D1F] border-black/[0.05] hover:bg-[#E8E8ED]"
@@ -1289,11 +1382,11 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <div className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-3 flex items-center justify-between">
-                <div className="text-xs font-medium text-[#86868B]">สถานะ:</div>
+              {/* สถานะ Badge */}
+              <div className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-2.5 flex items-center justify-between">
+                <div className="text-[11px] font-medium text-[#86868B]">สถานะ:</div>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold border inline-flex items-center gap-1 shadow-2xs ${
+                  className={`px-3 py-0.5 rounded-full text-xs font-semibold border inline-flex items-center gap-1 shadow-2xs ${
                     editStatus === "เสร็จ"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : editStatus === "ดำเนินการ"
@@ -1306,24 +1399,24 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </span>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2 pt-2.5 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingSubtask(null)}
-                  className="px-4 py-2 bg-[#F5F5F7] text-[#1D1D1F] rounded-full text-xs font-medium hover:bg-[#E8E8ED] transition-colors cursor-pointer"
+                  className="px-4 py-1.5 bg-[#F5F5F7] text-[#1D1D1F] rounded-full text-xs font-medium hover:bg-[#E8E8ED] transition-colors cursor-pointer"
                 >
                   ยกเลิก
                 </button>
                 <button
-                  type="button"
-                  onClick={handleSaveSubtask}
+                  type="submit"
                   disabled={isSavingSubtask}
-                  className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-xs font-medium shadow-xs cursor-pointer"
+                  className="px-5 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-xs font-medium shadow-xs flex items-center gap-1.5 cursor-pointer"
                 >
-                  {isSavingSubtask ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSavingSubtask ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}</span>
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -1400,37 +1493,41 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-[#1D1D1F] mb-1">วันที่เริ่ม</label>
-                  <input
-                    type="text"
-                    value={insertStart}
-                    onChange={(e) => setInsertStart(e.target.value)}
-                    placeholder="เช่น 28 ส.ค. 2026"
-                    className="w-full px-3 py-2 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white"
-                  />
+                  <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
+                    <span>วันที่เริ่ม</span>
+                    <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+                  </label>
+                  <div
+                    onClick={() => handleOpenCalendarPicker("insert_start", "เลือกวันที่เริ่มงาน", insertStart)}
+                    className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-semibold text-[#005B9A] truncate">{insertStart || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block font-semibold text-[#1D1D1F] mb-1">วันที่ใช้ (วัน)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={insertDays}
-                    onChange={(e) => setInsertDays(Number(e.target.value))}
-                    className="w-full px-3 py-2 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white font-mono"
-                  />
+                  <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
+                    <span>วันที่เสร็จ</span>
+                    <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+                  </label>
+                  <div
+                    onClick={() => handleOpenCalendarPicker("insert_end", "เลือกวันที่แล้วเสร็จ", insertEnd)}
+                    className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                  >
+                    <span className="font-mono font-semibold text-[#005B9A] truncate">{insertEnd || "เลือกวันที่"}</span>
+                    <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold text-[#1D1D1F] mb-1">วันที่เสร็จ</label>
-                  <input
-                    type="text"
-                    value={insertEnd}
-                    onChange={(e) => setInsertEnd(e.target.value)}
-                    placeholder="เช่น 1 ก.ย. 2026"
-                    className="w-full px-3 py-2 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white"
-                  />
-                </div>
+              </div>
+
+              <div className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-2.5 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-[#1D1D1F]">จำนวนวันที่ใช้:</span>
+                <span className="font-mono font-bold text-xs text-[#005B9A] bg-white border border-black/[0.06] px-3 py-0.5 rounded-xl shadow-2xs">
+                  {calculateDayDifference(insertStart, insertEnd)} วัน
+                </span>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
