@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Subtask } from "@/types"
-import { X, ArrowUpToLine, ArrowDownToLine, Calendar as CalendarIcon } from "lucide-react"
+import { X, ArrowUpToLine, ArrowDownToLine, Calendar as CalendarIcon, Plus } from "lucide-react"
 
 interface InsertSubtaskModalProps {
   isOpen: boolean
@@ -39,130 +39,134 @@ export default function InsertSubtaskModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 bg-[#19211E]/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-black/[0.08] animate-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+      <div className="bg-[#FAF8F5] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#DDD6C8] animate-in zoom-in-95 duration-150 text-[#19211E]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#DDD6C8] mb-3">
           <div>
-            <h3 className="font-semibold text-xs text-[#1D1D1F]">
+            <h3 className="font-bold text-xs text-[#19211E]">
               {targetSubtask.isHeader
                 ? `เพิ่มงานย่อยในหมวด`
                 : `แทรกแถวงานย่อย (${insertPosition === "above" ? "ด้านบน" : "ด้านล่าง"})`}
             </h3>
-            <p className="text-[11px] text-[#005B9A] font-bold mt-0.5 line-clamp-1">
-              หมวดงาน: <span className="text-[#1D1D1F]">{targetSubtask.category}</span>
+            <p className="text-[11px] text-[#C05621] font-bold mt-0.5 line-clamp-1">
+              หมวดงาน: <span className="text-[#19211E]">{targetSubtask.category}</span>
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#86868B] hover:text-[#1D1D1F] p-1 rounded-full hover:bg-[#F5F5F7] cursor-pointer"
+            className="text-[#6B7771] hover:text-[#19211E] p-1 rounded-full hover:bg-[#ECE7DC] cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={onSave} className="space-y-3.5 text-xs">
+        <form onSubmit={onSave} className="space-y-3.5 text-xs text-[#19211E]">
           {!targetSubtask.isHeader && (
             <div>
-              <label className="block font-semibold text-[#1D1D1F] mb-1.5">ตำแหน่งการแทรกแถว:</label>
+              <label className="block font-bold text-[#19211E] mb-1.5">ตำแหน่งการแทรกแถว:</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setInsertPosition("above")}
-                  className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     insertPosition === "above"
-                      ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
-                      : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
+                      ? "bg-[#19211E] text-[#FAF8F5] border-[#19211E] shadow-2xs"
+                      : "bg-white text-[#434E49] border-[#DDD6C8] hover:bg-[#ECE7DC]"
                   }`}
                 >
-                  <ArrowUpToLine className="w-4 h-4 text-[#005B9A]" />
+                  <ArrowUpToLine className="w-4 h-4" />
                   <span>แทรกด้านบน</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setInsertPosition("below")}
-                  className={`py-2 px-3 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                     insertPosition === "below"
-                      ? "bg-sky-50 text-[#005B9A] border-[#005B9A] ring-2 ring-sky-100"
-                      : "bg-[#F5F5F7] text-[#6E6E73] border-black/[0.06] hover:bg-[#E8E8ED]"
+                      ? "bg-[#19211E] text-[#FAF8F5] border-[#19211E] shadow-2xs"
+                      : "bg-white text-[#434E49] border-[#DDD6C8] hover:bg-[#ECE7DC]"
                   }`}
                 >
-                  <ArrowDownToLine className="w-4 h-4 text-[#005B9A]" />
+                  <ArrowDownToLine className="w-4 h-4" />
                   <span>แทรกด้านล่าง</span>
                 </button>
               </div>
             </div>
           )}
 
+          {/* รายการงานย่อย */}
           <div>
-            <label className="block font-semibold text-[#1D1D1F] mb-1">
-              ชื่องานที่ต้องทำ <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#19211E] mb-1">
+              ชื่องานย่อย (Subtask Name) <span className="text-[#C05621]">*</span>
             </label>
             <input
               type="text"
               required
               value={insertCategory}
               onChange={(e) => setInsertCategory(e.target.value)}
-              placeholder="เช่น ตรวจสอบแนวเชื่อม NDT..."
-              className="w-full px-3.5 py-2.5 bg-[#F5F5F7] border border-black/[0.06] rounded-2xl text-xs outline-none focus:bg-white focus:border-[#005B9A] font-medium"
+              placeholder="เช่น งานประกอบและเชื่อมชิ้นงาน..."
+              className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs outline-none focus:bg-white focus:border-[#19211E] font-medium"
             />
           </div>
 
+          {/* วันที่เริ่ม & วันที่เสร็จ */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
-                <span>วันที่เริ่ม</span>
-                <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+              <label className="block font-bold text-[#19211E] mb-1 flex items-center justify-between">
+                <span>วันที่เริ่มงาน <span className="text-[#C05621]">*</span></span>
+                <span className="text-[10px] text-[#C05621] font-medium">ปฏิทิน</span>
               </label>
               <div
-                onClick={() => onOpenCalendarPicker("insert_start", "เลือกวันที่เริ่มงาน", insertStart)}
-                className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                onClick={() => onOpenCalendarPicker("insert_start", "เลือกวันที่เริ่มงานย่อย", insertStart)}
+                className="w-full px-3 py-2 bg-white hover:bg-[#ECE7DC]/60 border border-[#DDD6C8] hover:border-[#19211E] rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
               >
-                <span className="font-mono font-semibold text-[#005B9A] truncate">{insertStart || "เลือกวันที่"}</span>
-                <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                <span className="font-mono font-semibold text-[#19211E] truncate">{insertStart || "เลือกวันที่"}</span>
+                <CalendarIcon className="w-3.5 h-3.5 text-[#19211E] group-hover:scale-110 transition-transform shrink-0" />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-[#1D1D1F] mb-1 flex items-center justify-between">
-                <span>วันที่เสร็จ</span>
-                <span className="text-[10px] text-[#005B9A] font-medium">ปฏิทิน</span>
+              <label className="block font-bold text-[#19211E] mb-1 flex items-center justify-between">
+                <span>วันที่แล้วเสร็จ</span>
+                <span className="text-[10px] text-[#C05621] font-medium">ปฏิทิน</span>
               </label>
               <div
-                onClick={() => onOpenCalendarPicker("insert_end", "เลือกวันที่แล้วเสร็จ", insertEnd)}
-                className="w-full px-3 py-2 bg-[#F5F5F7] hover:bg-sky-50 border border-black/[0.06] hover:border-[#005B9A] rounded-2xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
+                onClick={() => onOpenCalendarPicker("insert_end", "เลือกวันที่สิ้นสุดงานย่อย", insertEnd)}
+                className="w-full px-3 py-2 bg-white hover:bg-[#ECE7DC]/60 border border-[#DDD6C8] hover:border-[#19211E] rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors shadow-2xs group"
               >
-                <span className="font-mono font-semibold text-[#005B9A] truncate">{insertEnd || "เลือกวันที่"}</span>
-                <CalendarIcon className="w-3.5 h-3.5 text-[#005B9A] group-hover:scale-110 transition-transform shrink-0" />
+                <span className="font-mono font-semibold text-[#19211E] truncate">{insertEnd || "เลือกวันที่"}</span>
+                <CalendarIcon className="w-3.5 h-3.5 text-[#19211E] group-hover:scale-110 transition-transform shrink-0" />
               </div>
             </div>
           </div>
 
-          <div className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-2.5 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-[#1D1D1F]">จำนวนวันที่ใช้:</span>
-            <span className="font-mono font-bold text-xs text-[#005B9A] bg-white border border-black/[0.06] px-3 py-0.5 rounded-xl shadow-2xs">
-              {calculateDayDifference(insertStart, insertEnd)} วัน
+          {/* คำนวณวัน */}
+          <div className="bg-[#ECE7DC] border border-[#DDD6C8] p-2.5 rounded-xl flex items-center justify-between text-xs">
+            <span className="text-[#6B7771]">ระยะเวลาทำงาน:</span>
+            <span className="font-mono font-bold text-[#19211E]">
+              {calculateDayDifference(insertStart, insertEnd)} วัน (คำนวณอัตโนมัติ)
             </span>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#DDD6C8]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-[#F5F5F7] text-[#1D1D1F] rounded-full text-xs font-medium hover:bg-[#E8E8ED] transition-colors cursor-pointer"
+              className="px-4 py-2 bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] rounded-xl text-xs font-bold hover:bg-[#DDD6C8] transition-colors cursor-pointer"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={isInsertingSubtask}
-              className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-xs font-medium shadow-xs cursor-pointer"
+              className="px-5 py-2 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer border border-[#19211E]"
             >
-              {isInsertingSubtask ? "กำลังเพิ่ม..." : "✓ บันทึกแทรกแถว"}
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+              <span>{isInsertingSubtask ? "กำลังบันทึก..." : "แทรกแถวงานย่อย"}</span>
             </button>
           </div>
         </form>

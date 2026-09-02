@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import React, { useState, useMemo } from "react"
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react"
@@ -85,65 +85,67 @@ export default function ThaiCalendarPickerModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 z-60 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 bg-[#19211E]/50 z-60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-black/[0.08] animate-in zoom-in-95 duration-150">
+      <div className="bg-[#FAF8F5] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#DDD6C8] animate-in zoom-in-95 duration-150 text-[#19211E]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="flex items-center justify-between pb-3 border-b border-[#DDD6C8] mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold">
+            <div className="w-7 h-7 rounded-lg bg-[#ECE7DC] text-[#19211E] flex items-center justify-center font-bold border border-[#DDD6C8]">
               <CalendarIcon className="w-4 h-4" />
             </div>
-            <h3 className="font-semibold text-xs text-[#1D1D1F]">{title}</h3>
+            <h3 className="font-bold text-xs text-[#19211E]">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#86868B] hover:text-[#1D1D1F] p-1 rounded-full hover:bg-[#F5F5F7] cursor-pointer"
+            className="text-[#6B7771] hover:text-[#19211E] p-1.5 rounded-full hover:bg-[#ECE7DC] cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Month & Year Navigation Bar */}
-        <div className="flex items-center justify-between bg-[#F5F5F7] p-2 rounded-2xl border border-black/[0.04] mb-3">
+        {/* Month Navigation Header */}
+        <div className="flex items-center justify-between py-2 px-1 mb-2 bg-[#ECE7DC]/60 rounded-2xl border border-[#DDD6C8]">
           <button
             type="button"
             onClick={prevMonth}
-            className="p-1 rounded-full text-[#6E6E73] hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl hover:bg-white text-[#19211E] transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-
-          <div className="font-bold text-xs text-[#1D1D1F]">
-            <span>{THAI_MONTH_FULL[currentMonth]}</span>{" "}
-            <span className="font-mono text-[#005B9A]">{currentYear}</span>{" "}
-            <span className="text-[10px] text-[#86868B] font-normal">({thaiYear})</span>
+          <div className="font-bold text-xs text-[#19211E] flex items-center gap-1">
+            <span>{THAI_MONTH_FULL[currentMonth]}</span>
+            <span className="font-mono text-[11px] text-[#C05621]">{thaiYear}</span>
           </div>
-
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1 rounded-full text-[#6E6E73] hover:bg-white hover:text-[#005B9A] shadow-2xs transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl hover:bg-white text-[#19211E] transition-colors cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-1 text-center font-semibold text-[10px] text-[#86868B] mb-1">
+        {/* Day of Week Header */}
+        <div className="grid grid-cols-7 gap-1 text-center mb-1">
           {THAI_DAYS.map((day, idx) => (
-            <div key={idx} className={idx === 0 || idx === 6 ? "text-amber-600" : ""}>
+            <div
+              key={day}
+              className={`text-[10px] font-bold py-1 ${
+                idx === 0 || idx === 6 ? "text-[#C05621]" : "text-[#6B7771]"
+              }`}
+            >
               {day}
             </div>
           ))}
         </div>
 
-        {/* Calendar Day Cells Grid */}
-        <div className="grid grid-cols-7 gap-1 text-center text-xs">
+        {/* Day Cells Grid */}
+        <div className="grid grid-cols-7 gap-1">
           {calendarCells.map((cell, idx) => {
             const isSelected = isSameDay(cell.date, selectedDay)
             const isToday = isSameDay(cell.date, new Date())
@@ -153,13 +155,15 @@ export default function ThaiCalendarPickerModal({
                 key={idx}
                 type="button"
                 onClick={() => setSelectedDay(cell.date)}
-                className={`py-2 rounded-xl font-semibold transition-all text-xs flex flex-col items-center justify-center relative cursor-pointer ${
+                className={`h-8 rounded-xl text-xs font-mono font-bold flex flex-col items-center justify-center transition-all cursor-pointer relative ${
                   isSelected
-                    ? "bg-[#005B9A] text-white shadow-xs scale-105"
+                    ? "bg-[#19211E] text-[#FAF8F5] shadow-xs scale-105"
+                    : isToday
+                    ? "border border-[#19211E] text-[#19211E] bg-[#ECE7DC]/60"
                     : cell.isCurrentMonth
-                    ? "text-[#1D1D1F] hover:bg-sky-50 hover:text-[#005B9A]"
-                    : "text-[#D2D2D7] hover:bg-[#FAFAFC]"
-                } ${isToday && !isSelected ? "ring-1 ring-[#005B9A]" : ""}`}
+                    ? "text-[#19211E] hover:bg-[#ECE7DC]"
+                    : "text-[#98A39E] opacity-50 hover:opacity-100"
+                }`}
               >
                 <span>{cell.dayNum}</span>
               </button>
@@ -167,26 +171,28 @@ export default function ThaiCalendarPickerModal({
           })}
         </div>
 
-        {/* Selected Date Summary */}
-        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <div className="text-[11px] font-medium text-[#86868B]">
-            วันที่เลือก: <span className="font-mono text-[#005B9A] font-bold">{formatThaiDate(selectedDay)}</span>
+        {/* Selected Date Summary & Confirm Action */}
+        <div className="mt-4 pt-3 border-t border-[#DDD6C8] flex items-center justify-between gap-2">
+          <div className="text-[11px] font-mono text-[#19211E] font-bold bg-[#ECE7DC] px-2.5 py-1 rounded-lg border border-[#DDD6C8]">
+            {formatThaiDate(selectedDay)}
           </div>
-
-          <div className="flex items-center gap-1.5">
+          <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setSelectedDay(new Date())}
-              className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-[#F5F5F7] text-[#1D1D1F] hover:bg-[#E8E8ED] transition-colors cursor-pointer"
+              onClick={onClose}
+              className="px-3 py-1.5 bg-[#ECE7DC] text-[#19211E] rounded-xl text-xs font-bold hover:bg-[#DDD6C8] transition-colors cursor-pointer border border-[#DDD6C8]"
             >
-              วันนี้
+              ยกเลิก
             </button>
             <button
               type="button"
-              onClick={() => onSelectDate(selectedDay)}
-              className="px-4 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-xs font-medium transition-all shadow-xs cursor-pointer"
+              onClick={() => {
+                onSelectDate(selectedDay)
+                onClose()
+              }}
+              className="px-4 py-1.5 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer border border-[#19211E]"
             >
-              ยืนยัน
+              เลือกวันนี้
             </button>
           </div>
         </div>

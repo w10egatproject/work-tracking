@@ -73,182 +73,165 @@ export default function DisciplineHandoverDialog({ task, open, onClose, onSucces
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 bg-[#19211E]/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200/90 overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className="bg-[#FAF8F5] rounded-2xl w-full max-w-lg shadow-2xl border border-[#DDD6C8] overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-[#0F172A] text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-[#19211E] text-[#FAF8F5] px-6 py-4 flex items-center justify-between border-b border-[#2C3732]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#005B9A] to-[#004A7D] border border-sky-400/30 flex items-center justify-center text-xl shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[#2C3732] border border-[#DDD6C8]/30 flex items-center justify-center text-lg shadow-xs">
               🤝
             </div>
             <div>
               <h2 className="text-sm font-bold flex items-center gap-1.5">
                 <span>ส่งมอบงานให้หมวดถัดไป</span>
-                <span className="text-[#F0B323] text-xs font-normal">(Discipline Handover)</span>
+                <span className="text-[#C05621] text-xs font-normal">(Discipline Handover)</span>
               </h2>
-              <p className="text-xs text-slate-400">โอนย้ายงานและบันทึกประวัติการส่งมอบลงแผ่นงาน</p>
+              <p className="text-xs text-[#98A39E]">โอนย้ายงานและบันทึกประวัติการส่งมอบลงแผ่นงาน</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            className="text-[#98A39E] hover:text-[#FAF8F5] p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleConfirm} className="p-6 space-y-4 text-xs">
-          {/* Visual Handover Stepper */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-between gap-3">
+        <form onSubmit={handleConfirm} className="p-6 space-y-4 text-xs text-[#19211E]">
+          {/* Handover Direction Graphic Box */}
+          <div className="bg-white border border-[#DDD6C8] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-2xs">
             {/* From */}
-            <div className="flex-1 bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs text-center">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ผู้ส่งมอบ</div>
-              <div className="text-xs font-bold text-[#0F172A] mt-1 flex items-center justify-center gap-1.5">
-                <span className={`w-2.5 h-2.5 rounded-full ${fromMeta ? fromMeta.barClass : "bg-purple-500"}`}></span>
-                <span>{fromMeta ? fromMeta.fullName : fromDiscipline}</span>
-              </div>
-              <div className="text-[11px] text-emerald-600 font-bold mt-1 flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>เสร็จ 100%</span>
+            <div className="flex-1 text-center">
+              <span className="text-[10px] font-semibold text-[#6B7771] block mb-1">หมวดผู้ส่งมอบ (ปัจจุบัน)</span>
+              <div className="inline-flex items-center gap-1.5 bg-[#ECE7DC] border border-[#DDD6C8] text-[#19211E] font-bold px-3 py-1.5 rounded-xl font-mono text-xs">
+                <span>{fromMeta?.num || fromDiscipline}</span>
+                <span className="font-sans font-medium text-[11px]">{fromMeta?.fullName?.replace(`หมวด `, "")}</span>
               </div>
             </div>
 
-            <div className="p-2 rounded-full bg-sky-50 text-[#005B9A] flex-shrink-0 border border-sky-200">
-              <ArrowRight className="w-4 h-4" />
+            <div className="flex flex-col items-center shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[#19211E] text-[#FAF8F5] flex items-center justify-center shadow-xs">
+                <ArrowRight className="w-4 h-4" />
+              </div>
             </div>
 
             {/* To */}
-            <div className="flex-1 bg-white p-3.5 rounded-xl border border-[#F0B323] shadow-2xs text-center ring-2 ring-[#F0B323]/20">
-              <div className="text-[10px] font-bold text-[#D97706] uppercase tracking-wider">ผู้รับมอบ</div>
-              <div className="text-xs font-bold text-[#0F172A] mt-1 flex items-center justify-center gap-1.5">
-                <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    targetMeta ? targetMeta.barClass : "bg-slate-400"
-                  }`}
-                ></span>
-                <span>{targetMeta ? targetMeta.fullName : toDiscipline}</span>
-              </div>
-              <div className="text-[11px] text-[#005B9A] font-bold mt-1 flex items-center justify-center gap-1">
-                <Clock className="w-3 h-3" />
-                <span>เริ่มดำเนินการ</span>
+            <div className="flex-1 text-center">
+              <span className="text-[10px] font-semibold text-[#6B7771] block mb-1">ส่งมอบให้หมวด (ปลายทาง)</span>
+              <div className="inline-flex items-center gap-1.5 bg-[#FDF2EC] border border-[#F7CEB9] text-[#C05621] font-bold px-3 py-1.5 rounded-xl font-mono text-xs shadow-2xs">
+                <span>{targetMeta?.num || toDiscipline}</span>
+                <span className="font-sans font-medium text-[11px]">{targetMeta?.fullName?.replace(`หมวด `, "")}</span>
               </div>
             </div>
           </div>
 
-          {/* 1. เลือกหมวดผู้ส่งมอบงาน (From Discipline) */}
-          <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-              เลือกหมวดผู้ส่งมอบงาน <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={fromDiscipline}
-              onChange={(e) => setFromDiscipline(e.target.value as DisciplineCode)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-[#0F172A] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none"
-            >
-              {allDisciplines.map((code) => {
-                const conf = DISCIPLINE_CONFIG[code]
-                return (
-                  <option key={code} value={code}>
-                    {conf.fullName}
-                  </option>
-                )
-              })}
-            </select>
+          {/* Select From & To Disciplines */}
+          <div className="grid grid-cols-2 gap-3.5">
+            <div>
+              <label className="block font-bold text-[#19211E] mb-1">
+                หมวดผู้ส่งมอบงาน
+              </label>
+              <select
+                value={fromDiscipline}
+                onChange={(e) => setFromDiscipline(e.target.value as DisciplineCode)}
+                className="w-full px-3 py-2 bg-white border border-[#DDD6C8] rounded-xl text-xs font-semibold text-[#19211E] focus:border-[#19211E] outline-none cursor-pointer"
+              >
+                {allDisciplines.map((code) => {
+                  const conf = DISCIPLINE_CONFIG[code]
+                  return (
+                    <option key={code} value={code}>
+                      {conf ? `${conf.num} (${conf.fullName})` : code}
+                    </option>
+                  )
+                })}
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#19211E] mb-1">
+                หมวดผู้รับมอบงาน <span className="text-[#C05621]">*</span>
+              </label>
+              <select
+                value={toDiscipline}
+                onChange={(e) => setToDiscipline(e.target.value as DisciplineCode)}
+                className="w-full px-3 py-2 bg-white border border-[#DDD6C8] rounded-xl text-xs font-bold text-[#C05621] focus:border-[#19211E] outline-none cursor-pointer"
+              >
+                {allDisciplines
+                  .filter((d) => d !== fromDiscipline)
+                  .map((code) => {
+                    const conf = DISCIPLINE_CONFIG[code]
+                    return (
+                      <option key={code} value={code}>
+                        {conf ? `${conf.num} (${conf.fullName})` : code}
+                      </option>
+                    )
+                  })}
+              </select>
+            </div>
           </div>
 
-          {/* 2. เลือกหมวดผู้รับมอบงาน (To Discipline) */}
-          <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-              เลือกหมวดผู้รับมอบงาน <span className="text-rose-500">*</span>
-            </label>
-            <select
-              value={toDiscipline}
-              onChange={(e) => setToDiscipline(e.target.value as DisciplineCode)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-[#0F172A] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none"
-            >
-              {allDisciplines.map((code) => {
-                const conf = DISCIPLINE_CONFIG[code]
-                return (
-                  <option key={code} value={code}>
-                    {conf.fullName}
-                  </option>
-                )
-              })}
-            </select>
+          {/* Submitter Name & Date */}
+          <div className="grid grid-cols-2 gap-3.5">
+            <div>
+              <label className="block font-bold text-[#19211E] mb-1">
+                ชื่อผู้ส่งมอบงาน
+              </label>
+              <input
+                type="text"
+                value={byUser}
+                onChange={(e) => setByUser(e.target.value)}
+                placeholder="เช่น นายช่างสมศักดิ์"
+                className="w-full px-3.5 py-2 bg-white border border-[#DDD6C8] rounded-xl text-xs text-[#19211E] focus:border-[#19211E] outline-none font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-[#19211E] mb-1">
+                วันที่ส่งมอบ
+              </label>
+              <input
+                type="text"
+                value={handoverDate}
+                onChange={(e) => setHandoverDate(e.target.value)}
+                className="w-full px-3.5 py-2 bg-white border border-[#DDD6C8] rounded-xl text-xs text-[#19211E] font-mono focus:border-[#19211E] outline-none"
+              />
+            </div>
           </div>
 
-          {/* 3. Handover By / ชื่อผู้ส่งมอบ */}
+          {/* Notes */}
           <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1.5 flex items-center justify-between">
-              <span>ชื่อผู้ส่งมอบงาน / ผู้บันทึก (Handover By)</span>
-              <span className="text-[10px] text-slate-400 font-normal">เช่น วิศวกรผู้ควบคุมงาน / นายสมชาย</span>
-            </label>
-            <input
-              type="text"
-              value={byUser}
-              onChange={(e) => setByUser(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:border-[#005B9A] outline-none"
-              placeholder="ระบุชื่อผู้ส่งมอบงาน..."
-            />
-          </div>
-
-          {/* 4. Handover Date */}
-          <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-              วันที่ส่งมอบงาน
-            </label>
-            <input
-              type="text"
-              value={handoverDate}
-              onChange={(e) => setHandoverDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium focus:bg-white focus:border-[#005B9A] outline-none"
-              placeholder="เช่น 1 ก.พ. 2026"
-            />
-          </div>
-
-          {/* 5. Notes */}
-          <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-              หมายเหตุ / รายละเอียดการส่งมอบ
+            <label className="block font-bold text-[#19211E] mb-1">
+              บันทึกข้อความ / รายละเอียดการส่งมอบ
             </label>
             <textarea
-              rows={3}
+              rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="เช่น งานกลึงชิ้นงานเสร็จสมบูรณ์ ส่งมอบให้หมวดเชื่อมประกอบโครงสร้างต่อ..."
-              className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none resize-none"
+              placeholder="ระบุความคืบหน้าที่ทำเสร็จ หรือสิ่งที่หมวดถัดไปต้องดำเนินการต่อ..."
+              className="w-full px-3.5 py-2 bg-white border border-[#DDD6C8] rounded-xl text-xs text-[#19211E] focus:border-[#19211E] outline-none resize-none"
             />
           </div>
 
-          {/* Notice Card */}
-          <div className="flex items-start gap-2.5 bg-sky-50/80 border border-sky-200 text-[#005B9A] p-3.5 rounded-xl text-xs">
-            <AlertCircle className="w-4 h-4 text-[#005B9A] flex-shrink-0 mt-0.5" />
-            <div className="leading-relaxed">
-              เมื่อยืนยัน ระบบจะปรับหมวด <strong>{fromMeta ? fromMeta.name : fromDiscipline}</strong> เป็น <strong>&quot;เสร็จ&quot; (100%)</strong> และปรับหมวด <strong>{targetMeta ? targetMeta.name : toDiscipline}</strong> เป็น <strong>&quot;ดำเนินการ&quot;</strong>
-            </div>
-          </div>
-
-          {/* Footer actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          {/* Footer Actions */}
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#DDD6C8]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] rounded-xl text-xs font-bold hover:bg-[#DDD6C8] transition-colors cursor-pointer"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-5 py-2 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer border border-[#19211E]"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{submitting ? "กำลังส่งมอบ..." : "✓ ยืนยันการส่งมอบงาน"}</span>
+              <span>{submitting ? "กำลังส่งมอบ..." : "ยืนยันส่งมอบงาน"}</span>
             </button>
           </div>
         </form>

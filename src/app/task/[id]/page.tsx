@@ -636,19 +636,19 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] flex flex-col items-center justify-center gap-3 font-sans">
-        <div className="w-8 h-8 border-2 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
-        <div className="text-[#86868B] text-xs font-medium">กำลังโหลดข้อมูลแผ่นงาน...</div>
+      <div className="min-h-screen bg-[#F5F2EB] flex flex-col items-center justify-center gap-3 font-sans">
+        <div className="w-8 h-8 border-2 border-[#19211E] border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-[#6B7771] text-xs font-medium">กำลังโหลดข้อมูลแผ่นงาน...</div>
       </div>
     )
   }
 
   if (!task) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] p-12 text-center flex flex-col items-center justify-center font-sans">
+      <div className="min-h-screen bg-[#F5F2EB] p-12 text-center flex flex-col items-center justify-center font-sans">
         <div className="text-4xl mb-3">📄</div>
-        <div className="text-[#1D1D1F] font-semibold text-sm mb-4">ไม่พบข้อมูลงานที่ระบุในแผ่นงาน</div>
-        <a href="/" className="px-4 py-2 bg-[#005B9A] text-white rounded-full text-xs font-medium hover:bg-[#004A7D] transition-colors shadow-xs">
+        <div className="text-[#19211E] font-bold text-sm mb-4">ไม่พบข้อมูลงานที่ระบุในแผ่นงาน</div>
+        <a href="/" className="px-4 py-2 bg-[#19211E] text-[#FAF8F5] rounded-full text-xs font-semibold hover:bg-[#2C3732] transition-colors shadow-xs">
           ← กลับหน้ารวมงาน
         </a>
       </div>
@@ -659,8 +659,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const currentTaskNum = task.taskNo?.replace("งานที่", "") || task.id
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] flex flex-col font-sans select-none antialiased text-[12px] pb-16 selection:bg-[#005B9A] selection:text-white">
-      {/* 1. Apple-Clean Floating Glassmorphic Navbar */}
+    <div className="min-h-screen bg-[#F5F2EB] text-[#19211E] flex flex-col font-sans select-none antialiased text-[12px] pb-16 selection:bg-[#19211E] selection:text-[#FAF8F5]">
+      {/* 1. Industrial Console Floating Navbar */}
       <FloatingNavbar
         type="task-detail"
         taskNo={task.taskNo || `งานที่${task.id}`}
@@ -672,8 +672,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       />
 
       {/* Main Workspace Body */}
-      <main className="flex-1 px-4 sm:px-6 max-w-[1600px] w-full mx-auto space-y-6 pt-7 sm:pt-8">
-        {/* 2. Apple-Clean Bento Metadata Card (Modular Component) */}
+      <main className="flex-1 px-3 sm:px-6 max-w-[1600px] w-full mx-auto space-y-6 pt-5 sm:pt-7">
+        {/* 2. Industrial Ledger Bento Metadata Card */}
         <TaskHeaderCard
           task={task}
           currentTaskNum={currentTaskNum}
@@ -685,36 +685,36 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
         />
 
         {/* 3. True Two-Pane Split-Table Architecture (Left Subtasks Pinned | Right Timeline Scrollable) */}
-        <div className="bg-white rounded-3xl border border-black/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.03)] overflow-hidden">
+        <div className="bg-[#FAF8F5] rounded-3xl border border-[#DDD6C8] shadow-[0_2px_12px_rgba(25,33,30,0.04)] overflow-hidden">
           {/* Table Header Bar with Dynamic Timeline Controls */}
-          <div className="bg-[#FAFAFC] px-6 py-3.5 border-b border-black/[0.06] flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-[#ECE7DC] px-4 sm:px-6 py-3.5 border-b border-[#DDD6C8] flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#005B9A]"></span>
-              <span className="text-xs font-semibold text-[#1D1D1F]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#19211E]"></span>
+              <span className="text-xs font-bold text-[#19211E]">
                 ตารางแผนงานย่อยและไทม์ไลน์รายวัน (Subtasks Breakdown & Daily Schedule)
               </span>
-              <span className="text-[11px] font-medium text-[#005B9A] bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full font-mono">
+              <span className="text-[11px] font-bold text-[#19211E] bg-[#FAF8F5] border border-[#DDD6C8] px-2.5 py-0.5 rounded-full font-mono">
                 {subtasks.length} แถว
               </span>
             </div>
 
             {/* Timeline Window Controls */}
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="text-[11px] font-medium text-[#1D1D1F] bg-white border border-black/[0.06] px-3 py-1 rounded-full font-mono flex items-center gap-1.5 shadow-2xs">
-                <span className="text-[#86868B]">ช่วงที่แสดง:</span>
-                <span className="text-[#005B9A] font-semibold">
+              <div className="text-[11px] font-medium text-[#19211E] bg-[#FAF8F5] border border-[#DDD6C8] px-3 py-1 rounded-full font-mono flex items-center gap-1.5 shadow-2xs">
+                <span className="text-[#6B7771]">ช่วงที่แสดง:</span>
+                <span className="text-[#C05621] font-bold">
                   {monthGroups.length > 0
                     ? `${monthGroups[0].month.split(" ")[0]} - ${monthGroups[monthGroups.length - 1].month.split(" ")[0]} ${monthGroups[0].month.split(" ")[1] || ""}`
                     : ""}
                 </span>
-                <span className="text-[#86868B]">({dayColumns.length} วัน)</span>
+                <span className="text-[#6B7771]">({dayColumns.length} วัน)</span>
               </div>
 
               {visibleMonthsCount > 1 && (
                 <button
                   type="button"
                   onClick={handleShrinkTimelineMonth}
-                  className="px-3 py-1 bg-white hover:bg-[#F5F5F7] text-[#1D1D1F] border border-black/[0.08] rounded-full text-[11px] font-medium transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1 bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] rounded-full text-[11px] font-semibold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
                   title="ย่อลด 1 เดือน"
                 >
                   <span>➖ ย่อเดือน</span>
@@ -724,7 +724,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               <button
                 type="button"
                 onClick={handleExpandTimelineMonth}
-                className="px-3.5 py-1 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-full text-[11px] font-medium transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
+                className="px-3.5 py-1 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-full text-[11px] font-bold transition-all shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer border border-[#19211E]"
                 title="ขยายแสดงไทม์ไลน์เพิ่มอีก 1 เดือน"
               >
                 <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -734,23 +734,23 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Side-by-Side Dual-Pane Split Workspace */}
-          <div className="flex flex-col lg:flex-row w-full items-stretch divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
+          <div className="flex flex-col lg:flex-row w-full items-stretch divide-y lg:divide-y-0 lg:divide-x divide-[#DDD6C8]">
             {/* PANE 1: Left Pinned Subtasks Operational Table */}
-            <div className="w-full lg:w-[680px] shrink-0 bg-white overflow-x-auto">
+            <div className="w-full lg:w-[680px] shrink-0 bg-[#FAF8F5] overflow-x-auto">
               <table className="w-full border-collapse text-[11px] text-left">
                 <thead>
-                  {/* Header Row (Two tiers merged into h-[65px] for exact alignment) */}
-                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#86868B] font-semibold text-[10px] h-[65px] max-h-[65px]">
-                    <th className="py-2 px-3 w-10 text-center border-r border-slate-200 font-mono">#</th>
-                    <th className="py-2 px-3 min-w-[200px] border-r border-slate-200">งานที่ต้องทำ (Subtask)</th>
-                    <th className="py-2 px-2.5 w-24 text-center border-r border-slate-200">เริ่ม - เสร็จ</th>
-                    <th className="py-2 px-2 w-12 text-center border-r border-slate-200 font-mono">วัน</th>
-                    <th className="py-2 px-3 w-28 text-center border-r border-slate-200">ความคืบหน้า</th>
-                    <th className="py-2 px-2.5 w-24 text-center border-r border-slate-200">สถานะ</th>
+                  {/* Header Row */}
+                  <tr className="bg-[#ECE7DC]/80 border-b border-[#DDD6C8] text-[#6B7771] font-bold text-[10px] h-[65px] max-h-[65px]">
+                    <th className="py-2 px-3 w-10 text-center border-r border-[#DDD6C8] font-mono">#</th>
+                    <th className="py-2 px-3 min-w-[200px] border-r border-[#DDD6C8]">งานที่ต้องทำ (Subtask)</th>
+                    <th className="py-2 px-2.5 w-24 text-center border-r border-[#DDD6C8]">เริ่ม - เสร็จ</th>
+                    <th className="py-2 px-2 w-12 text-center border-r border-[#DDD6C8] font-mono">วัน</th>
+                    <th className="py-2 px-3 w-28 text-center border-r border-[#DDD6C8]">ความคืบหน้า</th>
+                    <th className="py-2 px-2.5 w-24 text-center border-r border-[#DDD6C8]">สถานะ</th>
                     <th className="py-2 px-2 w-24 text-center">จัดการ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-[11px]">
+                <tbody className="divide-y divide-[#DDD6C8]/60 text-[11px]">
                   {subtasks.map((st, sIdx) => {
                     const isHeader = st.isHeader
                     const isDone = st.status === "เสร็จ"
@@ -766,89 +766,89 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         onClick={() => !isHeader && handleOpenEditSubtask(st)}
                         className={`transition-all duration-150 h-[50px] min-h-[50px] max-h-[50px] box-border ${
                           isHeader
-                            ? "bg-sky-50/80 font-bold border-t border-b border-sky-200"
+                            ? "bg-[#ECE7DC] font-bold border-t border-b border-[#DDD6C8]"
                             : isHovered
-                            ? "bg-sky-50/80 cursor-pointer"
-                            : "hover:bg-sky-50/40 cursor-pointer bg-white"
+                            ? "bg-[#ECE7DC]/80 cursor-pointer"
+                            : "hover:bg-[#ECE7DC]/50 cursor-pointer bg-white"
                         }`}
                       >
                         {/* 1. Row Num */}
-                        <td className="py-1 px-3 border-r border-slate-100 text-center font-mono text-[10px] text-[#86868B] bg-[#FAFAFC] h-[50px]">
+                        <td className="py-1 px-3 border-r border-[#DDD6C8]/60 text-center font-mono text-[10px] text-[#6B7771] bg-[#ECE7DC]/30 h-[50px]">
                           {sIdx + 1}
                         </td>
 
                         {/* 2. งานที่ต้องทำ */}
-                        <td className="py-1 px-3 border-r border-slate-100 font-medium h-[50px]">
+                        <td className="py-1 px-3 border-r border-[#DDD6C8]/60 font-medium h-[50px]">
                           <div className="flex items-center justify-between gap-1.5">
                             {isHeader ? (
-                              <span className="text-[#005B9A] font-bold flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#005B9A]"></span>
+                              <span className="text-[#19211E] font-bold flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#19211E]"></span>
                                 <span>{st.category}</span>
                               </span>
                             ) : (
-                              <span className="text-[#1D1D1F] pl-1.5 flex items-center gap-1.5 group-hover:text-[#005B9A] transition-colors">
-                                <span className="text-[#D2D2D7]">•</span>
+                              <span className="text-[#19211E] pl-1.5 flex items-center gap-1.5 group-hover:text-[#C05621] transition-colors">
+                                <span className="text-[#DDD6C8]">•</span>
                                 <span className="font-medium line-clamp-1">{st.category}</span>
                               </span>
                             )}
-                            <Edit2 className="w-3 h-3 text-[#005B9A] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                            <Edit2 className="w-3 h-3 text-[#19211E] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                           </div>
                         </td>
 
                         {/* 3. วันที่เริ่ม - เสร็จ */}
-                        <td className="py-1 px-2 border-r border-slate-100 text-center text-[#6E6E73] text-[10px] whitespace-nowrap h-[50px]">
+                        <td className="py-1 px-2 border-r border-[#DDD6C8]/60 text-center text-[#6B7771] text-[10px] whitespace-nowrap h-[50px]">
                           <div className="leading-tight">{st.start || "-"}</div>
-                          <div className="text-[9px] text-[#86868B] leading-tight">{st.end || "-"}</div>
+                          <div className="text-[9px] text-[#98A39E] leading-tight">{st.end || "-"}</div>
                         </td>
 
                         {/* 4. วันที่ใช้ */}
-                        <td className="py-1 px-2 border-r border-slate-100 text-center font-mono text-[#1D1D1F] font-semibold text-[10px] h-[50px]">
+                        <td className="py-1 px-2 border-r border-[#DDD6C8]/60 text-center font-mono text-[#19211E] font-semibold text-[10px] h-[50px]">
                           {st.days || 1}
                         </td>
 
                         {/* 5. ความคืบหน้า% */}
-                        <td className="py-1 px-3 border-r border-slate-100 h-[50px]">
+                        <td className="py-1 px-3 border-r border-[#DDD6C8]/60 h-[50px]">
                           <div className="flex items-center gap-1.5 justify-center">
-                            <div className="flex-1 h-1.5 bg-[#E5E5EA] rounded-full overflow-hidden">
+                            <div className="flex-1 h-1.5 bg-[#ECE7DC] rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all duration-300 ${
-                                  isDone ? "bg-emerald-500" : "bg-[#005B9A]"
+                                  isDone ? "bg-[#1B5E3B]" : "bg-[#C05621]"
                                 }`}
                                 style={{ width: `${st.progress}%` }}
                               ></div>
                             </div>
-                            <span className="font-mono font-semibold text-[10px] w-6 text-right text-[#1D1D1F]">
+                            <span className="font-mono font-bold text-[10px] w-6 text-right text-[#19211E]">
                               {st.progress}%
                             </span>
                           </div>
                         </td>
 
                         {/* 6. สถานะ */}
-                        <td className="py-1 px-2.5 border-r border-slate-100 text-center h-[50px]">
+                        <td className="py-1 px-2.5 border-r border-[#DDD6C8]/60 text-center h-[50px]">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[9px] font-semibold border inline-flex items-center gap-1 ${
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-bold border inline-flex items-center gap-1 ${
                               isDone
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                ? "bg-[#E8F4EC] text-[#1B5E3B] border-[#B8DCBD]"
                                 : isInProgress
-                                ? "bg-sky-50 text-[#005B9A] border-sky-200"
+                                ? "bg-[#FDF2EC] text-[#C05621] border-[#F7CEB9]"
                                 : isPending
-                                ? "bg-amber-50 text-amber-800 border-amber-200"
-                                : "bg-rose-50 text-rose-700 border-rose-200"
+                                ? "bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]"
+                                : "bg-[#F3F4F6] text-[#4B5563] border-[#E5E7EB]"
                             }`}
                           >
-                            <span>{isDone ? "✅" : isInProgress ? "⚙️" : isPending ? "⏳" : "🔴"}</span>
+                            <span>{isDone ? "✅" : isInProgress ? "⚙️" : isPending ? "⏳" : "⚪"}</span>
                             <span>{st.status}</span>
                           </span>
                         </td>
 
                         {/* 7. ปุ่มจัดการแถว */}
-                        <td className={`py-1 px-2 text-center whitespace-nowrap h-[50px] ${isHeader ? "bg-sky-50/40" : "bg-[#FAFAFC]"}`}>
+                        <td className={`py-1 px-2 text-center whitespace-nowrap h-[50px] ${isHeader ? "bg-[#ECE7DC]/40" : "bg-[#FAF8F5]"}`}>
                           {!isHeader ? (
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenInsertModal(st, "below", e)}
-                                className="px-2.5 py-1 rounded-lg bg-white hover:bg-sky-50 text-[#005B9A] hover:text-[#004A7D] border border-slate-200 hover:border-sky-300 text-[10px] font-semibold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+                                className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] text-[10px] font-bold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
                                 title="แทรกแถวงานย่อย"
                               >
                                 <Plus className="w-3 h-3 stroke-[2.5]" />
@@ -857,7 +857,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                               <button
                                 type="button"
                                 onClick={(e) => handleOpenDeleteModal(st, e)}
-                                className="p-1.5 rounded-lg text-[#86868B] hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                                className="p-1.5 rounded-lg text-[#6B7771] hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
                                 title="ลบแถวนี้"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -867,7 +867,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                             <button
                               type="button"
                               onClick={(e) => handleOpenInsertModal(st, "below", e)}
-                              className="px-2.5 py-1.5 rounded-lg bg-[#005B9A] hover:bg-[#004A7D] text-white text-[10px] font-bold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
+                              className="px-2.5 py-1.5 rounded-lg bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] text-[10px] font-bold inline-flex items-center gap-1 transition-all shadow-2xs hover:scale-105 cursor-pointer active:scale-95 whitespace-nowrap shrink-0 border border-[#19211E]"
                               title="เพิ่มงานย่อยใต้หมวดนี้"
                             >
                               <Plus className="w-3 h-3 stroke-[2.5]" />
@@ -883,16 +883,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* PANE 2: Right Independently Horizontally Scrollable Calendar Gantt Timeline */}
-            <div className="flex-1 min-w-0 overflow-x-auto bg-[#FAFAFC]">
+            <div className="flex-1 min-w-0 overflow-x-auto bg-[#FAF8F5]">
               <table className="w-full border-collapse text-[11px]">
                 <thead>
                   {/* Top Tier: Month Spans */}
-                  <tr className="bg-[#F5F5F7] border-b border-slate-200 text-[#1D1D1F] font-bold text-xs h-[32px]">
+                  <tr className="bg-[#ECE7DC] border-b border-[#DDD6C8] text-[#19211E] font-bold text-xs h-[32px]">
                     {monthGroups.map((grp, gIdx) => (
                       <th
                         key={gIdx}
                         colSpan={grp.span}
-                        className="py-1 px-2 text-center font-bold text-[#005B9A] bg-sky-50/80 border-r border-slate-200 text-xs tracking-wide h-[32px] shadow-2xs whitespace-nowrap"
+                        className="py-1 px-2 text-center font-bold text-[#19211E] bg-[#ECE7DC] border-r border-[#DDD6C8] text-xs tracking-wide h-[32px] whitespace-nowrap"
                       >
                         {grp.month}
                       </th>
@@ -900,23 +900,23 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   </tr>
 
                   {/* Bottom Tier: Day Columns */}
-                  <tr className="bg-[#FAFAFC] border-b border-slate-200 text-[10px] text-[#86868B] font-medium h-[32px]">
+                  <tr className="bg-[#FAF8F5] border-b border-[#DDD6C8] text-[10px] text-[#6B7771] font-medium h-[32px]">
                     {dayColumns.map((col, idx) => (
                       <th
                         key={idx}
-                        className={`py-0.5 px-0.5 w-10 min-w-[40px] text-center border-r border-slate-200 leading-tight h-[32px] ${
-                          col.isWeekend ? "bg-amber-50/60 text-amber-900" : "text-[#1D1D1F]"
+                        className={`py-0.5 px-0.5 w-10 min-w-[40px] text-center border-r border-[#DDD6C8]/80 leading-tight h-[32px] ${
+                          col.isWeekend ? "bg-[#ECE7DC]/40 text-[#C05621]" : "text-[#19211E]"
                         }`}
                         title={`${col.weekdayFull} ${col.dateStr}`}
                       >
-                        <div className="font-bold text-xs text-[#1D1D1F] font-mono">{col.dayNum}</div>
-                        <div className="text-[9.5px] font-semibold text-[#86868B]">{col.weekday}</div>
+                        <div className="font-bold text-xs text-[#19211E] font-mono">{col.dayNum}</div>
+                        <div className="text-[9.5px] font-semibold text-[#6B7771]">{col.weekday}</div>
                       </th>
                     ))}
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100 text-[11px]">
+                <tbody className="divide-y divide-[#DDD6C8]/60 text-[11px]">
                   {subtasks.map((st) => {
                     const isDone = st.status === "เสร็จ"
                     const isInProgress = st.status === "ดำเนินการ"
@@ -932,10 +932,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                         onClick={() => !st.isHeader && handleOpenEditSubtask(st)}
                         className={`transition-all duration-150 h-[50px] min-h-[50px] max-h-[50px] box-border ${
                           st.isHeader
-                            ? "bg-sky-50/80 border-t border-b border-sky-200"
+                            ? "bg-[#ECE7DC] border-t border-b border-[#DDD6C8]"
                             : isHovered
-                            ? "bg-sky-50/80 cursor-pointer"
-                            : "hover:bg-sky-50/40 cursor-pointer bg-white"
+                            ? "bg-[#ECE7DC]/80 cursor-pointer"
+                            : "hover:bg-[#ECE7DC]/50 cursor-pointer bg-white"
                         }`}
                       >
                         {dayColumns.map((dayCol, dIdx) => {
@@ -946,13 +946,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                           let capsuleColor = ""
                           if (isActive) {
                             if (st.isHeader || st.category.includes("ส่งมอบ")) {
-                              capsuleColor = "bg-[#8EA9DB]" // Google Sheets Light Blue for Headers & Handover
+                              capsuleColor = "bg-[#19211E]" // Industrial Graphite for Headers & Handover
                             } else if (isDone) {
-                              capsuleColor = "bg-[#70AD47]" // Google Sheets Green for เสร็จ (Completed)
+                              capsuleColor = "bg-[#1B5E3B]" // Ledger Green for เสร็จ
                             } else if (isInProgress) {
-                              capsuleColor = "bg-[#5B9BD5]" // Google Sheets Blue for ดำเนินการ (In Progress)
+                              capsuleColor = "bg-[#C05621]" // Furnace Orange for ดำเนินการ
                             } else {
-                              capsuleColor = "bg-[#ED7D31]" // Google Sheets Orange for รอดำเนินการ / ยังไม่ดำเนินการ (Pending/Not Started)
+                              capsuleColor = "bg-[#B45309]" // Amber Brass for รอดำเนินการ
                             }
                           }
 
@@ -972,13 +972,13 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                           return (
                             <td
                               key={dIdx}
-                              className={`border-r border-slate-100 text-center p-0 h-[50px] w-10 min-w-[40px] relative overflow-visible ${
-                                isHovered ? "bg-sky-50/80" : dayCol.isWeekend ? "bg-amber-50/20" : "bg-white"
+                              className={`border-r border-[#DDD6C8]/60 text-center p-0 h-[50px] w-10 min-w-[40px] relative overflow-visible ${
+                                isHovered ? "bg-[#ECE7DC]/80" : dayCol.isWeekend ? "bg-[#ECE7DC]/20" : "bg-white"
                               }`}
                             >
                               {isActive && (
                                 <div
-                                  className={`h-6.5 ${barRounding} ${capsuleColor} transition-all duration-150 relative z-10`}
+                                  className={`h-6.5 ${barRounding} ${capsuleColor} transition-all duration-150 relative z-10 shadow-2xs`}
                                   title={`${st.category} (${dayCol.dateStr}) - ${st.status}`}
                                 ></div>
                               )}
@@ -994,16 +994,16 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Bottom Table Bar with Extend Month Shortcut */}
-          <div className="bg-[#FAFAFC] border-t border-slate-200 px-6 py-3 flex items-center justify-between text-xs flex-wrap gap-2">
-            <div className="text-[11px] text-[#86868B]">
-              💡 ช่วงเวลาที่แสดง: <span className="font-mono font-semibold text-[#005B9A]">{dayColumns[0]?.dateStr || "-"}</span> ถึง <span className="font-mono font-semibold text-[#005B9A]">{dayColumns[dayColumns.length - 1]?.dateStr || "-"}</span> (รวม {dayColumns.length} วัน)
+          <div className="bg-[#ECE7DC] border-t border-[#DDD6C8] px-4 sm:px-6 py-3 flex items-center justify-between text-xs flex-wrap gap-2 text-[#434E49]">
+            <div className="text-[11px] text-[#6B7771]">
+              💡 ช่วงเวลาที่แสดง: <span className="font-mono font-bold text-[#19211E]">{dayColumns[0]?.dateStr || "-"}</span> ถึง <span className="font-mono font-bold text-[#19211E]">{dayColumns[dayColumns.length - 1]?.dateStr || "-"}</span> (รวม {dayColumns.length} วัน)
             </div>
             <button
               type="button"
               onClick={handleExpandTimelineMonth}
-              className="px-4 py-1.5 bg-white hover:bg-sky-50 text-[#005B9A] border border-sky-200 rounded-full text-[11px] font-semibold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+              className="px-4 py-1.5 bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] rounded-full text-[11px] font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>กดดูวันเพิ่ม (+1 เดือน)</span>
             </button>
           </div>
@@ -1011,35 +1011,35 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
         {/* 4. Handover History Logs */}
         {task.handovers && task.handovers.length > 0 && (
-          <div className="bg-white rounded-3xl border border-black/[0.08] p-6 shadow-xs">
-            <h3 className="text-xs font-semibold text-[#1D1D1F] flex items-center gap-2 mb-3">
+          <div className="bg-[#FAF8F5] rounded-3xl border border-[#DDD6C8] p-4 sm:p-6 shadow-2xs">
+            <h3 className="text-xs font-bold text-[#19211E] flex items-center gap-2 mb-3">
               <span>ประวัติการส่งมอบงานระหว่างหมวด (Handover Logs)</span>
             </h3>
             <div className="space-y-2">
               {task.handovers.map((ho, idx) => (
                 <div
                   key={ho.id || idx}
-                  className="bg-[#FAFAFC] border border-black/[0.05] rounded-2xl p-3.5 text-xs flex flex-wrap items-center justify-between gap-2"
+                  className="bg-white border border-[#DDD6C8] rounded-2xl p-3.5 text-xs flex flex-wrap items-center justify-between gap-2 shadow-2xs"
                 >
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-[#86868B]">โอนย้าย:</span>
-                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-purple-700 font-mono">
+                    <span className="font-medium text-[#6B7771]">โอนย้าย:</span>
+                    <span className="px-2.5 py-0.5 bg-[#ECE7DC] rounded-lg border border-[#DDD6C8] font-bold text-[#19211E] font-mono">
                       {ho.fromDiscipline}
                     </span>
-                    <span className="text-[#D2D2D7]">➔</span>
-                    <span className="px-2.5 py-0.5 bg-white rounded-lg border border-black/[0.05] font-semibold text-[#005B9A] font-mono">
+                    <span className="text-[#DDD6C8]">➔</span>
+                    <span className="px-2.5 py-0.5 bg-[#FDF2EC] rounded-lg border border-[#F7CEB9] font-bold text-[#C05621] font-mono">
                       {ho.toDiscipline}
                     </span>
                     {ho.byUser && (
-                      <span className="px-2.5 py-0.5 bg-sky-50 text-[#005B9A] rounded-lg border border-sky-200/80 font-semibold text-[11px]">
+                      <span className="px-2.5 py-0.5 bg-[#ECE7DC] text-[#19211E] rounded-lg border border-[#DDD6C8] font-semibold text-[11px]">
                         ผู้ส่งมอบ: {ho.byUser}
                       </span>
                     )}
                     {ho.notes && (
-                      <span className="text-[#6E6E73] ml-1 italic">&quot;{ho.notes}&quot;</span>
+                      <span className="text-[#434E49] ml-1 italic">&quot;{ho.notes}&quot;</span>
                     )}
                   </div>
-                  <div className="text-[#86868B] font-mono text-[11px] bg-white border border-black/[0.05] px-2.5 py-0.5 rounded-lg">
+                  <div className="text-[#6B7771] font-mono text-[11px] bg-[#FAF8F5] border border-[#DDD6C8] px-2.5 py-0.5 rounded-lg">
                     {ho.handoverDate}
                   </div>
                 </div>
