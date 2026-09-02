@@ -6,7 +6,9 @@ export interface DisciplineMeta {
   code: DisciplineCode
   num: string
   name: string
+  shortName: string
   fullName: string
+  dotColor: string
   badgeClass: string
   borderClass: string
   barClass: string
@@ -18,7 +20,9 @@ export const DISCIPLINE_CONFIG: Record<DisciplineCode, DisciplineMeta> = {
     code: "W11",
     num: "11",
     name: "วิศวกรรม",
+    shortName: "W11",
     fullName: "W11 : วิศวกรรม",
+    dotColor: "bg-purple-500",
     badgeClass: "bg-purple-100 text-purple-700 border-purple-200",
     borderClass: "border-purple-300",
     barClass: "bg-purple-500",
@@ -28,7 +32,9 @@ export const DISCIPLINE_CONFIG: Record<DisciplineCode, DisciplineMeta> = {
     code: "W12",
     num: "12",
     name: "เครื่องกล",
+    shortName: "W12",
     fullName: "W12 : เครื่องกล",
+    dotColor: "bg-blue-500",
     badgeClass: "bg-blue-100 text-blue-700 border-blue-200",
     borderClass: "border-blue-300",
     barClass: "bg-blue-500",
@@ -38,7 +44,9 @@ export const DISCIPLINE_CONFIG: Record<DisciplineCode, DisciplineMeta> = {
     code: "W13",
     num: "13",
     name: "ซ่อมเครื่องจักรกล",
+    shortName: "W13",
     fullName: "W13 : ซ่อมเครื่องจักรกล",
+    dotColor: "bg-amber-500",
     badgeClass: "bg-amber-100 text-amber-700 border-amber-200",
     borderClass: "border-amber-300",
     barClass: "bg-orange-500",
@@ -48,13 +56,22 @@ export const DISCIPLINE_CONFIG: Record<DisciplineCode, DisciplineMeta> = {
     code: "W14",
     num: "14",
     name: "ซ่อมอุปกรณ์เครื่องจักรกล",
+    shortName: "W14",
     fullName: "W14 : ซ่อมอุปกรณ์เครื่องจักรกล",
+    dotColor: "bg-emerald-500",
     badgeClass: "bg-emerald-100 text-emerald-700 border-emerald-200",
     borderClass: "border-emerald-300",
     barClass: "bg-emerald-500",
     lightBg: "bg-emerald-50",
   },
 }
+
+export const DISCIPLINE_STEPS: DisciplineMeta[] = [
+  DISCIPLINE_CONFIG.W11,
+  DISCIPLINE_CONFIG.W12,
+  DISCIPLINE_CONFIG.W13,
+  DISCIPLINE_CONFIG.W14,
+]
 
 export function parseWCodes(raw: string): DisciplineCode[] {
   if (!raw) return []
@@ -121,6 +138,7 @@ export interface Task {
   link: string
   status: TaskStatus
   current_discipline?: DisciplineCode
+  currentDiscipline?: DisciplineCode
   sheet_name?: string
   imageUrl?: string
   subtasks?: Subtask[]

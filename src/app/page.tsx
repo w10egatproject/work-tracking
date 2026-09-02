@@ -1,45 +1,36 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
-import { Task, DisciplineCode } from "@/types"
+import { useState, useEffect, useMemo, useTransition } from "react"
+import { Task, DisciplineCode, TaskStatus, DISCIPLINE_CONFIG } from "@/types"
 import SummaryCards from "@/components/SummaryCards"
 import TaskTable from "@/components/TaskTable"
 import KanbanBoardView from "@/components/KanbanBoardView"
 import AddTaskDialog from "@/components/AddTaskDialog"
 import FloatingNavbar from "@/components/FloatingNavbar"
 import MobileBottomNav from "@/components/MobileBottomNav"
-import { Search, X } from "lucide-react"
+import { Search } from "lucide-react"
 
-export default function Home() {
+export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [addDialogOpen, setAddDialogOpen] = useState(false)
-
-  // Filters & Views
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedDiscipline, setSelectedDiscipline] = useState<string>("ALL")
-  const [selectedStatus, setSelectedStatus] = useState<string>("ALL")
+  const [search, setSearch] = useState("")
+  const [selectedDiscipline, setSelectedDiscipline] = useState<DisciplineCode | "ALL">("ALL")
+  const [selectedStatus, setSelectedStatus] = useState<TaskStatus | "ALL">("ALL")
   const [viewMode, setViewMode] = useState<"table" | "kanban">("table")
+  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [, startTransition] = useTransition()
 
-  const searchInputRef = useRef<HTMLInputElement>(null)
-
-  const loadData = async () => {
+  const fetchTasks = async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) setRefreshing(true)
     try {
       const res = await fetch("/api/tasks")
       if (res.ok) {
         const data = await res.json()
-        if (Array.isArray(data)) {
-          const sorted = [...data].sort((a, b) => {
-            const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
-            const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
-            return numB - numA
-          })
-          setTasks(sorted)
-        }
+        setTasks(data)
       }
-    } catch (e) {
-      console.error("Failed to load tasks:", e)
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -47,301 +38,201 @@ export default function Home() {
   }
 
   useEffect(() => {
-    loadData()
+    fetchTasks()
   }, [])
 
-  // Keyboard shortcut for search
+  // Keyboard shortcut '/' to focus search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement !== searchInputRef.current && !addDialogOpen) {
+      if (e.key === "/" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
         e.preventDefault()
-        searchInputRef.current?.focus()
+        document.getElementById("search-input")?.focus()
       }
     }
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [addDialogOpen])
+  }, [])
 
-  const handleRefresh = () => {
-    setRefreshing(true)
-    loadData()
-  }
-
-  const handleTaskAdded = (newTask: Task) => {
-    setTasks((prev) =>
-      [newTask, ...prev].sort((a, b) => {
-        const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
-        const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
-        return numB - numA
+  // Discipline Count Map
+  const disciplineCounts = useMemo(() => {
+    const counts: Record<string, number> = { W11: 0, W12: 0, W13: 0, W14: 0 }
+    tasks.forEach((t) => {
+      t.w_codes?.forEach((code) => {
+        if (counts[code] !== undefined) {
+          counts[code]++
+        }
       })
-    )
-  }
+    })
+    return counts
+  }, [tasks])
 
-  const handleTaskDeleted = (deletedId: string) => {
-    setTasks((prev) =>
-      prev.filter(
-        (t) =>
-          t.id !== deletedId &&
-          t.taskNo !== deletedId &&
-          t.taskNo !== `งานที่${deletedId}` &&
-          t.id.replace(/\D/g, "") !== deletedId.replace(/\D/g, "")
-      )
-    )
-  }
-
-  // Discipline counts
-  const countW11 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("11") || (t.w_codes && t.w_codes.includes("W11"))).length, [tasks])
-  const countW12 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("12") || (t.w_codes && t.w_codes.includes("W12"))).length, [tasks])
-  const countW13 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("13") || (t.w_codes && t.w_codes.includes("W13"))).length, [tasks])
-  const countW14 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("14") || (t.w_codes && t.w_codes.includes("W14"))).length, [tasks])
-
-  // Filter tasks - Sorted descending (latest task on top)
+  // Filter Tasks
   const filteredTasks = useMemo(() => {
-    return tasks
-      .filter((task) => {
-        const matchSearch =
-          !searchQuery.trim() ||
-          task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          task.wo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          task.equip.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (task.taskNo && task.taskNo.toLowerCase().includes(searchQuery.toLowerCase()))
+    return tasks.filter((task) => {
+      // 1. Search Query Filter
+      if (search.trim()) {
+        const q = search.toLowerCase()
+        const matchTitle = task.title.toLowerCase().includes(q)
+        const matchTaskNo = task.taskNo?.toLowerCase().includes(q)
+        const matchWo = task.wo?.toLowerCase().includes(q)
+        const matchEquip = task.equip?.toLowerCase().includes(q)
+        if (!matchTitle && !matchTaskNo && !matchWo && !matchEquip) return false
+      }
 
-        const matchDiscipline =
-          selectedDiscipline === "ALL" ||
-          (task.w_codes && task.w_codes.includes(selectedDiscipline as DisciplineCode)) ||
-          task.completion_codes.includes(selectedDiscipline.replace("W", ""))
+      // 2. Discipline Filter
+      if (selectedDiscipline !== "ALL") {
+        if (!task.w_codes?.includes(selectedDiscipline)) return false
+      }
 
-        const matchStatus =
-          selectedStatus === "ALL" || task.status === selectedStatus
+      // 3. Status Filter
+      if (selectedStatus !== "ALL") {
+        if (task.status !== selectedStatus) return false
+      }
 
-        return matchSearch && matchDiscipline && matchStatus
-      })
-      .sort((a, b) => {
-        const numA = parseInt(a.id.replace(/\D/g, "") || (a.taskNo || "").replace(/\D/g, "") || "0", 10)
-        const numB = parseInt(b.id.replace(/\D/g, "") || (b.taskNo || "").replace(/\D/g, "") || "0", 10)
-        return numB - numA
-      })
-  }, [tasks, searchQuery, selectedDiscipline, selectedStatus])
+      return true
+    })
+  }, [tasks, search, selectedDiscipline, selectedStatus])
 
-  const todayStr = new Date().toLocaleDateString("th-TH", {
-    weekday: "long",
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
+  const handleDeleteTaskFromState = (taskId: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== taskId))
+  }
+
+  // Thai Date Formatter
+  const todayStr = useMemo(() => {
+    const d = new Date()
+    const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."]
+    return `วันพุธที่ ${d.getDate()} ${thaiMonths[d.getMonth()]} ${d.getFullYear() + 543}`
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[#F5F2EB] text-[#19211E] flex flex-col font-sans antialiased selection:bg-[#19211E] selection:text-[#FAF8F5]">
-      {/* 1. Unified Industrial Console Header */}
+    <div className="min-h-screen bg-[#F5F5F7] text-[#0F172A] flex flex-col font-sans select-none antialiased text-[13px] pb-24 md:pb-16 selection:bg-[#005B9A] selection:text-white">
+      {/* 1. EGAT Operations Floating Navbar */}
       <FloatingNavbar
         type="dashboard"
         todayStr={todayStr}
         refreshing={refreshing}
-        onRefresh={handleRefresh}
-        onAddTask={() => setAddDialogOpen(true)}
+        onRefresh={() => fetchTasks(true)}
+        onAddTask={() => setAddModalOpen(true)}
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={(mode) => setViewMode(mode)}
       />
 
-      {/* Main Content Dashboard Area */}
-      <main className="flex-1 pb-24 md:pb-16 max-w-[1600px] w-full mx-auto space-y-4 sm:space-y-5 pt-5 sm:pt-6 px-3 sm:px-6">
-        {/* Symmetrical KPI Summary Cards (Proof over promise) */}
+      {/* Main Workspace Body */}
+      <main className="flex-1 px-3 sm:px-6 max-w-[1600px] w-full mx-auto space-y-5 pt-4 sm:pt-6">
+        {/* 2. KPI Summary Bento Cards */}
         <SummaryCards tasks={tasks} />
 
-        {/* Industrial Action & Filter Toolbar */}
-        <div className="bg-[#FAF8F5] rounded-2xl p-3 border border-[#DDD6C8] shadow-[0_2px_8px_rgba(25,33,30,0.03)] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
-          {/* Quick Search Input with Shortcut */}
-          <div className="relative flex-1 min-w-[260px]">
-            <Search className="w-4 h-4 text-[#6B7771] absolute left-3.5 top-1/2 -translate-y-1/2" />
+        {/* 3. Search & Filter Operational Bar */}
+        <div className="bg-white rounded-2xl p-3 sm:p-3.5 border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.03)] flex flex-wrap items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
-              ref={searchInputRef}
+              id="search-input"
               type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={search}
+              onChange={(e) => startTransition(() => setSearch(e.target.value))}
               placeholder="ค้นหาตามชื่องาน, เลข W/O, หรืออุปกรณ์..."
-              className="w-full pl-10 pr-16 py-2 bg-[#ECE7DC]/60 border border-[#DDD6C8] rounded-xl text-xs text-[#19211E] placeholder:text-[#6B7771] focus:bg-[#FFFFFF] focus:border-[#19211E] focus:ring-1 focus:ring-[#19211E] outline-none transition-all"
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs outline-none focus:bg-white focus:border-[#005B9A] text-[#0F172A] placeholder:text-slate-400 font-medium transition-all"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-              {searchQuery ? (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="p-1 text-[#6B7771] hover:text-[#19211E] rounded-full"
-                  title="ล้างคำค้นหา"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#6B7771] bg-[#FAF8F5] rounded border border-[#DDD6C8] shadow-2xs">
-                  /
-                </kbd>
-              )}
-            </div>
+            {/* Shortcut key indicator */}
+            {!search && (
+              <span className="hidden sm:block absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-400 bg-slate-200/60 px-1.5 py-0.5 rounded">
+                /
+              </span>
+            )}
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          {/* Right Group: Discipline Facet Pills + Status Selector */}
-          <div className="flex flex-wrap items-center justify-between xl:justify-end gap-2">
-            {/* Discipline Facet Buttons */}
-            <div className="flex flex-wrap items-center gap-1">
-              <button
-                onClick={() => setSelectedDiscipline("ALL")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
-                  selectedDiscipline === "ALL"
-                    ? "bg-[#19211E] text-[#FAF8F5] border-[#19211E] shadow-2xs"
-                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8] hover:text-[#19211E]"
-                }`}
-              >
-                <span>ทั้งหมด</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "ALL" ? "bg-white/20 text-[#FAF8F5]" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
+          {/* Discipline Filters (Desktop) */}
+          <div className="hidden md:flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setSelectedDiscipline("ALL")}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                selectedDiscipline === "ALL"
+                  ? "bg-[#005B9A] text-white border-[#005B9A] shadow-xs"
+                  : "bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-slate-100"
+              }`}
+            >
+              ทั้งหมด <span className="text-[10px] ml-1 font-mono opacity-80">{tasks.length}</span>
+            </button>
+
+            {(["W11", "W12", "W13", "W14"] as DisciplineCode[]).map((code) => {
+              const conf = DISCIPLINE_CONFIG[code]
+              const count = disciplineCounts[code] || 0
+              const isSelected = selectedDiscipline === code
+
+              return (
+                <button
+                  key={code}
+                  onClick={() => setSelectedDiscipline(isSelected ? "ALL" : code)}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                    isSelected
+                      ? "bg-[#005B9A] text-white border-[#005B9A] shadow-xs"
+                      : "bg-slate-50 text-slate-600 border-slate-200/80 hover:bg-slate-100"
                   }`}
                 >
-                  {tasks.length}
-                </span>
-              </button>
+                  <span className={`w-2 h-2 rounded-full ${isSelected ? "bg-white" : conf.dotColor}`}></span>
+                  <span>{conf.shortName}</span>
+                  <span className="text-[10px] font-mono opacity-80">{count}</span>
+                </button>
+              )
+            })}
+          </div>
 
-              {/* W11 */}
-              <button
-                onClick={() => setSelectedDiscipline("W11")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
-                  selectedDiscipline === "W11"
-                    ? "bg-[#1D4ED8] text-white border-[#1D4ED8] shadow-2xs"
-                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
-                }`}
-                title="W11 วิศวกรรม"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#1D4ED8]"></span>
-                <span>W11</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W11" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
-                  }`}
-                >
-                  {countW11}
-                </span>
-              </button>
-
-              {/* W12 */}
-              <button
-                onClick={() => setSelectedDiscipline("W12")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
-                  selectedDiscipline === "W12"
-                    ? "bg-[#D97706] text-white border-[#D97706] shadow-2xs"
-                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
-                }`}
-                title="W12 เครื่องกล"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
-                <span>W12</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W12" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
-                  }`}
-                >
-                  {countW12}
-                </span>
-              </button>
-
-              {/* W13 */}
-              <button
-                onClick={() => setSelectedDiscipline("W13")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
-                  selectedDiscipline === "W13"
-                    ? "bg-[#059669] text-white border-[#059669] shadow-2xs"
-                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
-                }`}
-                title="W13 ซ่อมเครื่องจักรกล"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#059669]"></span>
-                <span>W13</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W13" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
-                  }`}
-                >
-                  {countW13}
-                </span>
-              </button>
-
-              {/* W14 */}
-              <button
-                onClick={() => setSelectedDiscipline("W14")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
-                  selectedDiscipline === "W14"
-                    ? "bg-[#7C3AED] text-white border-[#7C3AED] shadow-2xs"
-                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
-                }`}
-                title="W14 ซ่อมอุปกรณ์เครื่องจักรกล"
-              >
-                <span className="w-2 h-2 rounded-full bg-[#7C3AED]"></span>
-                <span>W14</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W14" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
-                  }`}
-                >
-                  {countW14}
-                </span>
-              </button>
-            </div>
-
-            <div className="h-5 w-px bg-[#DDD6C8] hidden sm:block"></div>
-
-            {/* Status Selector */}
-            <div className="flex items-center gap-1.5">
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-1.5 bg-[#ECE7DC] border border-[#DDD6C8] rounded-xl text-xs font-semibold text-[#19211E] outline-none focus:border-[#19211E] focus:bg-[#FAF8F5] cursor-pointer"
-              >
-                <option value="ALL">ทุกสถานะ</option>
-                <option value="ดำเนินการ">⚙️ กำลังดำเนินการ</option>
-                <option value="เสร็จ">✅ เสร็จสมบูรณ์</option>
-                <option value="รอดำเนินการ">⏳ รอดำเนินการ</option>
-              </select>
-            </div>
+          {/* Status Dropdown */}
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value as TaskStatus | "ALL")}
+              className="px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-semibold text-[#0F172A] outline-none focus:bg-white focus:border-[#005B9A] cursor-pointer"
+            >
+              <option value="ALL">ทุกสถานะ</option>
+              <option value="ดำเนินการ">⚙️ ดำเนินการ</option>
+              <option value="เสร็จ">✅ เสร็จสิ้น</option>
+              <option value="รอดำเนินการ">⏳ รอดำเนินการ</option>
+              <option value="ยังไม่ดำเนินการ">⚪ ยังไม่เริ่ม</option>
+            </select>
           </div>
         </div>
 
-        {/* Dynamic Views (Table / Kanban) */}
+        {/* 4. Active Data View (Table or Kanban) */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-3 bg-[#FAF8F5] rounded-2xl border border-[#DDD6C8] shadow-xs">
-            <div className="w-7 h-7 border-2 border-[#19211E] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-[#6B7771] text-xs font-medium">กำลังโหลดข้อมูลงานซ่อมบำรุง...</div>
+          <div className="py-24 text-center bg-white rounded-2xl border border-slate-200/80 shadow-xs flex flex-col items-center justify-center gap-3">
+            <div className="w-8 h-8 border-2 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-slate-400 text-xs font-medium">กำลังโหลดข้อมูลงานซ่อมบำรุง...</div>
           </div>
+        ) : viewMode === "table" ? (
+          <TaskTable tasks={filteredTasks} onDeleteTask={handleDeleteTaskFromState} />
         ) : (
-          <>
-            {viewMode === "table" && <TaskTable tasks={filteredTasks} onDeleteTask={handleTaskDeleted} />}
-            {viewMode === "kanban" && <KanbanBoardView tasks={filteredTasks} />}
-          </>
+          <KanbanBoardView tasks={filteredTasks} onDeleteTask={handleDeleteTaskFromState} />
         )}
       </main>
 
-      {/* 📱 Mobile Bottom Navigation & Slide Drawer */}
+      {/* 5. Mobile Bottom Navigation Bar & Drawer */}
       <MobileBottomNav
         viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        onViewModeChange={(mode) => setViewMode(mode)}
         selectedDiscipline={selectedDiscipline}
-        onSelectDiscipline={setSelectedDiscipline}
-        selectedStatus={selectedStatus}
-        onSelectStatus={setSelectedStatus}
-        counts={{
-          all: tasks.length,
-          w11: countW11,
-          w12: countW12,
-          w13: countW13,
-          w14: countW14,
-        }}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-        onAddTask={() => setAddDialogOpen(true)}
+        onSelectDiscipline={(code) => setSelectedDiscipline(code)}
+        disciplineCounts={disciplineCounts}
+        totalCount={tasks.length}
+        onAddTask={() => setAddModalOpen(true)}
       />
 
-      {/* Add Task Dialog */}
+      {/* 6. Create Task Dialog */}
       <AddTaskDialog
-        open={addDialogOpen}
-        onClose={() => setAddDialogOpen(false)}
-        onAdd={handleTaskAdded}
+        isOpen={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={() => fetchTasks(true)}
       />
     </div>
   )

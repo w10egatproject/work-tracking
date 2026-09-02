@@ -13,7 +13,7 @@ const THAI_DAYS = ["อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."]
 function formatThaiDate(d: Date): string {
   const day = d.getDate()
   const month = THAI_MONTH_NAMES[d.getMonth()]
-  const year = d.getFullYear()
+  const year = d.getFullYear() + 543
   return `${day} ${month} ${year}`
 }
 
@@ -85,46 +85,46 @@ export default function ThaiCalendarPickerModal({
 
   return (
     <div
-      className="fixed inset-0 bg-[#19211E]/50 z-60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 bg-black/40 z-60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-[#FAF8F5] rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#DDD6C8] animate-in zoom-in-95 duration-150 text-[#19211E]">
+      <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200/80 animate-in zoom-in-95 duration-150 text-[#0F172A]">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#DDD6C8] mb-3">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#ECE7DC] text-[#19211E] flex items-center justify-center font-bold border border-[#DDD6C8]">
+            <div className="w-7 h-7 rounded-lg bg-sky-50 text-[#005B9A] flex items-center justify-center font-bold border border-sky-100">
               <CalendarIcon className="w-4 h-4" />
             </div>
-            <h3 className="font-bold text-xs text-[#19211E]">{title}</h3>
+            <h3 className="font-bold text-xs text-[#0F172A]">{title}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#6B7771] hover:text-[#19211E] p-1.5 rounded-full hover:bg-[#ECE7DC] cursor-pointer transition-colors"
+            className="text-slate-400 hover:text-slate-700 p-1.5 rounded-full hover:bg-slate-100 cursor-pointer transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Month Navigation Header */}
-        <div className="flex items-center justify-between py-2 px-1 mb-2 bg-[#ECE7DC]/60 rounded-2xl border border-[#DDD6C8]">
+        <div className="flex items-center justify-between py-2 px-1 mb-2 bg-slate-50 rounded-2xl border border-slate-200/80">
           <button
             type="button"
             onClick={prevMonth}
-            className="p-1.5 rounded-xl hover:bg-white text-[#19211E] transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl hover:bg-white text-slate-700 transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <div className="font-bold text-xs text-[#19211E] flex items-center gap-1">
+          <div className="font-bold text-xs text-[#0F172A] flex items-center gap-1">
             <span>{THAI_MONTH_FULL[currentMonth]}</span>
-            <span className="font-mono text-[11px] text-[#C05621]">{thaiYear}</span>
+            <span className="font-mono text-[11px] text-[#005B9A] font-bold">{thaiYear}</span>
           </div>
           <button
             type="button"
             onClick={nextMonth}
-            className="p-1.5 rounded-xl hover:bg-white text-[#19211E] transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl hover:bg-white text-slate-700 transition-colors cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -136,7 +136,7 @@ export default function ThaiCalendarPickerModal({
             <div
               key={day}
               className={`text-[10px] font-bold py-1 ${
-                idx === 0 || idx === 6 ? "text-[#C05621]" : "text-[#6B7771]"
+                idx === 0 || idx === 6 ? "text-rose-600" : "text-slate-500"
               }`}
             >
               {day}
@@ -157,12 +157,12 @@ export default function ThaiCalendarPickerModal({
                 onClick={() => setSelectedDay(cell.date)}
                 className={`h-8 rounded-xl text-xs font-mono font-bold flex flex-col items-center justify-center transition-all cursor-pointer relative ${
                   isSelected
-                    ? "bg-[#19211E] text-[#FAF8F5] shadow-xs scale-105"
+                    ? "bg-[#005B9A] text-white shadow-xs scale-105"
                     : isToday
-                    ? "border border-[#19211E] text-[#19211E] bg-[#ECE7DC]/60"
+                    ? "border border-[#005B9A] text-[#005B9A] bg-sky-50"
                     : cell.isCurrentMonth
-                    ? "text-[#19211E] hover:bg-[#ECE7DC]"
-                    : "text-[#98A39E] opacity-50 hover:opacity-100"
+                    ? "text-[#0F172A] hover:bg-slate-100"
+                    : "text-slate-300 opacity-50 hover:opacity-100"
                 }`}
               >
                 <span>{cell.dayNum}</span>
@@ -172,15 +172,15 @@ export default function ThaiCalendarPickerModal({
         </div>
 
         {/* Selected Date Summary & Confirm Action */}
-        <div className="mt-4 pt-3 border-t border-[#DDD6C8] flex items-center justify-between gap-2">
-          <div className="text-[11px] font-mono text-[#19211E] font-bold bg-[#ECE7DC] px-2.5 py-1 rounded-lg border border-[#DDD6C8]">
+        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <div className="text-[11px] font-mono text-[#005B9A] font-bold bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200">
             {formatThaiDate(selectedDay)}
           </div>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 bg-[#ECE7DC] text-[#19211E] rounded-xl text-xs font-bold hover:bg-[#DDD6C8] transition-colors cursor-pointer border border-[#DDD6C8]"
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors cursor-pointer"
             >
               ยกเลิก
             </button>
@@ -190,7 +190,7 @@ export default function ThaiCalendarPickerModal({
                 onSelectDate(selectedDay)
                 onClose()
               }}
-              className="px-4 py-1.5 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer border border-[#19211E]"
+              className="px-4 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer"
             >
               เลือกวันนี้
             </button>

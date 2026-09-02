@@ -29,26 +29,26 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
   if (props.type === "dashboard") {
     return (
       <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-3 sm:px-6 transition-all">
-        <div className="backdrop-blur-xl bg-[#FAF8F5]/90 border border-[#DDD6C8] shadow-[0_4px_24px_rgba(25,33,30,0.06),0_1px_2px_rgba(25,33,30,0.04)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#19211E] transition-all">
+        <div className="backdrop-blur-xl bg-white/90 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#0F172A] transition-all">
           {/* Left: Branding & Subtitle */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#19211E] text-[#F5F2EB] flex items-center justify-center text-sm font-bold shadow-xs shrink-0 border border-[#DDD6C8]">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#005B9A] to-[#0284C7] text-white flex items-center justify-center text-sm font-bold shadow-xs shrink-0">
               ⚡
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#19211E] flex items-center gap-2">
-                  <span className="font-sans">W10 Operations</span>
-                  <span className="text-[#6B7771] text-xs font-normal hidden lg:inline font-sans">
-                    | ระบบติดตามงานซ่อมบำรุงโรงงาน
+                <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#0F172A] flex items-center gap-2">
+                  <span>W10 Operations</span>
+                  <span className="text-slate-400 text-xs font-normal hidden lg:inline">
+                    | ระบบติดตามงานซ่อมบำรุงประจำแผนก
                   </span>
                 </h1>
-                <span className="bg-[#E8F4EC] text-[#1B5E3B] text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-[#B8DCBD] flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#1B5E3B] animate-pulse"></span>
+                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   <span>Live Sync</span>
                 </span>
               </div>
-              <p className="text-[11px] text-[#6B7771] font-normal hidden sm:block mt-0.5">
+              <p className="text-[11px] text-slate-500 font-normal hidden sm:block mt-0.5">
                 กฟผ. แม่เมาะ • W11 วิศวกรรม • W12 เครื่องกล • W13 ซ่อมเครื่องจักร • W14 ซ่อมอุปกรณ์
               </p>
             </div>
@@ -57,17 +57,17 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
           {/* Right: View Switcher, Date, Refresh & Actions */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             {/* View Mode Segmented Controls */}
-            <div className="hidden sm:flex items-center bg-[#ECE7DC] p-0.5 rounded-xl border border-[#DDD6C8]">
+            <div className="hidden sm:flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
               <button
                 onClick={() => props.onViewModeChange("table")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   props.viewMode === "table"
-                    ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs font-bold"
-                    : "text-[#6B7771] hover:text-[#19211E]"
+                    ? "bg-white text-[#005B9A] shadow-xs font-bold"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
                 title="มุมมองตารางรายการ"
               >
-                <TableIcon className="w-3.5 h-3.5 text-[#19211E]" />
+                <TableIcon className="w-3.5 h-3.5 text-[#005B9A]" />
                 <span className="hidden md:inline">ตาราง</span>
               </button>
 
@@ -75,19 +75,19 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
                 onClick={() => props.onViewModeChange("kanban")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   props.viewMode === "kanban"
-                    ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs font-bold"
-                    : "text-[#6B7771] hover:text-[#19211E]"
+                    ? "bg-white text-[#005B9A] shadow-xs font-bold"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
                 title="มุมมองบอร์ด Kanban"
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#19211E]" />
+                <LayoutGrid className="w-3.5 h-3.5 text-[#005B9A]" />
                 <span className="hidden md:inline">บอร์ด</span>
               </button>
             </div>
 
             {/* Date */}
-            <div className="text-xs text-[#6B7771] hidden xl:flex items-center gap-1.5 bg-[#FAF8F5] px-3 py-1.5 rounded-xl font-medium border border-[#DDD6C8]">
-              <Calendar className="w-3.5 h-3.5 text-[#6B7771]" />
+            <div className="text-xs text-slate-500 hidden xl:flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl font-medium border border-slate-200/80">
+              <Calendar className="w-3.5 h-3.5 text-[#005B9A]" />
               <span className="text-[11px]">{props.todayStr}</span>
             </div>
 
@@ -95,17 +95,17 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
             <button
               onClick={props.onRefresh}
               disabled={props.refreshing}
-              className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer border border-[#DDD6C8]"
+              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#0F172A] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer border border-slate-200/80"
               title="รีเฟรชข้อมูลจาก Master Sheet"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#19211E] ${props.refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#005B9A] ${props.refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">รีเฟรช</span>
             </button>
 
             {/* Add Task Primary Action */}
             <button
               onClick={props.onAddTask}
-              className="px-3.5 py-1.5 rounded-xl bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] transition-all text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer border border-[#19211E]"
+              className="px-3.5 py-1.5 rounded-xl bg-[#005B9A] hover:bg-[#004A7D] text-white transition-all text-xs font-semibold flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer border border-transparent"
               title="เพิ่มใบสั่งงานใหม่"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -120,22 +120,22 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
   // Task Detail Navbar
   return (
     <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-3 sm:px-6 transition-all">
-      <div className="backdrop-blur-xl bg-[#FAF8F5]/90 border border-[#DDD6C8] shadow-[0_4px_24px_rgba(25,33,30,0.06),0_1px_2px_rgba(25,33,30,0.04)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#19211E] transition-all">
+      <div className="backdrop-blur-xl bg-white/90 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03),0_1px_2px_rgba(0,0,0,0.02)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#0F172A] transition-all">
         {/* Left: Back & Breadcrumb */}
         <div className="flex items-center gap-3">
           <a
             href="/"
-            className="w-9 h-9 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] border border-[#DDD6C8] text-[#19211E] flex items-center justify-center transition-all active:scale-95 shrink-0"
+            className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-[#0F172A] flex items-center justify-center transition-all active:scale-95 shrink-0"
             title="กลับสู่หน้าภาพรวมแดชบอร์ด"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 text-[#005B9A]" />
           </a>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-[#19211E] bg-[#ECE7DC] px-2.5 py-0.5 rounded-md border border-[#DDD6C8] font-mono">
+              <span className="text-xs font-bold text-[#005B9A] bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200/80 font-mono">
                 {props.taskNo}
               </span>
-              <h1 className="text-sm sm:text-base font-bold text-[#19211E] tracking-tight line-clamp-1 max-w-[280px] sm:max-w-md md:max-w-lg">
+              <h1 className="text-sm sm:text-base font-bold text-[#0F172A] tracking-tight line-clamp-1 max-w-[280px] sm:max-w-md md:max-w-lg">
                 {props.title}
               </h1>
             </div>
@@ -149,26 +149,26 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
               href={props.sheetLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] text-xs font-medium flex items-center gap-1.5 border border-[#DDD6C8] transition-all"
+              className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#0F172A] text-xs font-medium flex items-center gap-1.5 border border-slate-200/80 transition-all"
               title="เปิดดูใน Google Sheets"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-[#19211E]" />
+              <ExternalLink className="w-3.5 h-3.5 text-[#005B9A]" />
               <span className="hidden sm:inline">Google Sheets</span>
             </a>
           )}
 
           <button
             onClick={props.onEditTask}
-            className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] text-xs font-medium flex items-center gap-1.5 border border-[#DDD6C8] transition-all cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#0F172A] text-xs font-medium flex items-center gap-1.5 border border-slate-200/80 transition-all cursor-pointer"
             title="แก้ไขข้อมูลงาน"
           >
-            <Edit2 className="w-3.5 h-3.5 text-[#19211E]" />
+            <Edit2 className="w-3.5 h-3.5 text-[#005B9A]" />
             <span className="hidden sm:inline">แก้ไข</span>
           </button>
 
           <button
             onClick={props.onHandover}
-            className="px-3.5 py-1.5 rounded-xl bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-[#005B9A] hover:bg-[#004A7D] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
             title="ส่งมอบงานระหว่างหมวด"
           >
             <span>ส่งมอบงาน</span>
@@ -177,7 +177,7 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
           {props.onDeleteTask && (
             <button
               onClick={props.onDeleteTask}
-              className="p-1.5 rounded-xl bg-[#FAF8F5] hover:bg-rose-50 text-rose-700 hover:text-rose-800 text-xs font-medium flex items-center gap-1 border border-[#DDD6C8] hover:border-rose-300 transition-all cursor-pointer"
+              className="p-1.5 rounded-xl bg-slate-50 hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs font-medium flex items-center gap-1 border border-slate-200/80 hover:border-rose-200 transition-all cursor-pointer"
               title="ลบงานนี้"
             >
               <Trash2 className="w-3.5 h-3.5" />

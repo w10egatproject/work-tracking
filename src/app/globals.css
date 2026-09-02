@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:wght@300;400;500;600;700;800&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Sarabun:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 /* 🐘 Official CMU Font (Chiang Mai University) */
@@ -43,59 +43,60 @@
 }
 
 @theme {
-  --font-sans: 'CMU', 'Sarabun', 'IBM Plex Sans Thai', 'IBM Plex Sans', 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'CMU', 'Sarabun', 'IBM Plex Sans Thai', 'Prompt', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-serif: 'Spectral', Georgia, serif;
 }
 
 :root {
-  /* Prom Design — Industrial Ledger Tokens */
-  --ground-base: #F5F2EB;
-  --ground-surface: #FAF8F5;
-  --ground-muted: #ECE7DC;
-  --ground-deep: #E4DEC $\to$ #E2DBD0;
+  /* EGAT Modern Operations Official Palette */
+  --egat-blue: #005B9A;
+  --egat-blue-hover: #004A7D;
+  --egat-blue-light: #F0F9FF;
+  --egat-blue-border: #BAE6FD;
 
-  /* Structural Borders */
-  --border-ledger: #DDD6C8;
-  --border-subtle: #E8E2D5;
-  --border-focus: #C05621;
+  --mae-moh-amber: #F0B323;
+  --mae-moh-amber-hover: #D99C12;
+  --mae-moh-amber-light: #FEF3C7;
 
-  /* Inks (Never pure black) */
-  --ink-primary: #19211E;
-  --ink-secondary: #434E49;
-  --ink-muted: #6B7771;
-  --ink-faint: #98A39E;
+  /* Surfaces & Backgrounds */
+  --surface-ground: #F5F5F7;
+  --surface-white: #FFFFFF;
+  --surface-card: #FFFFFF;
+  --surface-muted: #F8FAFC;
+  --border-default: #E2E8F0;
+  --border-subtle: #F1F5F9;
 
-  /* Status Accents (Proof over promise) */
-  --status-done-ink: #1B5E3B;
-  --status-done-bg: #E8F4EC;
-  --status-done-border: #B8DCBD;
+  /* Typography Inks */
+  --ink-primary: #0F172A;
+  --ink-secondary: #334155;
+  --ink-muted: #64748B;
+  --ink-faint: #94A3B8;
 
-  --status-prog-ink: #C05621;
-  --status-prog-bg: #FDF2EC;
-  --status-prog-border: #F7CEB9;
+  /* Status Tokens */
+  --status-done: #10B981;
+  --status-done-bg: #ECFDF5;
+  --status-done-border: #A7F3D0;
 
-  --status-pending-ink: #B45309;
+  --status-prog: #005B9A;
+  --status-prog-bg: #F0F9FF;
+  --status-prog-border: #BAE6FD;
+
+  --status-pending: #F59E0B;
   --status-pending-bg: #FEF3C7;
   --status-pending-border: #FDE68A;
 
-  --status-notstarted-ink: #4B5563;
-  --status-notstarted-bg: #F3F4F6;
-  --status-notstarted-border: #E5E7EB;
+  --status-notstarted: #64748B;
+  --status-notstarted-bg: #F1F5F9;
+  --status-notstarted-border: #E2E8F0;
 
   /* Disciplines (W11-W14) */
-  --discipline-w11: #1D4ED8;
-  --discipline-w12: #D97706;
-  --discipline-w13: #059669;
-  --discipline-w14: #7C3AED;
-
-  /* Brand Accents */
-  --egat-blue: #005B9A;
-  --furnace-orange: #C05621;
-  --mae-moh-amber: #F0B323;
+  --discipline-w11: #7C3AED;
+  --discipline-w12: #005B9A;
+  --discipline-w13: #D97706;
+  --discipline-w14: #059669;
 
   /* Radius */
-  --radius: 0.875rem;
+  --radius: 1rem;
 }
 
 * {
@@ -103,34 +104,34 @@
 }
 
 body {
-  background-color: var(--ground-base);
+  background-color: var(--surface-ground);
   color: var(--ink-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Tactile Industrial Scrollbar */
+/* Modern Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--ground-base);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C8BFB0;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #B0A696;
+  background: #94A3B8;
 }
 
-/* Tactile Focus Ring */
+/* Focus Ring - EGAT Blue */
 :focus-visible {
-  outline: 2px solid var(--furnace-orange);
+  outline: 2px solid var(--egat-blue);
   outline-offset: 2px;
 }
