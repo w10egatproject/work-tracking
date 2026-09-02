@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>W10 EGAT Operations — Layout Design Directions & Before/After Mockup</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#005B9A] selection:text-white">
+
+  <!-- 🎛️ TOP CONTROL DECK: Switch Layouts & Views -->
+  <header class="sticky top-0 z-50 bg-[#0F172A] text-white border-b border-slate-800 shadow-xl px-4 sm:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#005B9A] to-[#38BDF8] flex items-center justify-center font-bold text-sm shadow-md">
+          ⚡
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-sm tracking-tight text-white">EGAT W10 Layout Explorer</span>
+            <span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded-full font-mono font-semibold">
+              Prom-Design v2.0
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400">สำรวจทิศทางการปรับโครงสร้าง Layout สำหรับระบบติดตามงานซ่อมบำรุงโรงไฟฟ้า</p>
+        </div>
+      </div>
+
+      <!-- Segmented Tab Switcher -->
+      <div class="flex items-center bg-slate-800/90 p-1 rounded-2xl border border-slate-700/80 gap-1 overflow-x-auto max-w-full">
+        <button onclick="switchView('compare')" id="btn-compare" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-[#005B9A] text-white shadow-xs">
+          ⚖️ เปรียบเทียบ Before vs After
+        </button>
+        <button onclick="switchView('dir-a')" id="btn-dir-a" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          1️⃣ Command Center (Master Grid)
+        </button>
+        <button onclick="switchView('dir-b')" id="btn-dir-b" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          2️⃣ Split-Horizon (Master + Live Gantt)
+        </button>
+        <button onclick="switchView('dir-c')" id="btn-dir-c" class="tab-btn px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          3️⃣ Field Mobile Stream (หน้างานช่าง)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 🌐 MAIN VIEW CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: BEFORE vs AFTER COMPARISON -->
+    <!-- ========================================================================= -->
+    <section id="view-compare" class="space-y-8 animate-in fade-in duration-200">
+      <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-3">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h2 class="text-base font-bold text-[#0F172A] flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-[#005B9A]"></span>
+            <span>เปรียบเทียบโครงสร้างหน้าเว็บ (Before vs After)</span>
+          </h2>
+          <span class="text-xs text-slate-500 font-mono">Design Standard: Prom Design + EGAT Steel Blue</span>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          ตารางเปรียบเทียบจุดเด่นและสิ่งที่ได้รับการยกระดับ จากหน้าเดิมที่อิงสไตล์สเปรดชีตทั่วไป สู่เลย์เอาต์ระดับ Enterprise ที่โฟกัสความเร็ว ความชัดเจนของข้อมูล (Proof over Promise) และความเข้ากันได้ทุกอุปกรณ์
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        <!-- 🔴 BEFORE (แบบเดิม: Spreadsheet Clone) -->
+        <div class="bg-white rounded-3xl border-2 border-slate-300 p-6 flex flex-col justify-between shadow-xs relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-slate-200 text-slate-700 px-4 py-1 rounded-bl-2xl text-xs font-bold font-mono">
+            BEFORE (เดิม)
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 text-slate-500 text-xs font-bold">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+              <span>Spreadsheet-Centric Pattern</span>
+            </div>
+            <h3 class="text-sm font-bold text-slate-800">
+              เลียนแบบ Google Sheets / ตารางข้อความยาว
+            </h3>
+            <ul class="space-y-2.5 text-xs text-slate-600">
+              <li class="flex items-start gap-2">
+                <span class="text-rose-500 font-bold">✕</span>
+                <span><strong>มุมมองเดียว (Monolithic):</strong> ต้องเลื่อนหน้าจอแนวนอนยาวมาก และไม่เห็นภาพรวมเปอร์เซ็นต์ KPI</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-500 font-bold">✕</span>
+                <span><strong>ขาดความกระชับบนมือถือ:</strong> ตารางขนาดกว้างเกินหน้าจอมือถือ ทำให้ช่างหน้างานกดยาก</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-rose-500 font-bold">✕</span>
+                <span><strong>ไม่มีการแบ่งหมวดงานเชิงลึก:</strong> หมวด W11-W14 ปะปนกัน ต้องกดสลับหน้าไปมาเพื่อดูสถานะแต่ละหมวด</span>
+              </li>
+            </ul>
+
+            <!-- Wireframe Preview Before -->
+            <div class="bg-slate-100 rounded-2xl p-3.5 border border-slate-200 space-y-2 font-mono text-[10px] text-slate-500">
+              <div class="h-6 bg-slate-200 rounded w-full flex items-center px-2">Navbar (Static)</div>
+              <div class="h-10 bg-slate-200 rounded w-full flex items-center px-2">Table Headers (Horizontal Scroll Heavy)</div>
+              <div class="space-y-1">
+                <div class="h-5 bg-white rounded border border-slate-200"></div>
+                <div class="h-5 bg-white rounded border border-slate-200"></div>
+                <div class="h-5 bg-white rounded border border-slate-200"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 mt-4 border-t border-slate-100 text-[11px] text-slate-400">
+            ข้อจำกัด: อ่านยากในสภาวะหน้างานจริง และขาดการคัดกรองข้อมูลแบบทันที
+          </div>
+        </div>
+
+        <!-- 🟢 AFTER (แบบใหม่: Prom Design Industrial Ledger) -->
+        <div class="bg-white rounded-3xl border-2 border-[#005B9A] p-6 flex flex-col justify-between shadow-md relative overflow-hidden ring-4 ring-sky-50">
+          <div class="absolute top-0 right-0 bg-[#005B9A] text-white px-4 py-1 rounded-bl-2xl text-xs font-bold font-mono">
+            AFTER (Prom Design)
+          </div>
+          <div class="space-y-4">
+            <div class="flex items-center gap-2 text-[#005B9A] text-xs font-bold">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#005B9A] animate-pulse"></span>
+              <span>Tactile Bento + Dual-Pane Architecture</span>
+            </div>
+            <h3 class="text-sm font-bold text-[#0F172A]">
+              วิศวกรรมข้อมูลแบบ Bento Cards + Two-Pane Synchronized Gantt
+            </h3>
+            <ul class="space-y-2.5 text-xs text-slate-700">
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span><strong>Tactile KPI Cards:</strong> แสดงความคืบหน้าระบบ 4 มิติ (Master, กำลังทำ, เสร็จ, รอเปิดหมวด)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span><strong>Two-Pane Split Table:</strong> ตารางงานฝั่งซ้าย Pinned นิ่ง ตารางไทม์ไลน์ฝั่งขวา Scroll อิสระ ไม่หลุดโฟกัส</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-emerald-600 font-bold">✓</span>
+                <span><strong>Mobile Thumb-Zone:</strong> แถบนำทางด้านล่าง + สไลด์ Drawer กรอง W11–W14 ใช้งานมือเดียวได้ทันที</span>
+              </li>
+            </ul>
+
+            <!-- Wireframe Preview After -->
+            <div class="bg-sky-50/60 rounded-2xl p-3.5 border border-sky-100 space-y-2 font-mono text-[10px]">
+              <div class="h-6 bg-white rounded-xl shadow-2xs border border-sky-200 flex items-center justify-between px-2 text-[#005B9A]">
+                <span>⚡ Floating Console</span>
+                <span>[Table] [Kanban]</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5">
+                <div class="h-7 bg-white rounded-lg border border-sky-200 p-1 text-[9px] text-[#005B9A]">6 ทั้งหมด</div>
+                <div class="h-7 bg-white rounded-lg border border-sky-200 p-1 text-[9px] text-[#005B9A]">4 ดำเนินการ</div>
+                <div class="h-7 bg-white rounded-lg border border-emerald-200 p-1 text-[9px] text-emerald-700">1 เสร็จ</div>
+                <div class="h-7 bg-white rounded-lg border border-amber-200 p-1 text-[9px] text-amber-800">1 รอ</div>
+              </div>
+              <div class="grid grid-cols-12 gap-1 h-12">
+                <div class="col-span-5 bg-white rounded-lg border border-sky-200 p-1">Pinned Subtasks</div>
+                <div class="col-span-7 bg-white rounded-lg border border-sky-200 p-1 overflow-hidden">Scrollable Gantt Ribbon</div>
+              </div>
+            </div>
+          </div>
+          <div class="pt-4 mt-4 border-t border-slate-100 text-[11px] text-emerald-700 font-medium">
+            ผลลัพธ์: ตอบสนองเร็ว ลดเวลาค้นหาข้อมูล สอดคล้องกับมาตรฐาน กฟผ. แม่เมาะ
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: DIRECTION A — COMMAND CENTER BENTO & MASTER LEDGER -->
+    <!-- ========================================================================= -->
+    <section id="view-dir-a" class="hidden space-y-6 animate-in fade-in duration-200">
+      <!-- Feature Pill -->
+      <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-bold font-mono text-[#005B9A] bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
+            LAYOUT DIRECTION 1
+          </span>
+          <h2 class="text-base font-bold text-[#0F172A] mt-1">Command Center (Executive Bento + Operational Ledger)</h2>
+          <p class="text-xs text-slate-500">เหมาะสำหรับ: หัวหน้างาน/ผู้ประสานงานหลักที่ต้องการดูภาพรวมทั้งแผนกในหน้าจอเดียว</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl">ความหนาแน่นข้อมูล: สูง (High Density)</span>
+        </div>
+      </div>
+
+      <!-- Mockup Component: Bento Top Deck -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+          <div class="text-[11px] text-slate-500 font-bold">งานทั้งหมดในระบบ</div>
+          <div class="text-2xl font-extrabold text-[#0F172A] font-mono mt-1">6 <span class="text-xs text-slate-400 font-sans">งาน</span></div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-[#0F172A] h-full w-[17%]"></div></div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+          <div class="text-[11px] text-slate-500 font-bold">กำลังดำเนินการ</div>
+          <div class="text-2xl font-extrabold text-[#005B9A] font-mono mt-1">4 <span class="text-xs text-slate-400 font-sans">งาน (67%)</span></div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-[#005B9A] h-full w-[67%]"></div></div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+          <div class="text-[11px] text-slate-500 font-bold">เสร็จสมบูรณ์</div>
+          <div class="text-2xl font-extrabold text-emerald-600 font-mono mt-1">1 <span class="text-xs text-slate-400 font-sans">งาน (17%)</span></div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-emerald-500 h-full w-[17%]"></div></div>
+        </div>
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs">
+          <div class="text-[11px] text-slate-500 font-bold">รอดำเนินการ</div>
+          <div class="text-2xl font-extrabold text-amber-600 font-mono mt-1">1 <span class="text-xs text-slate-400 font-sans">งาน (17%)</span></div>
+          <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden"><div class="bg-amber-500 h-full w-[17%]"></div></div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-bold text-slate-700">หมวดงาน:</span>
+          <button class="px-2.5 py-1 bg-[#005B9A] text-white rounded-lg text-xs font-bold">ทั้งหมด (6)</button>
+          <button class="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-semibold">W11 (5)</button>
+          <button class="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-semibold">W12 (5)</button>
+          <button class="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-semibold">W13 (5)</button>
+          <button class="px-2.5 py-1 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-xs font-semibold">W14 (1)</button>
+        </div>
+        <div class="text-xs font-mono text-slate-400">กด '/' เพื่อค้นหาด่วน</div>
+      </div>
+
+      <!-- Master Data Table Mock -->
+      <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold text-[11px]">
+            <tr>
+              <th class="p-3 w-20 text-center font-mono">ลำดับ</th>
+              <th class="p-3">ชื่องานซ่อมบำรุง</th>
+              <th class="p-3 w-28 text-center font-mono">เลข W/O</th>
+              <th class="p-3 w-28 text-center">เริ่มงาน</th>
+              <th class="p-3 w-32 text-center">หมวดร่วม</th>
+              <th class="p-3 w-36 text-center">อุปกรณ์</th>
+              <th class="p-3 w-28 text-right">การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700 font-normal">
+            <tr class="hover:bg-sky-50/50">
+              <td class="p-3 text-center font-bold font-mono text-[#005B9A]">งานที่6</td>
+              <td class="p-3 font-semibold text-[#0F172A]">ปรับปรุง Pontoon และสำรวจสภาพพื้นผิว Sump 2SW</td>
+              <td class="p-3 text-center font-mono font-bold text-[#005B9A]">4161863</td>
+              <td class="p-3 text-center text-slate-500">27 ส.ค. 2569</td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold mr-1">11</span><span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold">13</span></td>
+              <td class="p-3 text-center text-slate-500">Sump 2SW</td>
+              <td class="p-3 text-right"><span class="px-3 py-1 bg-[#005B9A] text-white rounded-lg text-[11px] font-semibold">เปิดดู ➔</span></td>
+            </tr>
+            <tr class="hover:bg-sky-50/50">
+              <td class="p-3 text-center font-bold font-mono text-[#005B9A]">งานที่5</td>
+              <td class="p-3 font-semibold text-[#0F172A]">ตัดเหล็กสร้าง Base Plate ชุดรางเดินเครื่องจักร Bay7</td>
+              <td class="p-3 text-center font-mono font-bold text-[#005B9A]">4161472</td>
+              <td class="p-3 text-center text-slate-500">1 ก.ค. 2569</td>
+              <td class="p-3 text-center"><span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-bold mr-1">11</span><span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold mr-1">12</span><span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold">14</span></td>
+              <td class="p-3 text-center text-slate-400">-</td>
+              <td class="p-3 text-right"><span class="px-3 py-1 bg-[#005B9A] text-white rounded-lg text-[11px] font-semibold">เปิดดู ➔</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: DIRECTION B — SPLIT-SCREEN HORIZON (MASTER + INSTANT GANTT) -->
+    <!-- ========================================================================= -->
+    <section id="view-dir-b" class="hidden space-y-6 animate-in fade-in duration-200">
+      <!-- Feature Pill -->
+      <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-bold font-mono text-[#005B9A] bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
+            LAYOUT DIRECTION 2
+          </span>
+          <h2 class="text-base font-bold text-[#0F172A] mt-1">Split-Screen Horizon (Master Navigator + Live Interactive Gantt)</h2>
+          <p class="text-xs text-slate-500">เหมาะสำหรับ: การทำงานเชิงวิเคราะห์และวางแผนคู่ขนาน ดูรายการงานพร้อมไทม์ไลน์ข้างกันโดยไม่ต้องกดเปลี่ยนหน้า</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-[#005B9A] bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-200">แบบ 2 หน้าต่าง (Dual-Pane)</span>
+        </div>
+      </div>
+
+      <!-- Split Layout Container -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- Left Sidebar: Task Navigator (4 cols) -->
+        <div class="lg:col-span-4 bg-white rounded-3xl border border-slate-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-xs font-bold text-[#0F172A]">รายการงานซ่อม (6)</span>
+            <input type="text" placeholder="ค้นหา..." class="text-xs px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg w-32 outline-none" />
+          </div>
+
+          <div class="space-y-2 max-h-[500px] overflow-y-auto">
+            <!-- Active Selected Task -->
+            <div class="p-3 bg-sky-50/80 border-2 border-[#005B9A] rounded-2xl cursor-pointer shadow-xs">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-bold text-[#005B9A] font-mono">งานที่6 • W/O 4161863</span>
+                <span class="px-2 py-0.5 bg-[#005B9A] text-white rounded-full text-[9px] font-bold">กำลังเลือก</span>
+              </div>
+              <div class="text-xs font-bold text-[#0F172A] line-clamp-1">ปรับปรุง Pontoon Sump 2SW</div>
+              <div class="flex items-center justify-between text-[10px] text-slate-500 mt-2">
+                <span>เริ่ม: 27 ส.ค. 2569</span>
+                <span class="font-bold text-slate-700">10 งานย่อย (38%)</span>
+              </div>
+            </div>
+
+            <!-- Inactive Task 2 -->
+            <div class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl cursor-pointer transition-colors">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-bold text-slate-700 font-mono">งานที่5 • W/O 4161472</span>
+                <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[9px] font-bold border border-emerald-200">เสร็จ</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-700 line-clamp-1">ตัดเหล็ก Base Plate Bay7</div>
+              <div class="flex items-center justify-between text-[10px] text-slate-400 mt-2">
+                <span>เริ่ม: 1 ก.ค. 2569</span>
+                <span>8 งานย่อย (100%)</span>
+              </div>
+            </div>
+
+            <!-- Inactive Task 3 -->
+            <div class="p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl cursor-pointer transition-colors">
+              <div class="flex items-center justify-between text-[11px] mb-1">
+                <span class="font-bold text-slate-700 font-mono">งานที่4 • W/O 4153669</span>
+                <span class="px-2 py-0.5 bg-amber-50 text-amber-800 rounded-full text-[9px] font-bold border border-amber-200">รอดำเนินการ</span>
+              </div>
+              <div class="text-xs font-semibold text-slate-700 line-clamp-1">ซ่อม Final Drive</div>
+              <div class="flex items-center justify-between text-[10px] text-slate-400 mt-2">
+                <span>เริ่ม: 21 ก.ค. 2569</span>
+                <span>4 งานย่อย (0%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Main Stage: Live Gantt & Details (8 cols) -->
+        <div class="lg:col-span-8 bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <span class="text-xs font-bold text-[#005B9A] bg-sky-50 px-2 py-0.5 rounded font-mono">งานที่6</span>
+              <h3 class="text-sm font-bold text-[#0F172A] mt-1">ปรับปรุง Pontoon และสำรวจสภาพพื้นผิว Sump 2SW</h3>
+            </div>
+            <div class="flex gap-2">
+              <button class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">แก้ไข</button>
+              <button class="px-3 py-1 bg-[#005B9A] text-white text-xs font-bold rounded-xl shadow-xs">ส่งมอบงาน</button>
+            </div>
+          </div>
+
+          <!-- Mini Split Gantt inside Stage -->
+          <div class="border border-slate-200 rounded-2xl overflow-hidden text-xs">
+            <div class="bg-slate-50 px-4 py-2 border-b border-slate-200 font-bold text-slate-600 flex justify-between">
+              <span>ไทม์ไลน์งานย่อย (Subtasks Gantt Matrix)</span>
+              <span class="text-[#005B9A] font-mono">ส.ค. - ก.ย. 2569</span>
+            </div>
+            <div class="p-3 space-y-2 bg-white">
+              <div class="flex items-center justify-between text-[11px] p-2 bg-slate-50 rounded-xl">
+                <span class="font-semibold text-slate-800">1. ประสานงานกับหน่วยงาน</span>
+                <span class="text-emerald-600 font-bold font-mono">100% เสร็จ</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] p-2 bg-slate-50 rounded-xl">
+                <span class="font-semibold text-slate-800">2. งานพ่นทราย (พ่นลบ-ส)</span>
+                <span class="text-[#005B9A] font-bold font-mono">20% กำลังทำ</span>
+              </div>
+              <div class="flex items-center justify-between text-[11px] p-2 bg-slate-50 rounded-xl">
+                <span class="font-semibold text-slate-800">3. เชื่อมซ่อมชิ้นงาน</span>
+                <span class="text-amber-600 font-bold font-mono">0% รอทำ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 4: DIRECTION C — FIELD MOBILE STREAM (THUMB-ZONE & SPEED) -->
+    <!-- ========================================================================= -->
+    <section id="view-dir-c" class="hidden space-y-6 animate-in fade-in duration-200">
+      <!-- Feature Pill -->
+      <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-bold font-mono text-[#005B9A] bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
+            LAYOUT DIRECTION 3
+          </span>
+          <h2 class="text-base font-bold text-[#0F172A] mt-1">Field Mobile Stream (Mobile-First Thumb-Zone Engine)</h2>
+          <p class="text-xs text-slate-500">เหมาะสำหรับ: ช่างและวิศวกรที่ถือแท็บเล็ต/สมาร์ตโฟนตรวจหน้างานจริง เน้นปุ่มใหญ่และอัปเดตสถานะเร็ว</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">เหมาะกับสมาร์ตโฟน & แท็บเล็ต</span>
+        </div>
+      </div>
+
+      <!-- Mobile Screen Simulator Container -->
+      <div class="max-w-md mx-auto bg-slate-900 p-4 rounded-[40px] shadow-2xl border-4 border-slate-800">
+        <!-- Phone Screen Frame -->
+        <div class="bg-[#F5F5F7] rounded-[32px] overflow-hidden min-h-[600px] flex flex-col justify-between text-[#0F172A]">
+          <!-- Phone Header -->
+          <div class="bg-white p-4 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span class="text-xs font-bold">W10 Field Operations</span>
+            </div>
+            <span class="text-[10px] font-mono bg-sky-50 text-[#005B9A] px-2 py-0.5 rounded-md font-bold">กฟผ. แม่เมาะ</span>
+          </div>
+
+          <!-- Feed Content -->
+          <div class="p-3.5 space-y-3 flex-1 overflow-y-auto">
+            <!-- Mobile Card 1 -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-mono font-bold text-[#005B9A] bg-sky-50 px-2 py-0.5 rounded">งานที่6 • W/O 4161863</span>
+                <span class="text-[10px] font-bold text-[#005B9A] bg-sky-50 px-2 py-0.5 rounded-full">ดำเนินการ (38%)</span>
+              </div>
+              <div class="text-xs font-bold text-[#0F172A]">ปรับปรุง Pontoon Sump 2SW</div>
+              <div class="text-[11px] text-slate-500">อุปกรณ์: Sump 2SW • กำหนด: 7 ก.ย. 2569</div>
+              <!-- Action Row -->
+              <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                <button class="py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ดูไทม์ไลน์</button>
+                <button class="py-1.5 bg-[#005B9A] text-white rounded-xl text-xs font-bold">ส่งมอบหมวด</button>
+              </div>
+            </div>
+
+            <!-- Mobile Card 2 -->
+            <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-xs space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-mono font-bold text-[#005B9A] bg-sky-50 px-2 py-0.5 rounded">งานที่5 • W/O 4161472</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">เสร็จสิ้น (100%)</span>
+              </div>
+              <div class="text-xs font-bold text-[#0F172A]">ตัดเหล็ก Base Plate Bay7</div>
+              <div class="text-[11px] text-slate-500">กำหนด: 30 ก.ค. 2569</div>
+              <!-- Action Row -->
+              <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+                <button class="py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">ดูรายละเอียด</button>
+                <button class="py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold">ปิดงานแล้ว</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone Bottom Navigation Bar -->
+          <div class="bg-white border-t border-slate-200 p-2.5 flex items-center justify-around">
+            <button class="flex flex-col items-center text-[#005B9A] font-bold text-[10px]">
+              <span>📑</span>
+              <span>รายการงาน</span>
+            </button>
+            <button class="w-10 h-10 -mt-5 bg-[#005B9A] text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg border-2 border-white">
+              +
+            </button>
+            <button class="flex flex-col items-center text-slate-500 text-[10px]">
+              <span>🔍</span>
+              <span>กรอง W11-14</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 📜 INTERACTIVE SCRIPT -->
+  <script>
+    function switchView(viewId) {
+      // Hide all
+      document.getElementById('view-compare').classList.add('hidden');
+      document.getElementById('view-dir-a').classList.add('hidden');
+      document.getElementById('view-dir-b').classList.add('hidden');
+      document.getElementById('view-dir-c').classList.add('hidden');
+
+      // Reset buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-[#005B9A]', 'text-white', 'shadow-xs');
+        btn.classList.add('text-slate-300');
+      });
+
+      // Show target
+      const target = document.getElementById('view-' + viewId);
+      if (target) target.classList.remove('hidden');
+
+      // Highlight active button
+      const activeBtn = document.getElementById('btn-' + viewId);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-300');
+        activeBtn.classList.add('bg-[#005B9A]', 'text-white', 'shadow-xs');
+      }
+    }
+  </script>
+</body>
+</html>
