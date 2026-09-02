@@ -12,41 +12,41 @@ export default function KanbanBoardView({ tasks }: Props) {
   const [groupBy, setGroupBy] = useState<"status" | "discipline">("status")
 
   const statusColumns: { key: TaskStatus; title: string; color: string; bg: string; border: string; icon: string }[] = [
-    { key: "รอดำเนินการ", title: "รอดำเนินการ (Pending)", color: "text-amber-700", bg: "bg-amber-50/40", border: "border-amber-200/80", icon: "⏳" },
-    { key: "ดำเนินการ", title: "กำลังดำเนินการ (In Progress)", color: "text-[#005B9A]", bg: "bg-sky-50/40", border: "border-sky-200/80", icon: "⚙️" },
-    { key: "เสร็จ", title: "เสร็จสมบูรณ์ (Completed)", color: "text-emerald-700", bg: "bg-emerald-50/40", border: "border-emerald-200/80", icon: "✅" },
+    { key: "รอดำเนินการ", title: "รอดำเนินการ (Pending)", color: "text-[#B45309]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", icon: "⏳" },
+    { key: "ดำเนินการ", title: "กำลังดำเนินการ (In Progress)", color: "text-[#C05621]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", icon: "⚙️" },
+    { key: "เสร็จ", title: "เสร็จสมบูรณ์ (Completed)", color: "text-[#1B5E3B]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", icon: "✅" },
   ]
 
   const disciplineColumns: { key: DisciplineCode; title: string; color: string; bg: string; border: string; num: string }[] = [
-    { key: "W11", title: "W11 : วิศวกรรม", color: "text-purple-700", bg: "bg-purple-50/40", border: "border-purple-200/80", num: "11" },
-    { key: "W12", title: "W12 : เครื่องกล", color: "text-[#005B9A]", bg: "bg-sky-50/40", border: "border-sky-200/80", num: "12" },
-    { key: "W13", title: "W13 : ซ่อมเครื่องจักรกล", color: "text-amber-700", bg: "bg-amber-50/40", border: "border-amber-200/80", num: "13" },
-    { key: "W14", title: "W14 : ซ่อมอุปกรณ์", color: "text-emerald-700", bg: "bg-emerald-50/40", border: "border-emerald-200/80", num: "14" },
+    { key: "W11", title: "W11 : วิศวกรรม", color: "text-[#1D4ED8]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", num: "11" },
+    { key: "W12", title: "W12 : เครื่องกล", color: "text-[#D97706]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", num: "12" },
+    { key: "W13", title: "W13 : ซ่อมเครื่องจักรกล", color: "text-[#059669]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", num: "13" },
+    { key: "W14", title: "W14 : ซ่อมอุปกรณ์", color: "text-[#7C3AED]", bg: "bg-[#FAF8F5]", border: "border-[#DDD6C8]", num: "14" },
   ]
 
   return (
-    <div className="px-6 py-2">
+    <div className="py-2">
       {/* View Switcher Header */}
-      <div className="flex items-center justify-between mb-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.02)]">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-[#0F172A]">จัดกลุ่มบอร์ดตาม:</span>
-          <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200/80">
+      <div className="flex items-center justify-between mb-4 bg-[#FAF8F5] p-3 rounded-2xl border border-[#DDD6C8] shadow-xs">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-[#19211E]">จัดกลุ่มบอร์ดตาม:</span>
+          <div className="flex bg-[#ECE7DC] p-0.5 rounded-xl border border-[#DDD6C8]">
             <button
               onClick={() => setGroupBy("status")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all duration-150 ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
                 groupBy === "status"
-                  ? "bg-white text-[#0F172A] shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs"
+                  : "text-[#6B7771] hover:text-[#19211E]"
               }`}
             >
               📊 สถานะงาน (Status)
             </button>
             <button
               onClick={() => setGroupBy("discipline")}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all duration-150 ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all duration-150 cursor-pointer ${
                 groupBy === "discipline"
-                  ? "bg-white text-[#005B9A] shadow-xs"
-                  : "text-slate-500 hover:text-slate-900"
+                  ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs"
+                  : "text-[#6B7771] hover:text-[#19211E]"
               }`}
             >
               🏷️ หมวดงาน (Discipline)
@@ -54,8 +54,8 @@ export default function KanbanBoardView({ tasks }: Props) {
           </div>
         </div>
 
-        <div className="text-xs text-slate-400 font-medium">
-          แสดงทั้งหมด <strong className="text-[#0F172A]">{tasks.length}</strong> รายการ
+        <div className="text-xs text-[#6B7771] font-medium hidden sm:block">
+          แสดงทั้งหมด <strong className="text-[#19211E] font-mono">{tasks.length}</strong> รายการ
         </div>
       </div>
 
@@ -70,12 +70,12 @@ export default function KanbanBoardView({ tasks }: Props) {
                   className={`rounded-2xl border ${col.border} ${col.bg} p-3.5 shadow-xs flex flex-col min-h-[500px] transition-all`}
                 >
                   {/* Column Header */}
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80">
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#DDD6C8]">
                     <div className="flex items-center gap-2">
                       <span className="text-base">{col.icon}</span>
                       <h3 className={`text-xs font-bold ${col.color}`}>{col.title}</h3>
                     </div>
-                    <span className="text-xs font-bold bg-white/90 px-2 py-0.5 rounded-full text-slate-700 shadow-2xs border border-slate-200/80 font-mono">
+                    <span className="text-xs font-bold bg-[#ECE7DC] px-2 py-0.5 rounded-md text-[#19211E] border border-[#DDD6C8] font-mono">
                       {colTasks.length}
                     </span>
                   </div>
@@ -86,7 +86,7 @@ export default function KanbanBoardView({ tasks }: Props) {
                       <TaskKanbanCard key={task.id} task={task} />
                     ))}
                     {colTasks.length === 0 && (
-                      <div className="py-16 text-center text-xs text-slate-400 italic">
+                      <div className="py-16 text-center text-xs text-[#98A39E] italic">
                         ไม่มีงานในสถานะนี้
                       </div>
                     )}
@@ -104,14 +104,14 @@ export default function KanbanBoardView({ tasks }: Props) {
                   className={`rounded-2xl border ${col.border} ${col.bg} p-3.5 shadow-xs flex flex-col min-h-[500px] transition-all`}
                 >
                   {/* Column Header */}
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/80">
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#DDD6C8]">
                     <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-md bg-white flex items-center justify-center font-mono text-[11px] font-bold shadow-2xs border border-slate-200 text-[#0F172A]">
+                      <span className="w-5 h-5 rounded-md bg-[#ECE7DC] flex items-center justify-center font-mono text-[11px] font-bold border border-[#DDD6C8] text-[#19211E]">
                         {col.num}
                       </span>
                       <h3 className={`text-xs font-bold ${col.color}`}>{col.title}</h3>
                     </div>
-                    <span className="text-xs font-bold bg-white/90 px-2 py-0.5 rounded-full text-slate-700 shadow-2xs border border-slate-200/80 font-mono">
+                    <span className="text-xs font-bold bg-[#ECE7DC] px-2 py-0.5 rounded-md text-[#19211E] border border-[#DDD6C8] font-mono">
                       {colTasks.length}
                     </span>
                   </div>
@@ -122,7 +122,7 @@ export default function KanbanBoardView({ tasks }: Props) {
                       <TaskKanbanCard key={task.id} task={task} />
                     ))}
                     {colTasks.length === 0 && (
-                      <div className="py-16 text-center text-xs text-slate-400 italic">
+                      <div className="py-16 text-center text-xs text-[#98A39E] italic">
                         ไม่มีงานในหมวดนี้
                       </div>
                     )}
@@ -137,16 +137,17 @@ export default function KanbanBoardView({ tasks }: Props) {
 
 function TaskKanbanCard({ task }: { task: Task }) {
   const isDone = task.status === "เสร็จ"
+  const isProg = task.status === "ดำเนินการ"
 
   return (
-    <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.03)] hover:border-sky-300 hover:shadow-[0_4px_12px_rgba(0,91,154,0.08)] hover:-translate-y-0.5 transition-all duration-200 group flex flex-col gap-2 relative">
+    <div className="bg-[#FFFFFF] rounded-xl p-3.5 border border-[#DDD6C8] shadow-2xs hover:border-[#19211E] hover:shadow-xs transition-all duration-200 group flex flex-col gap-2 relative">
       {/* Top row: Task No, W/O, Status */}
       <div className="flex items-center justify-between gap-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-bold text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded font-mono">
+          <span className="text-[11px] font-bold text-[#19211E] bg-[#ECE7DC] px-1.5 py-0.5 rounded font-mono border border-[#DDD6C8]">
             {task.taskNo || `#${task.id}`}
           </span>
-          <span className="text-[11px] font-mono text-[#005B9A] font-bold">
+          <span className="text-[11px] font-mono text-[#19211E] font-bold">
             {task.wo || "-"}
           </span>
         </div>
@@ -154,10 +155,10 @@ function TaskKanbanCard({ task }: { task: Task }) {
         <span
           className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
             isDone
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : task.status === "ดำเนินการ"
-              ? "bg-sky-50 text-[#005B9A] border-sky-200"
-              : "bg-amber-50 text-amber-800 border-amber-200"
+              ? "bg-[#E8F4EC] text-[#1B5E3B] border-[#B8DCBD]"
+              : isProg
+              ? "bg-[#FDF2EC] text-[#C05621] border-[#F7CEB9]"
+              : "bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]"
           }`}
         >
           {task.status}
@@ -167,7 +168,7 @@ function TaskKanbanCard({ task }: { task: Task }) {
       {/* Task Title */}
       <a
         href={`/task/${task.id}`}
-        className="text-xs font-bold text-[#0F172A] group-hover:text-[#005B9A] transition-colors line-clamp-2 leading-relaxed"
+        className="text-xs font-bold text-[#19211E] group-hover:text-[#C05621] transition-colors line-clamp-2 leading-relaxed"
         title={task.title}
       >
         {task.title}
@@ -175,8 +176,8 @@ function TaskKanbanCard({ task }: { task: Task }) {
 
       {/* Equipment (if any) */}
       {task.equip && (
-        <div className="text-[11px] text-slate-600 bg-slate-50 border border-slate-200/70 rounded-md px-2 py-1 flex items-center gap-1.5 truncate">
-          <Wrench className="w-3 h-3 text-slate-400 flex-shrink-0" />
+        <div className="text-[11px] text-[#434E49] bg-[#FAF8F5] border border-[#DDD6C8] rounded-md px-2 py-1 flex items-center gap-1.5 truncate">
+          <Wrench className="w-3 h-3 text-[#6B7771] shrink-0" />
           <span className="truncate">{task.equip}</span>
         </div>
       )}
@@ -192,8 +193,8 @@ function TaskKanbanCard({ task }: { task: Task }) {
                 key={w}
                 className={`text-[10px] font-bold px-1.5 py-0.5 rounded border transition-all ${
                   isCurrent
-                    ? `${conf?.badgeClass} ring-1 ring-[#F0B323] font-extrabold shadow-2xs`
-                    : "bg-slate-50 text-slate-600 border-slate-200/70"
+                    ? `${conf?.badgeClass} ring-1 ring-[#C05621] font-extrabold shadow-2xs`
+                    : "bg-[#FAF8F5] text-[#434E49] border-[#DDD6C8]"
                 }`}
                 title={conf?.fullName}
               >
@@ -204,24 +205,24 @@ function TaskKanbanCard({ task }: { task: Task }) {
       </div>
 
       {/* Progress Bar */}
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+      <div className="pt-2 border-t border-[#DDD6C8]/60 flex items-center justify-between gap-3">
         <div className="flex-1 flex items-center gap-2">
-          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-[#ECE7DC] rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
-                isDone ? "bg-emerald-500" : "bg-[#005B9A]"
+                isDone ? "bg-[#1B5E3B]" : isProg ? "bg-[#C05621]" : "bg-[#B45309]"
               }`}
               style={{ width: `${task.progress}%` }}
             ></div>
           </div>
-          <span className="text-[11px] font-bold text-[#0F172A] font-mono w-7 text-right">
+          <span className="text-[11px] font-bold text-[#19211E] font-mono w-7 text-right">
             {task.progress}%
           </span>
         </div>
 
         <a
           href={`/task/${task.id}`}
-          className="p-1 rounded-md text-slate-400 hover:text-[#005B9A] hover:bg-sky-50 transition-colors"
+          className="p-1 rounded-md text-[#6B7771] hover:text-[#19211E] hover:bg-[#ECE7DC] transition-colors"
           title="ดูรายละเอียดงาน"
         >
           <ChevronRight className="w-4 h-4" />

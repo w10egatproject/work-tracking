@@ -7,7 +7,8 @@ import TaskTable from "@/components/TaskTable"
 import KanbanBoardView from "@/components/KanbanBoardView"
 import AddTaskDialog from "@/components/AddTaskDialog"
 import FloatingNavbar from "@/components/FloatingNavbar"
-import { Search, Filter, Table as TableIcon, LayoutGrid, X } from "lucide-react"
+import MobileBottomNav from "@/components/MobileBottomNav"
+import { Search, X } from "lucide-react"
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -94,7 +95,7 @@ export default function Home() {
   const countW13 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("13") || (t.w_codes && t.w_codes.includes("W13"))).length, [tasks])
   const countW14 = useMemo(() => tasks.filter((t) => t.completion_codes.includes("14") || (t.w_codes && t.w_codes.includes("W14"))).length, [tasks])
 
-  // Filter tasks - Sorted descending (latest task on top, Task 1 at bottom)
+  // Filter tasks - Sorted descending (latest task on top)
   const filteredTasks = useMemo(() => {
     return tasks
       .filter((task) => {
@@ -130,8 +131,8 @@ export default function Home() {
   })
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] flex flex-col font-sans antialiased selection:bg-[#005B9A] selection:text-white">
-      {/* 1. Unified Single App Header */}
+    <div className="min-h-screen bg-[#F5F2EB] text-[#19211E] flex flex-col font-sans antialiased selection:bg-[#19211E] selection:text-[#FAF8F5]">
+      {/* 1. Unified Industrial Console Header */}
       <FloatingNavbar
         type="dashboard"
         todayStr={todayStr}
@@ -143,55 +144,56 @@ export default function Home() {
       />
 
       {/* Main Content Dashboard Area */}
-      <main className="flex-1 pb-16 max-w-[1600px] w-full mx-auto space-y-4 sm:space-y-5 pt-6 sm:pt-7 px-4 sm:px-6">
-        {/* Symmetrical KPI Summary Bento Cards */}
+      <main className="flex-1 pb-24 md:pb-16 max-w-[1600px] w-full mx-auto space-y-4 sm:space-y-5 pt-5 sm:pt-6 px-3 sm:px-6">
+        {/* Symmetrical KPI Summary Cards (Proof over promise) */}
         <SummaryCards tasks={tasks} />
 
-        {/* Unified Action & Filter Toolbar */}
-        <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-[0_1px_3px_rgba(15,23,42,0.03),0_4px_12px_rgba(15,23,42,0.02)] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
-          {/* Quick Search Input */}
+        {/* Industrial Action & Filter Toolbar */}
+        <div className="bg-[#FAF8F5] rounded-2xl p-3 border border-[#DDD6C8] shadow-[0_2px_8px_rgba(25,33,30,0.03)] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
+          {/* Quick Search Input with Shortcut */}
           <div className="relative flex-1 min-w-[260px]">
-            <Search className="w-4 h-4 text-[#86868B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#6B7771] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="ค้นหาตามชื่องาน, เลข W/O, หรืออุปกรณ์..."
-              className="w-full pl-10 pr-16 py-2 bg-[#F5F5F7] border border-black/[0.05] rounded-xl text-xs text-[#1D1D1F] placeholder:text-[#86868B] focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none transition-all"
+              className="w-full pl-10 pr-16 py-2 bg-[#ECE7DC]/60 border border-[#DDD6C8] rounded-xl text-xs text-[#19211E] placeholder:text-[#6B7771] focus:bg-[#FFFFFF] focus:border-[#19211E] focus:ring-1 focus:ring-[#19211E] outline-none transition-all"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {searchQuery ? (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="p-1 text-[#86868B] hover:text-[#1D1D1F] rounded-full"
+                  className="p-1 text-[#6B7771] hover:text-[#19211E] rounded-full"
+                  title="ล้างคำค้นหา"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               ) : (
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#86868B] bg-white rounded border border-black/[0.08] shadow-2xs">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#6B7771] bg-[#FAF8F5] rounded border border-[#DDD6C8] shadow-2xs">
                   /
                 </kbd>
               )}
             </div>
           </div>
 
-          {/* Right Group: Discipline Filter Pills + Status Dropdown */}
-          <div className="flex flex-wrap items-center justify-between xl:justify-end gap-2.5">
-            {/* Discipline Pills */}
+          {/* Right Group: Discipline Facet Pills + Status Selector */}
+          <div className="flex flex-wrap items-center justify-between xl:justify-end gap-2">
+            {/* Discipline Facet Buttons */}
             <div className="flex flex-wrap items-center gap-1">
               <button
                 onClick={() => setSelectedDiscipline("ALL")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
                   selectedDiscipline === "ALL"
-                    ? "bg-[#005B9A] text-white shadow-xs"
-                    : "bg-slate-100/80 text-slate-600 hover:bg-slate-200/80 hover:text-slate-900"
+                    ? "bg-[#19211E] text-[#FAF8F5] border-[#19211E] shadow-2xs"
+                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8] hover:text-[#19211E]"
                 }`}
               >
                 <span>ทั้งหมด</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "ALL" ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                    selectedDiscipline === "ALL" ? "bg-white/20 text-[#FAF8F5]" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
                   }`}
                 >
                   {tasks.length}
@@ -201,17 +203,18 @@ export default function Home() {
               {/* W11 */}
               <button
                 onClick={() => setSelectedDiscipline("W11")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
                   selectedDiscipline === "W11"
-                    ? "bg-purple-700 text-white shadow-xs"
-                    : "bg-purple-50/80 text-purple-700 hover:bg-purple-100/90 border border-purple-200/50"
+                    ? "bg-[#1D4ED8] text-white border-[#1D4ED8] shadow-2xs"
+                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
                 }`}
+                title="W11 วิศวกรรม"
               >
-                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                <span className="w-2 h-2 rounded-full bg-[#1D4ED8]"></span>
                 <span>W11</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W11" ? "bg-white/20 text-white" : "bg-purple-200/80 text-purple-800"
+                    selectedDiscipline === "W11" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
                   }`}
                 >
                   {countW11}
@@ -221,17 +224,18 @@ export default function Home() {
               {/* W12 */}
               <button
                 onClick={() => setSelectedDiscipline("W12")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
                   selectedDiscipline === "W12"
-                    ? "bg-[#005B9A] text-white shadow-xs"
-                    : "bg-sky-50/80 text-[#005B9A] hover:bg-sky-100/90 border border-sky-200/50"
+                    ? "bg-[#D97706] text-white border-[#D97706] shadow-2xs"
+                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
                 }`}
+                title="W12 เครื่องกล"
               >
-                <span className="w-2 h-2 rounded-full bg-[#005B9A]"></span>
+                <span className="w-2 h-2 rounded-full bg-[#D97706]"></span>
                 <span>W12</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W12" ? "bg-white/20 text-white" : "bg-sky-200/80 text-[#005B9A]"
+                    selectedDiscipline === "W12" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
                   }`}
                 >
                   {countW12}
@@ -241,17 +245,18 @@ export default function Home() {
               {/* W13 */}
               <button
                 onClick={() => setSelectedDiscipline("W13")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
                   selectedDiscipline === "W13"
-                    ? "bg-[#D97706] text-white shadow-xs"
-                    : "bg-amber-50/80 text-amber-800 hover:bg-amber-100/90 border border-amber-200/50"
+                    ? "bg-[#059669] text-white border-[#059669] shadow-2xs"
+                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
                 }`}
+                title="W13 ซ่อมเครื่องจักรกล"
               >
-                <span className="w-2 h-2 rounded-full bg-[#F0B323]"></span>
+                <span className="w-2 h-2 rounded-full bg-[#059669]"></span>
                 <span>W13</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W13" ? "bg-white/20 text-white" : "bg-amber-200/80 text-amber-900"
+                    selectedDiscipline === "W13" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
                   }`}
                 >
                   {countW13}
@@ -261,17 +266,18 @@ export default function Home() {
               {/* W14 */}
               <button
                 onClick={() => setSelectedDiscipline("W14")}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 flex items-center gap-1.5 cursor-pointer border ${
                   selectedDiscipline === "W14"
-                    ? "bg-emerald-700 text-white shadow-xs"
-                    : "bg-emerald-50/80 text-emerald-800 hover:bg-emerald-100/90 border border-emerald-200/50"
+                    ? "bg-[#7C3AED] text-white border-[#7C3AED] shadow-2xs"
+                    : "bg-[#ECE7DC] text-[#434E49] border-[#DDD6C8] hover:bg-[#DDD6C8]"
                 }`}
+                title="W14 ซ่อมอุปกรณ์เครื่องจักรกล"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className="w-2 h-2 rounded-full bg-[#7C3AED]"></span>
                 <span>W14</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDiscipline === "W14" ? "bg-white/20 text-white" : "bg-emerald-200/80 text-emerald-900"
+                    selectedDiscipline === "W14" ? "bg-white/20 text-white" : "bg-[#FAF8F5] text-[#19211E] border border-[#DDD6C8]"
                   }`}
                 >
                   {countW14}
@@ -279,14 +285,14 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="h-5 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-5 w-px bg-[#DDD6C8] hidden sm:block"></div>
 
-            {/* Status Dropdown */}
+            {/* Status Selector */}
             <div className="flex items-center gap-1.5">
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-1.5 bg-[#F5F5F7] border border-black/[0.06] rounded-xl text-xs font-medium text-[#1D1D1F] outline-none focus:border-[#005B9A] focus:bg-white cursor-pointer"
+                className="px-3 py-1.5 bg-[#ECE7DC] border border-[#DDD6C8] rounded-xl text-xs font-semibold text-[#19211E] outline-none focus:border-[#19211E] focus:bg-[#FAF8F5] cursor-pointer"
               >
                 <option value="ALL">ทุกสถานะ</option>
                 <option value="ดำเนินการ">⚙️ กำลังดำเนินการ</option>
@@ -299,9 +305,9 @@ export default function Home() {
 
         {/* Dynamic Views (Table / Kanban) */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-28 gap-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
-            <div className="w-8 h-8 border-2 border-[#005B9A] border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-[#86868B] text-xs font-medium">กำลังเชื่อมต่อข้อมูลจาก Google Sheets...</div>
+          <div className="flex flex-col items-center justify-center py-24 gap-3 bg-[#FAF8F5] rounded-2xl border border-[#DDD6C8] shadow-xs">
+            <div className="w-7 h-7 border-2 border-[#19211E] border-t-transparent rounded-full animate-spin"></div>
+            <div className="text-[#6B7771] text-xs font-medium">กำลังโหลดข้อมูลงานซ่อมบำรุง...</div>
           </div>
         ) : (
           <>
@@ -310,6 +316,26 @@ export default function Home() {
           </>
         )}
       </main>
+
+      {/* 📱 Mobile Bottom Navigation & Slide Drawer */}
+      <MobileBottomNav
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        selectedDiscipline={selectedDiscipline}
+        onSelectDiscipline={setSelectedDiscipline}
+        selectedStatus={selectedStatus}
+        onSelectStatus={setSelectedStatus}
+        counts={{
+          all: tasks.length,
+          w11: countW11,
+          w12: countW12,
+          w13: countW13,
+          w14: countW14,
+        }}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+        onAddTask={() => setAddDialogOpen(true)}
+      />
 
       {/* Add Task Dialog */}
       <AddTaskDialog

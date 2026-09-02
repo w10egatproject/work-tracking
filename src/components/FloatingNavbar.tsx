@@ -28,25 +28,27 @@ type FloatingNavbarProps = DashboardNavProps | TaskDetailNavProps
 export default function FloatingNavbar(props: FloatingNavbarProps) {
   if (props.type === "dashboard") {
     return (
-      <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
-        <div className="backdrop-blur-2xl bg-white/90 border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3.5 text-[#1D1D1F] transition-all">
+      <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-3 sm:px-6 transition-all">
+        <div className="backdrop-blur-xl bg-[#FAF8F5]/90 border border-[#DDD6C8] shadow-[0_4px_24px_rgba(25,33,30,0.06),0_1px_2px_rgba(25,33,30,0.04)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#19211E] transition-all">
           {/* Left: Branding & Subtitle */}
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#005B9A] to-[#0284C7] flex items-center justify-center text-white text-base font-bold shadow-xs shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#19211E] text-[#F5F2EB] flex items-center justify-center text-sm font-bold shadow-xs shrink-0 border border-[#DDD6C8]">
               ⚡
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#1D1D1F] flex items-center gap-2">
-                  <span>W10 Operations</span>
-                  <span className="text-[#86868B] text-xs font-normal hidden lg:inline">| ภาพรวมงานซ่อมบำรุงประจำแผนก</span>
+                <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#19211E] flex items-center gap-2">
+                  <span className="font-sans">W10 Operations</span>
+                  <span className="text-[#6B7771] text-xs font-normal hidden lg:inline font-sans">
+                    | ระบบติดตามงานซ่อมบำรุงโรงงาน
+                  </span>
                 </h1>
-                <span className="bg-emerald-50 text-emerald-700 text-[10px] font-medium px-2.5 py-0.5 rounded-full border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="bg-[#E8F4EC] text-[#1B5E3B] text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-[#B8DCBD] flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1B5E3B] animate-pulse"></span>
                   <span>Live Sync</span>
                 </span>
               </div>
-              <p className="text-[11px] text-[#86868B] font-normal hidden sm:block mt-0.5">
+              <p className="text-[11px] text-[#6B7771] font-normal hidden sm:block mt-0.5">
                 กฟผ. แม่เมาะ • W11 วิศวกรรม • W12 เครื่องกล • W13 ซ่อมเครื่องจักร • W14 ซ่อมอุปกรณ์
               </p>
             </div>
@@ -55,37 +57,37 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
           {/* Right: View Switcher, Date, Refresh & Actions */}
           <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
             {/* View Mode Segmented Controls */}
-            <div className="flex items-center bg-[#F5F5F7] p-0.5 rounded-xl border border-black/[0.05]">
+            <div className="hidden sm:flex items-center bg-[#ECE7DC] p-0.5 rounded-xl border border-[#DDD6C8]">
               <button
                 onClick={() => props.onViewModeChange("table")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   props.viewMode === "table"
-                    ? "bg-white text-[#1D1D1F] shadow-xs font-bold"
-                    : "text-[#86868B] hover:text-[#1D1D1F]"
+                    ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs font-bold"
+                    : "text-[#6B7771] hover:text-[#19211E]"
                 }`}
-                title="มุมมองตาราง"
+                title="มุมมองตารางรายการ"
               >
-                <TableIcon className="w-3.5 h-3.5 text-[#005B9A]" />
+                <TableIcon className="w-3.5 h-3.5 text-[#19211E]" />
                 <span className="hidden md:inline">ตาราง</span>
               </button>
 
               <button
                 onClick={() => props.onViewModeChange("kanban")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-150 cursor-pointer ${
                   props.viewMode === "kanban"
-                    ? "bg-white text-[#1D1D1F] shadow-xs font-bold"
-                    : "text-[#86868B] hover:text-[#1D1D1F]"
+                    ? "bg-[#FAF8F5] text-[#19211E] shadow-2xs font-bold"
+                    : "text-[#6B7771] hover:text-[#19211E]"
                 }`}
                 title="มุมมองบอร์ด Kanban"
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-[#005B9A]" />
+                <LayoutGrid className="w-3.5 h-3.5 text-[#19211E]" />
                 <span className="hidden md:inline">บอร์ด</span>
               </button>
             </div>
 
             {/* Date */}
-            <div className="text-xs text-[#6E6E73] hidden xl:flex items-center gap-1.5 bg-[#F5F5F7] px-3 py-1.5 rounded-xl font-medium border border-black/[0.04]">
-              <Calendar className="w-3.5 h-3.5 text-[#005B9A]" />
+            <div className="text-xs text-[#6B7771] hidden xl:flex items-center gap-1.5 bg-[#FAF8F5] px-3 py-1.5 rounded-xl font-medium border border-[#DDD6C8]">
+              <Calendar className="w-3.5 h-3.5 text-[#6B7771]" />
               <span className="text-[11px]">{props.todayStr}</span>
             </div>
 
@@ -93,17 +95,18 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
             <button
               onClick={props.onRefresh}
               disabled={props.refreshing}
-              className="px-3 py-1.5 rounded-xl bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer border border-black/[0.04]"
-              title="รีเฟรชข้อมูลจาก Google Sheets"
+              className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] transition-all text-xs font-medium flex items-center gap-1.5 active:scale-95 cursor-pointer border border-[#DDD6C8]"
+              title="รีเฟรชข้อมูลจาก Master Sheet"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#005B9A] ${props.refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#19211E] ${props.refreshing ? "animate-spin" : ""}`} />
               <span className="hidden sm:inline">รีเฟรช</span>
             </button>
 
-            {/* Add Task Button */}
+            {/* Add Task Primary Action */}
             <button
               onClick={props.onAddTask}
-              className="px-3.5 py-1.5 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] transition-all text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer border border-[#19211E]"
+              title="เพิ่มใบสั่งงานใหม่"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>สร้างงานใหม่</span>
@@ -114,69 +117,70 @@ export default function FloatingNavbar(props: FloatingNavbarProps) {
     )
   }
 
-  // Task Detail floating navbar (Apple Frosted Glass Style)
+  // Task Detail Navbar
   return (
-    <header className="sticky top-4 sm:top-5 z-40 mx-auto w-full max-w-[1600px] px-4 sm:px-6 transition-all">
-      <div className="backdrop-blur-2xl bg-white/85 border border-black/[0.08] shadow-[0_8px_30px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-2xl sm:rounded-full px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 text-[#1D1D1F] transition-all">
-        {/* Left: Back & Title info */}
-        <div className="flex items-center gap-3 overflow-hidden">
+    <header className="sticky top-3.5 z-40 mx-auto w-full max-w-[1600px] px-3 sm:px-6 transition-all">
+      <div className="backdrop-blur-xl bg-[#FAF8F5]/90 border border-[#DDD6C8] shadow-[0_4px_24px_rgba(25,33,30,0.06),0_1px_2px_rgba(25,33,30,0.04)] rounded-2xl px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-[#19211E] transition-all">
+        {/* Left: Back & Breadcrumb */}
+        <div className="flex items-center gap-3">
           <a
             href="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] text-xs font-medium transition-all shadow-2xs shrink-0"
+            className="w-9 h-9 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] border border-[#DDD6C8] text-[#19211E] flex items-center justify-center transition-all active:scale-95 shrink-0"
+            title="กลับสู่หน้าภาพรวมแดชบอร์ด"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#005B9A]" />
-            <span>กลับตารางหลัก</span>
+            <ArrowLeft className="w-4 h-4" />
           </a>
-          <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0"></div>
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono font-semibold text-[11px] bg-sky-50 text-[#005B9A] border border-sky-200/80 px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
-              {props.taskNo}
-            </span>
-            <span className="text-xs font-semibold text-[#1D1D1F] truncate hidden md:block" title={props.title}>
-              {props.title}
-            </span>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#19211E] bg-[#ECE7DC] px-2.5 py-0.5 rounded-md border border-[#DDD6C8] font-mono">
+                {props.taskNo}
+              </span>
+              <h1 className="text-sm sm:text-base font-bold text-[#19211E] tracking-tight line-clamp-1 max-w-[280px] sm:max-w-md md:max-w-lg">
+                {props.title}
+              </h1>
+            </div>
           </div>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={props.onEditTask}
-            className="px-3.5 py-1.5 bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#1D1D1F] rounded-full font-medium text-xs flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer active:scale-95"
-            title="แก้ไขวันที่และรายละเอียดใบสั่งงาน"
-          >
-            <Edit2 className="w-3.5 h-3.5 text-[#005B9A]" />
-            <span className="hidden sm:inline">แก้ไขข้อมูลงาน</span>
-            <span className="sm:hidden">แก้ไข</span>
-          </button>
-
-          <button
-            onClick={props.onHandover}
-            className="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded-full font-semibold text-xs flex items-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer"
-          >
-            <span>🤝 ส่งมอบงาน</span>
-          </button>
-
+        <div className="flex items-center gap-2 flex-wrap">
           {props.sheetLink && (
             <a
               href={props.sheetLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 py-1.5 bg-[#F5F5F7] hover:bg-[#E8E8ED] text-[#6E6E73] hover:text-[#1D1D1F] rounded-full text-xs font-medium flex items-center gap-1.5 transition-colors shadow-2xs hidden lg:flex"
+              className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] text-xs font-medium flex items-center gap-1.5 border border-[#DDD6C8] transition-all"
+              title="เปิดดูใน Google Sheets"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>เปิดชีท</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#19211E]" />
+              <span className="hidden sm:inline">Google Sheets</span>
             </a>
           )}
+
+          <button
+            onClick={props.onEditTask}
+            className="px-3 py-1.5 rounded-xl bg-[#FAF8F5] hover:bg-[#ECE7DC] text-[#19211E] text-xs font-medium flex items-center gap-1.5 border border-[#DDD6C8] transition-all cursor-pointer"
+            title="แก้ไขข้อมูลงาน"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-[#19211E]" />
+            <span className="hidden sm:inline">แก้ไข</span>
+          </button>
+
+          <button
+            onClick={props.onHandover}
+            className="px-3.5 py-1.5 rounded-xl bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            title="ส่งมอบงานระหว่างหมวด"
+          >
+            <span>ส่งมอบงาน</span>
+          </button>
 
           {props.onDeleteTask && (
             <button
               onClick={props.onDeleteTask}
-              className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 rounded-full font-medium text-xs flex items-center gap-1.5 transition-all shadow-2xs active:scale-95 cursor-pointer"
-              title="ลบใบสั่งงานนี้"
+              className="p-1.5 rounded-xl bg-[#FAF8F5] hover:bg-rose-50 text-rose-700 hover:text-rose-800 text-xs font-medium flex items-center gap-1 border border-[#DDD6C8] hover:border-rose-300 transition-all cursor-pointer"
+              title="ลบงานนี้"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">ลบงาน</span>
             </button>
           )}
         </div>

@@ -58,24 +58,24 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
   )
   const [completionDate, setCompletionDate] = useState("")
   const [totalDays, setTotalDays] = useState(60)
-  const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineCode[]>(["W11", "W12", "W13"])
   const [equip, setEquip] = useState("")
   const [link, setLink] = useState("")
+  const [selectedDisciplines, setSelectedDisciplines] = useState<DisciplineCode[]>(["W11", "W12", "W13", "W14"])
   const [submitting, setSubmitting] = useState(false)
 
-  // Calendar Picker state
+  // Modern Calendar Picker State
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [calendarTarget, setCalendarTarget] = useState<"reportDate" | "completionDate">("reportDate")
-  const [calendarTitle, setCalendarTitle] = useState("เลือกวันที่")
+  const [calendarTitle, setCalendarTitle] = useState("")
 
-  const handleOpenCalendar = (target: "reportDate" | "completionDate", titleText: string) => {
+  const handleOpenCalendar = (target: "reportDate" | "completionDate", modalTitle: string) => {
     setCalendarTarget(target)
-    setCalendarTitle(titleText)
+    setCalendarTitle(modalTitle)
     setCalendarOpen(true)
   }
 
-  const handleSelectDate = (d: Date) => {
-    const formatted = formatThaiDate(d)
+  const handleSelectDate = (date: Date) => {
+    const formatted = formatThaiDate(date)
     if (calendarTarget === "reportDate") {
       setReportDate(formatted)
       if (completionDate) {
@@ -87,7 +87,6 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
         setTotalDays(calculateDayDifference(reportDate, formatted))
       }
     }
-    setCalendarOpen(false)
   }
 
   if (!open) return null
@@ -95,7 +94,7 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
   const toggleDiscipline = (code: DisciplineCode) => {
     if (selectedDisciplines.includes(code)) {
       if (selectedDisciplines.length > 1) {
-        setSelectedDisciplines(selectedDisciplines.filter((c) => c !== code))
+        setSelectedDisciplines(selectedDisciplines.filter((d) => d !== code))
       }
     } else {
       setSelectedDisciplines([...selectedDisciplines, code])
@@ -146,36 +145,36 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
 
   return (
     <div
-      className="fixed inset-0 bg-slate-950/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 bg-[#19211E]/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-white rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200/90 overflow-hidden animate-in zoom-in-95 duration-150">
+      <div className="bg-[#FAF8F5] rounded-2xl w-full max-w-xl shadow-2xl border border-[#DDD6C8] overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-[#0F172A] text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-[#19211E] text-[#FAF8F5] px-6 py-4 flex items-center justify-between border-b border-[#2C3732]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#005B9A] to-[#004A7D] border border-sky-400/30 flex items-center justify-center text-xl shadow-xs">
+            <div className="w-9 h-9 rounded-xl bg-[#2C3732] border border-[#DDD6C8]/30 flex items-center justify-center text-lg shadow-xs">
               📝
             </div>
             <div>
-              <h2 className="text-base font-extrabold tracking-tight">เพิ่มใบสั่งงานซ่อมบำรุงใหม่</h2>
-              <p className="text-xs text-slate-400">บันทึกลงแผ่นงาน &quot;ลำดับงาน&quot; พร้อมสร้างแผนงานย่อยอัตโนมัติ</p>
+              <h2 className="text-sm sm:text-base font-bold tracking-tight">เพิ่มใบสั่งงานซ่อมบำรุงใหม่</h2>
+              <p className="text-xs text-[#98A39E]">บันทึกลงแผ่นงาน &quot;ลำดับงาน&quot; พร้อมสร้างแผนงานย่อยอัตโนมัติ</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="text-[#98A39E] hover:text-[#FAF8F5] p-1 rounded-lg hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs text-[#19211E]">
           <div>
-            <label className="block font-bold text-[#0F172A] mb-1">
-              รายการ / ชื่องานซ่อมบำรุง <span className="text-rose-500">*</span>
+            <label className="block font-bold text-[#19211E] mb-1">
+              รายการ / ชื่องานซ่อมบำรุง <span className="text-[#C05621]">*</span>
             </label>
             <input
               type="text"
@@ -183,13 +182,13 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="เช่น สร้างอุปกรณ์จับยก Bearing จำนวน 1 SE"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] focus:ring-2 focus:ring-sky-100 outline-none font-medium"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs focus:bg-white focus:border-[#19211E] focus:ring-1 focus:ring-[#19211E] outline-none font-medium"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1">
+              <label className="block font-bold text-[#19211E] mb-1">
                 เลข Work Order (W/O)
               </label>
               <input
@@ -197,30 +196,30 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 value={wo}
                 onChange={(e) => setWo(e.target.value)}
                 placeholder="เช่น 3816627"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-[#005B9A] focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs font-mono font-bold text-[#19211E] focus:bg-white focus:border-[#19211E] outline-none"
               />
             </div>
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
-                <span>วันที่เริ่มงาน <span className="text-rose-500">*</span></span>
-                <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเลือกปฏิทิน)</span>
+              <label className="block font-bold text-[#19211E] mb-1 flex items-center justify-between">
+                <span>วันที่เริ่มงาน <span className="text-[#C05621]">*</span></span>
+                <span className="text-[10px] text-[#C05621] font-normal">(คลิกเลือกปฏิทิน)</span>
               </label>
               <button
                 type="button"
                 onClick={() => handleOpenCalendar("reportDate", "เลือกวันที่เริ่มงาน")}
-                className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50/60 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs font-semibold text-[#0F172A] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-2 focus:ring-sky-100"
+                className="w-full px-3.5 py-2.5 bg-white hover:bg-[#ECE7DC]/60 border border-[#DDD6C8] hover:border-[#19211E] rounded-xl text-xs font-semibold text-[#19211E] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-1 focus:ring-[#19211E]"
               >
                 <span>{reportDate || "เลือกวันที่เริ่มงาน"}</span>
-                <CalendarIcon className="w-4 h-4 text-[#005B9A]" />
+                <CalendarIcon className="w-4 h-4 text-[#19211E]" />
               </button>
             </div>
           </div>
 
           {/* Disciplines Selection (W11-W14) */}
           <div>
-            <label className="block font-bold text-[#0F172A] mb-1.5 flex items-center justify-between">
-              <span>หมวดงานที่ร่วมงาน (W Codes) <span className="text-rose-500">*</span></span>
-              <span className="text-[11px] text-slate-400 font-normal">เลือกลำดับหมวดที่เกี่ยวข้อง</span>
+            <label className="block font-bold text-[#19211E] mb-1.5 flex items-center justify-between">
+              <span>หมวดงานที่ร่วมงาน (W Codes) <span className="text-[#C05621]">*</span></span>
+              <span className="text-[11px] text-[#6B7771] font-normal">เลือกลำดับหมวดที่เกี่ยวข้อง</span>
             </label>
             <div className="grid grid-cols-2 gap-2">
               {(["W11", "W12", "W13", "W14"] as DisciplineCode[]).map((code) => {
@@ -231,10 +230,10 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                     key={code}
                     type="button"
                     onClick={() => toggleDiscipline(code)}
-                    className={`px-3 py-2 rounded-xl border text-left flex items-center justify-between transition-all ${
+                    className={`px-3 py-2 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer ${
                       isSelected
-                        ? `${conf.lightBg} ${conf.borderClass} ring-1 ring-[#005B9A]/30 shadow-2xs`
-                        : "bg-slate-50 border-slate-200 text-slate-400 opacity-60 hover:opacity-100"
+                        ? `${conf.lightBg} ${conf.borderClass} ring-1 ring-[#19211E]/30 shadow-2xs font-bold`
+                        : "bg-white border-[#DDD6C8] text-[#98A39E] opacity-70 hover:opacity-100"
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -243,9 +242,9 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                       >
                         ✓
                       </span>
-                      <span className="text-xs font-bold text-[#0F172A]">{conf.fullName}</span>
+                      <span className="text-xs font-bold text-[#19211E]">{conf.fullName}</span>
                     </div>
-                    <span className="text-[10px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border text-slate-600">
+                    <span className="text-[10px] font-mono font-bold bg-[#FAF8F5] px-1.5 py-0.5 rounded border border-[#DDD6C8] text-[#19211E]">
                       {conf.num}
                     </span>
                   </button>
@@ -256,23 +255,23 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
 
           <div className="grid grid-cols-2 gap-3.5">
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1 flex items-center justify-between">
+              <label className="block font-bold text-[#19211E] mb-1 flex items-center justify-between">
                 <span>วันที่คาดว่าจะแล้วเสร็จ</span>
-                <span className="text-[10px] text-[#005B9A] font-normal">(คลิกเลือกปฏิทิน)</span>
+                <span className="text-[10px] text-[#C05621] font-normal">(คลิกเลือกปฏิทิน)</span>
               </label>
               <button
                 type="button"
                 onClick={() => handleOpenCalendar("completionDate", "เลือกวันที่คาดว่าจะแล้วเสร็จ")}
-                className="w-full px-3.5 py-2.5 bg-slate-50 hover:bg-sky-50/60 border border-slate-300 hover:border-[#005B9A] rounded-xl text-xs font-semibold text-[#0F172A] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-2 focus:ring-sky-100"
+                className="w-full px-3.5 py-2.5 bg-white hover:bg-[#ECE7DC]/60 border border-[#DDD6C8] hover:border-[#19211E] rounded-xl text-xs font-semibold text-[#19211E] flex items-center justify-between transition-all cursor-pointer text-left focus:ring-1 focus:ring-[#19211E]"
               >
-                <span className={completionDate ? "text-[#0F172A]" : "text-slate-400 font-normal"}>
+                <span className={completionDate ? "text-[#19211E]" : "text-[#98A39E] font-normal"}>
                   {completionDate || "เช่น 30 มี.ค. 2026"}
                 </span>
-                <CalendarIcon className="w-4 h-4 text-[#005B9A]" />
+                <CalendarIcon className="w-4 h-4 text-[#19211E]" />
               </button>
             </div>
             <div>
-              <label className="block font-bold text-[#0F172A] mb-1">
+              <label className="block font-bold text-[#19211E] mb-1">
                 ระยะเวลาทั้งหมด (วัน)
               </label>
               <input
@@ -280,13 +279,13 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
                 min={1}
                 value={totalDays}
                 onChange={(e) => setTotalDays(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:border-[#005B9A] outline-none"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs font-mono focus:bg-white focus:border-[#19211E] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-[#0F172A] mb-1">
+            <label className="block font-bold text-[#19211E] mb-1">
               อุปกรณ์ / เครื่องจักร (Equip)
             </label>
             <input
@@ -294,12 +293,12 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={equip}
               onChange={(e) => setEquip(e.target.value)}
               placeholder="เช่น 270006 Reclaimer 6 หรือ 240007 Crusher 3"
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs focus:bg-white focus:border-[#19211E] outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-[#0F172A] mb-1">
+            <label className="block font-bold text-[#19211E] mb-1">
               ลิ้งค์ Google Sheets
             </label>
             <input
@@ -307,23 +306,23 @@ export default function AddTaskDialog({ open, onClose, onAdd }: Props) {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="https://docs.google.com/spreadsheets/d/..."
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:bg-white focus:border-[#005B9A] outline-none"
+              className="w-full px-3.5 py-2.5 bg-white border border-[#DDD6C8] rounded-xl text-xs focus:bg-white focus:border-[#19211E] outline-none"
             />
           </div>
 
           {/* Footer actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#DDD6C8]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+              className="px-4 py-2 bg-[#ECE7DC] text-[#19211E] border border-[#DDD6C8] rounded-xl text-xs font-bold hover:bg-[#DDD6C8] transition-colors cursor-pointer"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 bg-[#005B9A] hover:bg-[#004A7D] text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95"
+              className="px-5 py-2 bg-[#19211E] hover:bg-[#2C3732] text-[#FAF8F5] rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 active:scale-95 cursor-pointer border border-[#19211E]"
             >
               {submitting ? "กำลังบันทึก..." : "✓ บันทึกงานใหม่"}
             </button>
